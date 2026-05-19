@@ -89,6 +89,11 @@
     "group": "regulatory",
     "desc": "GOODS VEHICLES PROHIBITED"
   },
+  "TS121": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "FRANCHISED BUS LANE"
+  },
   "TS122": {
     "tier": 1,
     "group": "regulatory",
@@ -109,10 +114,35 @@
     "group": "regulatory",
     "desc": "BUS LANE"
   },
+  "TS126": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "FRANCHISED CONTRA-FLOW BUS LANE"
+  },
+  "TS128": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "OFFSIDE LANE FOR BUSES"
+  },
+  "TS130": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "LEARNER DRIVERS PROHIBITED"
+  },
+  "TS132": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "NO RIGHT TURN"
+  },
   "TS134": {
     "tier": 0,
     "group": "regulatory",
     "desc": "NO PEDESTRIANS"
+  },
+  "TS136": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "NO PEDESTRIANS NO CYCLISTS"
   },
   "TS137": {
     "tier": 0,
@@ -129,15 +159,15 @@
     "group": "regulatory",
     "desc": "NO OVERTAKING"
   },
-  "TS143": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": "WIDTH LIMIT 2.7M"
-  },
   "TS144": {
     "tier": 0,
     "group": "regulatory",
     "desc": "WIDTH LIMIT 2.3M"
+  },
+  "TS143": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "WIDTH LIMIT 2.7M"
   },
   "TS145": {
     "tier": 0,
@@ -329,10 +359,60 @@
     "group": "regulatory",
     "desc": "NO STOPPING ZONE (A) -/M"
   },
+  "TS185": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (A) T-9PM"
+  },
+  "TS186": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (A) T-10PM"
+  },
+  "TS187": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (A) TM-11M"
+  },
+  "TS188": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (A) T-MI"
+  },
+  "TS189": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (A) A I"
+  },
+  "TS190": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (A) 10M-9PM"
+  },
   "TS191": {
     "tier": 0,
     "group": "regulatory",
     "desc": "KEEP LEFT UNLESS OVERTAK INC"
+  },
+  "TS192": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (B) T-9M 5M-7M"
+  },
+  "TS193": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (B) 7230M-930 5M-7M"
+  },
+  "TS194": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (B) T-10M 4M-7M"
+  },
+  "TS195": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE (B) 8M-10M 4330M-630"
   },
   "TS196": {
     "tier": 0,
@@ -344,6 +424,46 @@
     "group": "regulatory",
     "desc": "SPEED LIMI 110KM/"
   },
+  "TS198": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NO STOPPIN ZONE END"
+  },
+  "TS200": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIGI BUS NO STOPPIN ZONE (A) T-7M"
+  },
+  "TS201": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIGI BUS NO STOPPIN ZONE (A) TM-9PM"
+  },
+  "TS202": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIGI BUS NO STOPPIN ZONE (A) T-10PM"
+  },
+  "TS203": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIGI BUS NO STOPPIN ZONE (A) T-11PM"
+  },
+  "TS204": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIG BUS NO STOPPIN ZONE (A) T-MI"
+  },
+  "TS205": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIGI BUS NO STOPPIN ZONE (A) A"
+  },
+  "TS208": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIGHT BUSES NO STOPPING ZONE (B) -9M 5M-PM"
+  },
   "TS209": {
     "tier": 1,
     "group": "regulatory",
@@ -354,6 +474,798 @@
     "group": "regulatory",
     "desc": "PUBLIC LIGHT BUSES NO STOPPING ZONE (B) -10M 4M7M"
   },
+  "TS211": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "PUBLIC LIGHT BUSES NO STOPPING ZONE (B) 8-100M 430M-6 30PM"
+  },
+  "TS214": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "END OF PUBLIC LIGHT BUSES NO STOPPING ZONE"
+  },
+  "TS220": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": "ROAD CLOSED"
+  },
+  "TS222": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "EXIT POINT (QUT)"
+  },
+  "TS223": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "EXIT RESTRICTION (NO EXIT)"
+  },
+  "TS224": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "ACCESS RESTRICTION (NO ENTRY)"
+  },
+  "TS225": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": "CYCLISTS DISMOUNT USE PEDESTRIAN CROSSING"
+  },
+  "TS227": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "CYCLING RESTRICTION"
+  },
+  "TS272": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": "TUNNEL AREA END"
+  },
+  "TS326": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NEARSIDE LANE FOR BUSES"
+  },
+  "TS337": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "MIDDLE LANE FOR FRANCHISED BUSES"
+  },
+  "TS338": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "MIDDLE LANE FOR FRANCHISED BUSES"
+  },
+  "TS335": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "MIDDLE LANE FOR FRANCHISED BUSES"
+  },
+  "TS344": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "VEHICLES WITH DISABLED PERSONS PARKING PERMIT OR PARKING CERTIFICATE FOR DRIVERS"
+  },
+  "TS346": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NEARSIDE LANE FOR BUSES"
+  },
+  "TS357": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NEARSIDE LANE FOR FRANCHISED BUSES"
+  },
+  "TS353": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "START AND CONTINUATION OF AN EXPRESSWAY"
+  },
+  "TS354": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "END OF AN EXPRESSWAY"
+  },
+  "TS356": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 7OKM/N"
+  },
+  "TS358": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 55M/"
+  },
+  "TS365": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": "PROHIBITION OF ALL VEHICLES OF CERTAIN LENGTH"
+  },
+  "TS367": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "DRIVING TEST VEHICLES ONLY MON - FRI 8M - 5M SAT 8M - 1PM EXCEPT GENERAL HOLIDAYS"
+  },
+  "TS379": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "MIDDLE LANE FOR BUSES"
+  },
+  "TS380": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NEARSIDE LANE FOR BUSES"
+  },
+  "TS321": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NEARSIDE LANE FQR BUSES"
+  },
+  "TS352": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "NEARSIDE LANE FOR BUSES"
+  },
+  "TS386": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "FRANCHISED BUS ONL Y"
+  },
+  "TS401": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "STOP OR GIVE WAY SIGN AHEAD"
+  },
+  "TS407": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "TRAFFIC MERGES FROM LEFT"
+  },
+  "TS402": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "TRAFFIC MERGES FROM RIGHT"
+  },
+  "TS404": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "MERGING INTO TRAFFIC ON RIGHT"
+  },
+  "TS405": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "MERGING INTO TRAFFIC ON LEFT"
+  },
+  "TS406": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "DUAL- CARR IAGEWAY ROAD ENDS"
+  },
+  "TS417": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "DOUBLE BEND FIRST TO RIGHT AHEAD"
+  },
+  "TS412": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "DOUBLE BEND FIRST TQ LEFT AHEAD"
+  },
+  "TS414": {
+    "tier": 2,
+    "group": "warning",
+    "desc": "PERMANENT SHARP DEVIATION"
+  },
+  "TS415": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "ROAD NARROWS ON BOTH SIDES AHEAD"
+  },
+  "TS416": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "ROAD NARROWS ON RIGHT AHEAD"
+  },
+  "TS418": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "CROSS ROADS AHEAD"
+  },
+  "TS470": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "T-JUNCT ION AHEAD TO RIGHT"
+  },
+  "TS426": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "STEEP HILL DOWNWARDS AHEAD 135"
+  },
+  "TS430": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "STEEP HILL UPWARDS AHEAD 135"
+  },
+  "TS431": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "STEEP HILL UPWARDS AHEAD 138"
+  },
+  "TS440": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "HE TIGHT RESTRICTED AHEAD 4.2M"
+  },
+  "TS441": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "HE TIGHT RESTRICTED AHEAD 4.3M"
+  },
+  "TS446": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "HEIGHT RESTRICTED AHEAD 2-4M"
+  },
+  "TS490": {
+    "tier": 1,
+    "group": "warning",
+    "desc": "HEIGHT RESTRICTED 3.5M"
+  },
+  "TS451": {
+    "tier": 1,
+    "group": "warning",
+    "desc": "HEIGHT RESTRICTED 4.0M"
+  },
+  "TS456L": {
+    "tier": 1,
+    "group": "warning",
+    "desc": "HE IGHT RESTRICTED 4.5M"
+  },
+  "TS460": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "PEDESTRIAN ON OR CROSSING ROAD AHEAD"
+  },
+  "TS461": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "PEDESTRIAN CROSSING AHEAD"
+  },
+  "TS462": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "PEOPLE WITH DISABILITIES AHEAD"
+  },
+  "TS481": {
+    "tier": 0,
+    "group": "warning"
+  },
+  "TS465": {
+    "tier": 1,
+    "group": "warning",
+    "desc": "STEEP ROAD CYCLISTS ADVISED TO WALK"
+  },
+  "TS507": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "SLOW, WET TAR"
+  },
+  "TS510": {
+    "tier": 2,
+    "group": "warning",
+    "desc": "CROSSING NOT IN USE"
+  },
+  "TS511": {
+    "tier": 1,
+    "group": "warning",
+    "desc": "PEDESTRIANS"
+  },
+  "TS524": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "LIGHT RAILWAY VEHICLES OR TRAMS AHEAD"
+  },
+  "TS549": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "WARNING BUS LANE TQ RIGHT AHEAD"
+  },
+  "TS532": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS BUS W"
+  },
+  "TS553": {
+    "tier": 0,
+    "group": "warning",
+    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS"
+  },
+  "TS555": {
+    "tier": 1,
+    "group": "warning",
+    "desc": "PROHIBITION OF ALL VEHICLES OVER 10M AHEAD"
+  },
+  "TS566": {
+    "tier": 2,
+    "group": "warning",
+    "desc": "LANTAU TAXIS"
+  },
+  "TS588": {
+    "tier": 1,
+    "group": "warning"
+  },
+  "TS589": {
+    "tier": 1,
+    "group": "warning"
+  },
+  "TS602": {
+    "tier": 0,
+    "group": "informatory"
+  },
+  "TS603": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "BS TE BY"
+  },
+  "TS604": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "W EB"
+  },
+  "TS605": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS606": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS607": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS608": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS609": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS611": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "IN E"
+  },
+  "TS612": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "5 POINT A A"
+  },
+  "TS613": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "P AT 5 POINT AR 2 EA"
+  },
+  "TS614": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DW ES 5 POINT A & A"
+  },
+  "TS617": {
+    "tier": 0,
+    "group": "informatory"
+  },
+  "TS618": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS620": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "5IN C A"
+  },
+  "TS671": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "ICE BLOCK BB 7 B"
+  },
+  "TS665": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "LANE DIRECTIONS"
+  },
+  "TS666": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "LANE DIRECTIONS"
+  },
+  "TS667": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "LANE DIRECTIONS"
+  },
+  "TS668": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "LANE DIRECTIONS"
+  },
+  "TS703": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "OVER 10 TONNES"
+  },
+  "TS704": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "OVER 12 TONNES"
+  },
+  "TS705": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "EXCEPT GOODS VEHICLES MIDNIGHT - NOON"
+  },
+  "TS706": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "EXCEPT BUSES AND SCHOOL PRIVATE LIGHT BUSES"
+  },
+  "TS708": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "EXCEPT FRANCHISED BUSES"
+  },
+  "TS709": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "EXCEPT PUBLIC LIGHT BUSES"
+  },
+  "TS714": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 7-M"
+  },
+  "TS715": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE M-8M"
+  },
+  "TS717": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 10-9PM"
+  },
+  "TS718": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE Y-10PM"
+  },
+  "TS719": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE YM-11PM"
+  },
+  "TS720": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE YM-MIN"
+  },
+  "TS721": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE A"
+  },
+  "TS727": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 7230M-930M 5M-7PM"
+  },
+  "TS728": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE YM-10M 4M-/7M"
+  },
+  "TS735": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "ARROWS"
+  },
+  "TS737": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "REDUCE SPEED NOW"
+  },
+  "TS738": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "SINGLE FILE TRAFFIC"
+  },
+  "TS750": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "FALLEN TREE"
+  },
+  "TS751": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "SURVEYING"
+  },
+  "TS754": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "SIGN CLEANING"
+  },
+  "TS755": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "GRASS CUTTING"
+  },
+  "TS760": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "SAFE SPEED 20 KM/H"
+  },
+  "TS761": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "SAFE SPEED 30 KM/"
+  },
+  "TS764": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "SAFE SPEED 60 KM/H"
+  },
+  "TS770": {
+    "tier": 1,
+    "group": "supplementary"
+  },
+  "TS775": {
+    "tier": 1,
+    "group": "supplementary"
+  },
+  "TS780": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "1KM"
+  },
+  "TS781": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "2KM"
+  },
+  "TS785": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "FOR 2KM"
+  },
+  "TS788": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "FOR 5M"
+  },
+  "TS789": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "FOR 50M"
+  },
+  "TS799": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "FOR 100M"
+  },
+  "TS791": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "FOR 10KM"
+  },
+  "TS794": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "FOR 15KM"
+  },
+  "TS796": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "STOP 30M"
+  },
+  "TS800": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "LOW GEAR FOR 1KM"
+  },
+  "TS802L": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "LOW GEAR FOR 2KM"
+  },
+  "TS803": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "LOW GEAR FOR 272 K"
+  },
+  "TS805": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "UNACCOMPANIED CHILDREN PERMITTED"
+  },
+  "TS808H": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "HEAVY GOODS VEHICLE ARTICULATED ONLY"
+  },
+  "TS811": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": "SAFE HEIGHT 5.5M"
+  },
+  "TS812": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "VILLAGE VEHICLES"
+  },
+  "TS814": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "GOODS VEHICLES"
+  },
+  "TS835L": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "VEHICLE LENGTH OVER 11M"
+  },
+  "TS843": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 6M-7PM"
+  },
+  "TS844": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE SM-M"
+  },
+  "TS846": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "PARK ING TIME PLATE SUNDAYS AND PUBLIC HOLIDAYS 4M - M"
+  },
+  "TS847": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 8M - M"
+  },
+  "TS848": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "PARK ING TIME PLATE 9AT NOON 7M, SUNDAYS & GENERAL HOLIDAYS"
+  },
+  "TS849": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "PARKING TIME PLATE 7230 - 9AM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+  },
+  "TS858": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 7330 - 9AM"
+  },
+  "TS863": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 6M 7330M"
+  },
+  "TS865": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE N - 130PM 6M - 9YM"
+  },
+  "TS868": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "PARK ING TIME PLATE M - 10M EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+  },
+  "TS873": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "EXCEPT FRANCHISED BUSES AND TAXIS"
+  },
+  "TS874": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE (M 8AM"
+  },
+  "TS878": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "EXCEPT BUSES AND PRIVATE LIGHT BUSES"
+  },
+  "TS879": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": "EXCEPT BUSES AND PUBLIC LIGHT BUSES (SCHEDULED SERVICE)"
+  },
+  "TS887": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": "TIME PLATE 10M - N"
+  },
+  "TS905": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "TURN RIGHT"
+  },
+  "TS906": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "AHEAD ONLY"
+  },
+  "TS916": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "PASS EITHER SIDE"
+  },
+  "TS917": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "SINGLE FILE TRAFFIC"
+  },
+  "TS921": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "NO RIGHT TURN"
+  },
+  "TS922": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "ONE WAY TRAFFIC"
+  },
+  "TS923": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "NO ENTRY"
+  },
+  "TS924": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "TURN LEFT"
+  },
+  "TS925": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "TWO WAY TRAFFIC"
+  },
+  "TS930": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "NO THROUGH ROAD FOR MOTOR VEHICLES"
+  },
+  "TS932": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "TURN RIGHT"
+  },
+  "TS938": {
+    "tier": 1,
+    "group": "temporary",
+    "desc": "SLOW, POLICE"
+  },
+  "TS947": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "ROAD AHEAD CLOSED"
+  },
+  "TS949": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "SLOW, POLICE (USED WITH CONE) (HOLES ON SIGN MODIFLED)"
+  },
+  "TS950": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "STOP, POLICE USED WITH CONE, HOLES ON SIGN MODIFLED)"
+  },
+  "TS951": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": "ACCIDENT, POLICE USED WITH CONE, HOLES ON SIGN MODIFLED)"
+  },
   "TS2101": {
     "tier": 2,
     "group": "regulatory",
@@ -363,11 +1275,6 @@
     "tier": 2,
     "group": "regulatory",
     "desc": "2-HOUR METERS (CARD-OPERATED 8M - MIDNIGHT DAILY EXCEPT GENERAL HOLIDAYS"
-  },
-  "TS211": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUSES NO STOPPING ZONE (B) 8-100M 430M-6 30PM"
   },
   "TS2115": {
     "tier": 2,
@@ -488,15 +1395,15 @@
     "tier": 2,
     "group": "regulatory"
   },
-  "TS214": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "END OF PUBLIC LIGHT BUSES NO STOPPING ZONE"
-  },
   "TS2140": {
     "tier": 2,
     "group": "regulatory",
     "desc": "7OL EM 7"
+  },
+  "TS2144": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": "4G 7OLEO 7 12"
   },
   "TS2142": {
     "tier": 2,
@@ -505,11 +1412,6 @@
   "TS2143": {
     "tier": 1,
     "group": "regulatory"
-  },
-  "TS2144": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": "4G 7OLEO 7 12"
   },
   "TS2145": {
     "tier": 1,
@@ -606,6 +1508,16 @@
     "tier": 1,
     "group": "regulatory",
     "desc": "BUS NO STOPPING ZONE 7 - 10M"
+  },
+  "TS2169": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": "2-HOUR METER ((CARD-OPERATE 8M - MIDNIGH DAILY EXCEPT GENERAL IDA GENERAL HOLIDA 1N00M - 10OM"
+  },
+  "TS2170": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": ") 2-HOUR METER ((CARD-OPERATE 8M - MIDNIGH DAILY EXCEPT GENERAL P IDA GENERAL HOL IDA 10M - 10M"
   },
   "TS2172": {
     "tier": 0,
@@ -717,11 +1629,6 @@
     "tier": 1,
     "group": "regulatory"
   },
-  "TS220": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": "ROAD CLOSED"
-  },
   "TS2200": {
     "tier": 0,
     "group": "regulatory"
@@ -738,20 +1645,25 @@
     "tier": 0,
     "group": "regulatory"
   },
-  "TS222": {
-    "tier": 0,
+  "TS2204": {
+    "tier": 1,
     "group": "regulatory",
-    "desc": "EXIT POINT (QUT)"
+    "desc": "PERATED) 10 BO616 HE) AF RX BF 1 BR S& 4 5 3B"
   },
-  "TS223": {
-    "tier": 0,
+  "TS2205": {
+    "tier": 1,
     "group": "regulatory",
-    "desc": "EXIT RESTRICTION (NO EXIT)"
+    "desc": "PERATED) A 10 BO616 F FE) AF BF BE BR S42 5 3B"
   },
   "TS2230": {
     "tier": 1,
     "group": "regulatory",
     "desc": "NO ST ZC 8M - 4M -"
+  },
+  "TS2254": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": "32 3700 2-HOUR BE DO 6 -"
   },
   "TS2235": {
     "tier": 2,
@@ -763,20 +1675,15 @@
     "group": "regulatory",
     "desc": "3700 J 2-HOUR 8M - P DAILY ENERAL"
   },
-  "TS224": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": "ACCESS RESTRICTION (NO ENTRY)"
-  },
   "TS2240": {
     "tier": 2,
     "group": "regulatory",
     "desc": "I J 32 3700 1-HOUR BE DO BM -"
   },
-  "TS2242": {
+  "TS2248": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "15-HOUR METERS 8M MIDNIGHT"
+    "desc": "32 3700 1 -HOUR BE DO 8A -"
   },
   "TS2244": {
     "tier": 2,
@@ -788,25 +1695,10 @@
     "group": "regulatory",
     "desc": "3700 1 -HOUR PF 8M PO DAILY ENERAL"
   },
-  "TS2248": {
+  "TS2242": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "32 3700 1 -HOUR BE DO 8A -"
-  },
-  "TS225": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": "CYCLISTS DISMOUNT USE PEDESTRIAN CROSSING"
-  },
-  "TS2254": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": "32 3700 2-HOUR BE DO 6 -"
-  },
-  "TS227": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": "CYCLING RESTRICTION"
+    "desc": "15-HOUR METERS 8M MIDNIGHT"
   },
   "TS2601": {
     "tier": 2,
@@ -816,529 +1708,5 @@
     "tier": 2,
     "group": "informatory",
     "desc": "O BES"
-  },
-  "TS272": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": "TUNNEL AREA END"
-  },
-  "TS321": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "NEARSIDE LANE FQR BUSES"
-  },
-  "TS326": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR BUSES"
-  },
-  "TS335": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "MIDDLE LANE FOR FRANCHISED BUSES"
-  },
-  "TS344": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "VEHICLES WITH DISABLED PERSONS PARKING PERMIT OR PARKING CERTIFICATE FOR DRIVERS"
-  },
-  "TS346": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR BUSES"
-  },
-  "TS352": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR BUSES"
-  },
-  "TS353": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": "START AND CONTINUATION OF AN EXPRESSWAY"
-  },
-  "TS356": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 7OKM/N"
-  },
-  "TS357": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR FRANCHISED BUSES"
-  },
-  "TS365": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF CERTAIN LENGTH"
-  },
-  "TS367": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "DRIVING TEST VEHICLES ONLY MON - FRI 8M - 5M SAT 8M - 1PM EXCEPT GENERAL HOLIDAYS"
-  },
-  "TS379": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": "MIDDLE LANE FOR BUSES"
-  },
-  "TS401": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "STOP OR GIVE WAY SIGN AHEAD"
-  },
-  "TS402": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "TRAFFIC MERGES FROM RIGHT"
-  },
-  "TS404": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "MERGING INTO TRAFFIC ON RIGHT"
-  },
-  "TS405": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "MERGING INTO TRAFFIC ON LEFT"
-  },
-  "TS406": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "DUAL- CARR IAGEWAY ROAD ENDS"
-  },
-  "TS407": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "TRAFFIC MERGES FROM LEFT"
-  },
-  "TS412": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "DOUBLE BEND FIRST TQ LEFT AHEAD"
-  },
-  "TS415": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "ROAD NARROWS ON BOTH SIDES AHEAD"
-  },
-  "TS416": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "ROAD NARROWS ON RIGHT AHEAD"
-  },
-  "TS417": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "DOUBLE BEND FIRST TO RIGHT AHEAD"
-  },
-  "TS418": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "CROSS ROADS AHEAD"
-  },
-  "TS426": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "STEEP HILL DOWNWARDS AHEAD 135"
-  },
-  "TS430": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "STEEP HILL UPWARDS AHEAD 135"
-  },
-  "TS431": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "STEEP HILL UPWARDS AHEAD 138"
-  },
-  "TS440": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "HE TIGHT RESTRICTED AHEAD 4.2M"
-  },
-  "TS441": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "HE TIGHT RESTRICTED AHEAD 4.3M"
-  },
-  "TS446": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 2-4M"
-  },
-  "TS456L": {
-    "tier": 1,
-    "group": "warning",
-    "desc": "HE IGHT RESTRICTED 4.5M"
-  },
-  "TS460": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "PEDESTRIAN ON OR CROSSING ROAD AHEAD"
-  },
-  "TS461": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "PEDESTRIAN CROSSING AHEAD"
-  },
-  "TS462": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "PEOPLE WITH DISABILITIES AHEAD"
-  },
-  "TS465": {
-    "tier": 1,
-    "group": "warning",
-    "desc": "STEEP ROAD CYCLISTS ADVISED TO WALK"
-  },
-  "TS470": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "T-JUNCT ION AHEAD TO RIGHT"
-  },
-  "TS481": {
-    "tier": 0,
-    "group": "warning"
-  },
-  "TS490": {
-    "tier": 1,
-    "group": "warning",
-    "desc": "HEIGHT RESTRICTED 3.5M"
-  },
-  "TS507": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "SLOW, WET TAR"
-  },
-  "TS510": {
-    "tier": 2,
-    "group": "warning",
-    "desc": "CROSSING NOT IN USE"
-  },
-  "TS511": {
-    "tier": 1,
-    "group": "warning",
-    "desc": "PEDESTRIANS"
-  },
-  "TS524": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "LIGHT RAILWAY VEHICLES OR TRAMS AHEAD"
-  },
-  "TS549": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "WARNING BUS LANE TQ RIGHT AHEAD"
-  },
-  "TS553": {
-    "tier": 0,
-    "group": "warning",
-    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS"
-  },
-  "TS555": {
-    "tier": 1,
-    "group": "warning",
-    "desc": "PROHIBITION OF ALL VEHICLES OVER 10M AHEAD"
-  },
-  "TS566": {
-    "tier": 2,
-    "group": "warning",
-    "desc": "LANTAU TAXIS"
-  },
-  "TS588": {
-    "tier": 1,
-    "group": "warning"
-  },
-  "TS589": {
-    "tier": 1,
-    "group": "warning"
-  },
-  "TS602": {
-    "tier": 0,
-    "group": "informatory"
-  },
-  "TS604": {
-    "tier": 0,
-    "group": "informatory",
-    "desc": "W EB"
-  },
-  "TS605": {
-    "tier": 1,
-    "group": "informatory"
-  },
-  "TS606": {
-    "tier": 1,
-    "group": "informatory"
-  },
-  "TS607": {
-    "tier": 1,
-    "group": "informatory"
-  },
-  "TS608": {
-    "tier": 1,
-    "group": "informatory"
-  },
-  "TS609": {
-    "tier": 1,
-    "group": "informatory"
-  },
-  "TS611": {
-    "tier": 0,
-    "group": "informatory",
-    "desc": "IN E"
-  },
-  "TS613": {
-    "tier": 1,
-    "group": "informatory",
-    "desc": "P AT 5 POINT AR 2 EA"
-  },
-  "TS614": {
-    "tier": 1,
-    "group": "informatory",
-    "desc": "DW ES 5 POINT A & A"
-  },
-  "TS617": {
-    "tier": 0,
-    "group": "informatory"
-  },
-  "TS618": {
-    "tier": 1,
-    "group": "informatory"
-  },
-  "TS620": {
-    "tier": 0,
-    "group": "informatory",
-    "desc": "5IN C A"
-  },
-  "TS671": {
-    "tier": 0,
-    "group": "informatory",
-    "desc": "ICE BLOCK BB 7 B"
-  },
-  "TS705": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "EXCEPT GOODS VEHICLES MIDNIGHT - NOON"
-  },
-  "TS706": {
-    "tier": 1,
-    "group": "supplementary",
-    "desc": "EXCEPT BUSES AND SCHOOL PRIVATE LIGHT BUSES"
-  },
-  "TS714": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE 7-M"
-  },
-  "TS715": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE M-8M"
-  },
-  "TS718": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE Y-10PM"
-  },
-  "TS719": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE YM-11PM"
-  },
-  "TS721": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE A"
-  },
-  "TS737": {
-    "tier": 1,
-    "group": "supplementary",
-    "desc": "REDUCE SPEED NOW"
-  },
-  "TS738": {
-    "tier": 1,
-    "group": "supplementary",
-    "desc": "SINGLE FILE TRAFFIC"
-  },
-  "TS760": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "SAFE SPEED 20 KM/H"
-  },
-  "TS761": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "SAFE SPEED 30 KM/"
-  },
-  "TS764": {
-    "tier": 1,
-    "group": "supplementary",
-    "desc": "SAFE SPEED 60 KM/H"
-  },
-  "TS785": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "FOR 2KM"
-  },
-  "TS788": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "FOR 5M"
-  },
-  "TS789": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "FOR 50M"
-  },
-  "TS791": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "FOR 10KM"
-  },
-  "TS794": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "FOR 15KM"
-  },
-  "TS796": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "STOP 30M"
-  },
-  "TS799": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "FOR 100M"
-  },
-  "TS800": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "LOW GEAR FOR 1KM"
-  },
-  "TS802L": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "LOW GEAR FOR 2KM"
-  },
-  "TS805": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "UNACCOMPANIED CHILDREN PERMITTED"
-  },
-  "TS808H": {
-    "tier": 1,
-    "group": "supplementary",
-    "desc": "HEAVY GOODS VEHICLE ARTICULATED ONLY"
-  },
-  "TS811": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "SAFE HEIGHT 5.5M"
-  },
-  "TS812": {
-    "tier": 0,
-    "group": "supplementary",
-    "desc": "NT TAXIS"
-  },
-  "TS835L": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "VEHICLE LENGTH OVER 11M"
-  },
-  "TS843": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE 6M-7PM"
-  },
-  "TS844": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE SM-M"
-  },
-  "TS847": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "TIME PLATE 8M - M"
-  },
-  "TS868": {
-    "tier": 2,
-    "group": "supplementary",
-    "desc": "PARK ING TIME PLATE M - 10M EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
-  },
-  "TS905": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "TURN RIGHT"
-  },
-  "TS906": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "AHEAD ONLY"
-  },
-  "TS916": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "PASS EITHER SIDE"
-  },
-  "TS921": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "NO RIGHT TURN"
-  },
-  "TS922": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "ONE WAY TRAFFIC"
-  },
-  "TS923": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "NO ENTRY"
-  },
-  "TS924": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "TURN LEFT"
-  },
-  "TS925": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "TWO WAY TRAFFIC"
-  },
-  "TS930": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "NO THROUGH ROAD FOR MOTOR VEHICLES"
-  },
-  "TS932": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "TURN RIGHT"
-  },
-  "TS938": {
-    "tier": 1,
-    "group": "temporary",
-    "desc": "SLOW, POLICE"
-  },
-  "TS947": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "ROAD AHEAD CLOSED"
-  },
-  "TS949": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "SLOW, POLICE (USED WITH CONE) (HOLES ON SIGN MODIFLED)"
-  },
-  "TS950": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "STOP, POLICE USED WITH CONE, HOLES ON SIGN MODIFLED)"
-  },
-  "TS951": {
-    "tier": 0,
-    "group": "temporary",
-    "desc": "ACCIDENT, POLICE USED WITH CONE, HOLES ON SIGN MODIFLED)"
   }
 }

@@ -303,19 +303,43 @@ async function extractSheet(sheet, catalogue) {
       // No. cell: the big code sits in the upper ~46% of the row (above the
       // "(... )" reg-fig line). Trim to the glyphs and upscale so tesseract
       // doesn't confuse 1↔4 / 9↔3 on the thin print.
-      const noBuf = magick([png,
-        '-crop', `${noW}x${Math.round(rh * 0.46)}+${bx0 - noW - 8}+${y + 6}`,
-        '+repage', '-colorspace', 'Gray', '-threshold', '58%',
-        '-fuzz', '30%', '-trim', '+repage',
-        '-bordercolor', 'white', '-border', '18', '-resize', '220%', 'png:-'],
-      { binary: true })
-      const raw = ocrLine(noBuf, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        .replace(/\s+/g, '').toUpperCase()
-      const m = raw.match(/^(\d{2,4})([A-Z]?)$/)
+      //
+      // Read it as `cropW`-wide, threshold+trim, psm-7 single line. Returns
+      // the validated [digits, suffix] or null (no/misread/out-of-range — all
+      // indistinguishable here and all correctly mean "no code").
+      const readNo = (cropW) => {
+        const noBuf = magick([png,
+          '-crop', `${cropW}x${Math.round(rh * 0.46)}+${bx0 - noW - 8}+${y + 6}`,
+          '+repage', '-colorspace', 'Gray', '-threshold', '58%',
+          '-fuzz', '30%', '-trim', '+repage',
+          '-bordercolor', 'white', '-border', '18', '-resize', '220%', 'png:-'],
+        { binary: true })
+        const raw = ocrLine(noBuf, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+          .replace(/\s+/g, '').toUpperCase()
+        const mm = raw.match(/^(\d{2,4})([A-Z]?)$/)
+        if (!mm) return null
+        const n = Number(mm[1])
+        if (n < sheet.range[0] || n > sheet.range[1]) return null // misread
+        return [mm[1], mm[2]]
+      }
+      // Primary read = the full No. cell (unchanged historical behaviour).
+      // Fallback: rows holding a wide composite plate (NO STOPPING ZONE,
+      // PUBLIC LIGHT BUS, …) have a heavy plate border/corner hard against
+      // the No.|Symbol divider; at the 58% threshold it survives as a
+      // full-height bar that breaks tesseract's psm-7 read, so the cell OCR'd
+      // empty and the sign degraded to a bare dot for the MAJORITY of in-use
+      // signs. Re-reading with the right edge pulled `RNO` px off the symbol
+      // band drops that bar; the code digits sit well left of it. This is a
+      // FALLBACK (only when the full read failed), not a replacement, because
+      // a blind right-cut regresses sheets whose digits sit further right
+      // (verified by an all-16-sheet sweep) — keeping the full read primary
+      // guarantees zero regression while recovering the contaminated rows.
+      // `RNO` is an absolute px at the fixed 400-DPI render (the plate border
+      // is a sheet-independent CAD line, not a fraction of column pitch).
+      const RNO = 45
+      const m = readNo(noW) ?? (noW - RNO >= 24 ? readNo(noW - RNO) : null)
       if (!m) continue
-      const num = Number(m[1])
-      if (num < sheet.range[0] || num > sheet.range[1]) continue // misread
-      const code = `${sheet.prefix}${m[1]}${m[2]}`
+      const code = `${sheet.prefix}${m[0]}${m[1]}`
       if (catalogue[code]) continue // first (left-most) occurrence wins
 
       // Description cell, snapped to the grid rules (same row & group as the
