@@ -12,17 +12,27 @@
 //
 // Output:
 //   public/signs/<CODE>.png        trimmed pictogram, one per code
-//   app/data/signCatalogue.json    { "<CODE>": { tier } }
+//   app/data/signCatalogue.json    { "<CODE>": { tier, group, desc? } }
+//
+// `desc` is OCR'd from the Description column of the SAME row/group as the
+// code & symbol — no cross-numbering join — so it can never describe a
+// different sign. A blank or garbled read is dropped (the sign keeps its
+// pictogram, just without meaning text) rather than shipping a wrong meaning.
+// It is English best-effort only: app/data/signDescriptions.json holds
+// hand-curated bilingual overrides (TD Road Users' Code) that the RUNTIME
+// prefers over this — edited independently, no pipeline re-run needed.
 
 import { mkdir, rm, writeFile, readdir } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 
-const INDEX_PLAN_DIR = '/Users/william/Downloads/tadrawings_dataspec/Index Plan'
+const INDEX_PLAN_DIR = 'data/tadrawings_dataspec/Index Plan'
 const SIGNS_DIR = 'public/signs'
 const CATALOGUE_JSON = 'app/data/signCatalogue.json'
 const QA_MONTAGE = '/tmp/sign-catalogue-qa.png'
 const DPI = 400
+// Description OCR runs on a DPI×DESC_HD raster (sharper digits/units).
+const DESC_HD = 2
 
 // Sheets to extract. SIGNID in the dataset is `TS` + the No.-column value, so
 // `prefix` is prepended to each cropped code. The grid auto-detects, so adding
@@ -117,6 +127,15 @@ function cluster(indices, merge) {
   return out
 }
 
+// Centres of the strong runs in a 1-px ink profile — the table's rule lines.
+// Used for both the horizontal grid rules and the vertical column rules
+// (they only differ in the profile axis, threshold and merge distance).
+function ruleCentres(prof, thresh, merge) {
+  const idx = []
+  for (let i = 0; i < prof.length; i++) if (prof[i] >= thresh) idx.push(i)
+  return cluster(idx, merge)
+}
+
 // Modal spacing of a sorted centre list, to the nearest pixel.
 function modalGap(centres) {
   const counts = new Map()
@@ -134,11 +153,30 @@ function modalGap(centres) {
   return best
 }
 
-function ocrLine(pngBuf, whitelist) {
-  const args = ['stdin', 'stdout', '--psm', '7']
+function tesseractOcr(pngBuf, psm, whitelist) {
+  const args = ['stdin', 'stdout', '--psm', String(psm)]
   if (whitelist) args.push('-c', `tessedit_char_whitelist=${whitelist}`)
   const r = spawnSync('tesseract', args, { input: pngBuf, maxBuffer: 1 << 26 })
-  return r.status === 0 ? r.stdout.toString('utf8').trim() : ''
+  return r.status === 0 ? r.stdout.toString('utf8') : ''
+}
+// psm 7 = one text line — the No. column's single token.
+const ocrLine = (pngBuf, whitelist) => tesseractOcr(pngBuf, 7, whitelist).trim()
+// psm 6 = uniform block — Description cells wrap onto 2–3 lines that
+// cleanDescription() re-joins into one phrase.
+const ocrBlock = (pngBuf, whitelist) => tesseractOcr(pngBuf, 6, whitelist)
+
+// Normalise an OCR'd description: collapse all whitespace/newlines to single
+// spaces, tidy spacing around the "(...)" sub-note, and reject reads with too
+// little alphabetic signal to be a real meaning (blank continuation rows, a
+// stray rule line). Source text is authored ALL-CAPS — kept verbatim because
+// that is how the sign legend itself reads.
+function cleanDescription(raw) {
+  const s = raw
+    .replace(/\s+/g, ' ')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .trim()
+  return (s.match(/[A-Z]/g)?.length ?? 0) >= 2 ? s : ''
 }
 
 // Trimmed-symbol shape → LOD tier. Rectangular plates / text panels read only
@@ -193,6 +231,14 @@ async function extractSheet(sheet, catalogue) {
   const png = `${base}.png`
   const [W, H] = identify(png)
 
+  // Description text is thin CAD lettering; OCR'ing it off the 400-DPI sheet
+  // raster (tuned for pictogram extraction) loses digit/unit detail. Render
+  // a second raster at HD× for the description pass only — geometry stays on
+  // the 400-DPI raster, coords just scale by HD.
+  const pngHD = `${base}-hd.png`
+  spawnSync('pdftoppm', ['-png', '-r', String(DPI * DESC_HD),
+    '-singlefile', pdf, `${base}-hd`])
+
   // Columns: pictogram ink forms wide vertical bands = the Symbol columns.
   const colProf = profile(png, W, H, 'x')
   const symBands = runs(colProf, 25, 70)
@@ -200,9 +246,7 @@ async function extractSheet(sheet, catalogue) {
   // text/pictograms only partially fill a scanline — so a high threshold
   // isolates the rule lines.
   const rowProf = profile(png, W, H, 'y')
-  const lineIdx = []
-  for (let i = 0; i < rowProf.length; i++) if (rowProf[i] >= 120) lineIdx.push(i)
-  const gridLines = cluster(lineIdx, 3)
+  const gridLines = ruleCentres(rowProf, 120, 3)
   const pitch = modalGap(gridLines)
   // Row bands = consecutive grid lines one pitch apart (drops the irregular
   // header rule and the bottom title block automatically).
@@ -220,6 +264,28 @@ async function extractSheet(sheet, catalogue) {
     ? (symBands.at(-1)[0] - symBands[0][0]) / (symBands.length - 1)
     : symBands[0][0]
   const noW = Math.round(groupPitch * 0.32)
+
+  // Vertical column rules: a full-height rule line is ~all-ink in the 1-px
+  // x-projection, while a pictogram column only partly fills it — so a high
+  // threshold isolates the table's vertical rules (stable across 150–230).
+  const vRules = ruleCentres(colProf, 150, 4)
+
+  // The Description cell is a FIXED grid cell (its width does not track the
+  // symbol ink): bounded by the Symbol|Description rule and the next rule.
+  // Snapping to detected rules survives wide signs whose ink overruns the
+  // cell; if the bracketing rules look wrong we fall back to a fixed
+  // fraction of the group (calibrated: desc ≈ 0.69–0.98 of groupPitch from
+  // the group's left/No.-column edge).
+  function descCell(bx0) {
+    const r2 = vRules.find(x => x > bx0 + groupPitch * 0.10)
+    const r3 = r2 != null ? vRules.find(x => x > r2 + groupPitch * 0.05) : null
+    if (r2 != null && r3 != null) {
+      const w = r3 - r2
+      if (w > groupPitch * 0.12 && w < groupPitch * 0.45) return [r2 + 4, r3 - 2]
+    }
+    const gl = bx0 - noW - 8
+    return [gl + Math.round(groupPitch * 0.69), gl + Math.round(groupPitch * 0.98)]
+  }
 
   let extracted = 0
   for (const [bx0, bx1] of symBands) {
@@ -252,8 +318,31 @@ async function extractSheet(sheet, catalogue) {
       const code = `${sheet.prefix}${m[1]}${m[2]}`
       if (catalogue[code]) continue // first (left-most) occurrence wins
 
+      // Description cell, snapped to the grid rules (same row & group as the
+      // code/symbol — no cross-numbering). Cropped from the HD raster at the
+      // matching scale; grayscale+normalize (no hard threshold — it ate thin
+      // strokes), then a uniform-block OCR since cells wrap onto 2–3 lines.
+      const [dc0, dc1] = descCell(bx0)
+      const descX0 = Math.max(0, dc0)
+      const descX1 = Math.min(W - 2, dc1)
+      let desc = ''
+      if (descX1 - descX0 > 30) {
+        const cw = (descX1 - descX0) * DESC_HD
+        const ch = (rh - 10) * DESC_HD
+        const cx = descX0 * DESC_HD
+        const cy = (y + 5) * DESC_HD
+        const descBuf = magick([pngHD,
+          '-crop', `${cw}x${ch}+${cx}+${cy}`,
+          '+repage', '-colorspace', 'Gray', '-normalize',
+          '-bordercolor', 'white', '-border', '18', 'png:-'],
+        { binary: true })
+        desc = cleanDescription(ocrBlock(descBuf,
+          'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ()/&-.,'))
+      }
+
       normalizeSign(symRaw, join(SIGNS_DIR, `${code}.png`))
       catalogue[code] = { tier: classifyTier(sw, sh), group: sheet.group }
+      if (desc) catalogue[code].desc = desc
       extracted++
     }
   }

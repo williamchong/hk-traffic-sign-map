@@ -27,3 +27,9 @@ logs
 # public/data/*.pmtiles IS committed so GitHub Pages deploys without a
 # GDAL/tippecanoe data rebuild.
 data/raw/
+
+# TD source drawings + the open-data file manifest: ~18 MB build inputs for
+# `pnpm data:catalogue`. The generated public/signs/*.png + signCatalogue.json
+# ARE committed, so a fresh checkout deploys without re-running the OCR.
+data/tadrawings_dataspec/
+data/file_list.csv

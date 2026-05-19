@@ -1,0 +1,12 @@
+{
+  "TS101": { "en": "Stop", "zh": "停車" },
+  "TS102": { "en": "Give way to traffic on major road", "zh": "讓路" },
+  "TS106": { "en": "Ahead only", "zh": "只准前駛" },
+  "TS107": { "en": "Turn left", "zh": "只准向左轉" },
+  "TS108": { "en": "Turn right", "zh": "只准向右轉" },
+  "TS109": { "en": "Keep left", "zh": "靠左行駛" },
+  "TS110": { "en": "Keep right", "zh": "靠右行駛" },
+  "TS115": { "en": "No entry for all vehicles", "zh": "所有車輛不准駛入" },
+  "TS182": { "en": "One way traffic", "zh": "單程行車" },
+  "TS183": { "en": "No stopping (clearway)", "zh": "不准停車（通車路）" }
+}

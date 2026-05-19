@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { signIconUrl, categoryKeyOf } from '~/composables/useSignCatalogue'
+import { signIconUrl, signDescription, categoryKeyOf } from '~/composables/useSignCatalogue'
 
 const { selectedSign, categories } = useTrafficLayers()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const sign = computed(() => selectedSign.value)
 
@@ -19,6 +19,11 @@ const categoryLabel = computed(() =>
 // The real pictogram when this SIGNID is catalogued, else null (falls back
 // to the category colour dot).
 const signImage = computed(() => signIconUrl(sign.value?.properties.SIGNID))
+
+// Human meaning of the sign (curated bilingual, else OCR English).
+const description = computed(() =>
+  signDescription(sign.value?.properties.SIGNID, locale.value)
+)
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v))
 
@@ -61,6 +66,9 @@ const cycleHint = computed(() => {
     ? t('signPopup.cycleHint', { index: s.index, total: s.total })
     : null
 })
+
+// Pictogram a11y/hover label: its meaning, else the popup title.
+const signLabel = computed(() => description.value ?? title.value)
 </script>
 
 <template>
@@ -74,7 +82,8 @@ const cycleHint = computed(() => {
         <img
           v-if="signImage"
           :src="signImage"
-          :alt="title"
+          :alt="signLabel"
+          :title="signLabel"
           class="size-12 shrink-0 object-contain"
         >
         <span
@@ -106,6 +115,13 @@ const cycleHint = computed(() => {
         @click="selectedSign = null"
       />
     </div>
+
+    <p
+      v-if="description"
+      class="text-sm font-medium"
+    >
+      {{ description }}
+    </p>
 
     <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
       <template

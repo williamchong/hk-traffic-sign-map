@@ -1,4 +1,5 @@
 import catalogueJson from '~/data/signCatalogue.json'
+import descOverridesJson from '~/data/signDescriptions.json'
 
 // Real sign pictograms extracted from the TD Index Plan, keyed by SIGNID
 // (e.g. "TS101"). `tier` is a visual-complexity band that drives level-of-
@@ -10,9 +11,20 @@ export type SignGroup
 export interface SignCatalogueEntry {
   tier: 0 | 1 | 2
   group: SignGroup
+  // English meaning OCR'd from the Index Plan Description column. Best-effort
+  // (CAD lettering ⇒ ~85–90% clean), so it is only a fallback for codes the
+  // curated bilingual overrides below don't cover yet.
+  desc?: string
 }
 
 const catalogue = catalogueJson as Record<string, SignCatalogueEntry>
+
+// Hand-curated, authoritative meanings from the TD Road Users' Code, keyed by
+// SIGNID. Wins over the OCR `desc` and carries the zh-HK wording. Extend this
+// file alone (no pipeline re-run) as more signs are matched to the Code.
+const descOverrides = descOverridesJson as Record<
+  string, { en?: string, zh?: string }
+>
 
 // Every feature resolves to one category key: a catalogued group, or — via
 // the tile `category` — 'tourist' / 'other-traffic'. Poles have no SIGNID
@@ -51,6 +63,19 @@ export function signIconUrl(signId: unknown): string | null {
   return typeof signId === 'string' && signId in catalogue
     ? `/signs/${signId}.png`
     : null
+}
+
+// A sign's human meaning for the given UI locale: curated override first
+// (zh wording when the UI is Chinese), else its English text, else the
+// best-effort OCR text, else null. English is shown verbatim in the zh UI
+// when no zh override exists yet — source data beats an empty field.
+export function signDescription(
+  signId: unknown,
+  locale: 'en' | 'zh-HK'
+): string | null {
+  if (typeof signId !== 'string') return null
+  const o = descOverrides[signId]
+  return (locale === 'zh-HK' && o?.zh) || o?.en || catalogue[signId]?.desc || null
 }
 
 export const SIGN_GROUPS: readonly SignGroup[]
