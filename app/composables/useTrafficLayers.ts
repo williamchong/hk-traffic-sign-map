@@ -19,6 +19,11 @@ export interface SelectedSign {
 }
 const selectedSign = ref<SelectedSign | null>(null)
 
+// Set by TrafficMap when MapLibre can't initialize WebGL. Shared here so the
+// filter panel can drop its now-inert category controls while still showing
+// the (WebGL-independent) About/FAQ chrome.
+const mapUnavailable = ref(false)
+
 // The only filter is category visibility, applied GPU-side via setFilter.
 // `categoryKeyExpr` maps each feature to its sign-class key (catalogued group
 // or tile category); we keep the ones the user has enabled.
@@ -32,6 +37,7 @@ export function useTrafficLayers() {
     categories: SIGN_CATEGORIES,
     enabled,
     selectedSign,
+    mapUnavailable,
     mapFilter,
     toggleAll(value: boolean) {
       for (const c of SIGN_CATEGORIES) enabled[c.key] = value

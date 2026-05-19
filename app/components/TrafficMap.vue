@@ -9,7 +9,7 @@ import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr } from '~/compo
 // and is code-split out of the initial bundle.
 let detachProtocol: (() => void) | undefined
 
-const { mapFilter, selectedSign } = useTrafficLayers()
+const { mapFilter, selectedSign, mapUnavailable } = useTrafficLayers()
 const colorMode = useColorMode()
 
 const TILE_SOURCE = 'signs'
@@ -72,43 +72,56 @@ onMounted(async () => {
   maplibregl.addProtocol('pmtiles', new Protocol().tile)
   detachProtocol = () => maplibregl.removeProtocol('pmtiles')
 
-  const m = new maplibregl.Map({
-    container: container.value,
-    center: HK_CENTER,
-    zoom: 11,
-    minZoom: 9,
-    maxZoom: MAX_ZOOM,
-    maxBounds: HK_BOUNDS,
-    attributionControl: { compact: true },
-    style: {
-      version: 8,
-      sources: {
-        'osm-light': {
-          type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          maxzoom: 19,
-          attribution: OSM_ATTRIB
+  let m: MaplibreMap
+  try {
+    m = new maplibregl.Map({
+      container: container.value,
+      center: HK_CENTER,
+      zoom: 11,
+      minZoom: 9,
+      maxZoom: MAX_ZOOM,
+      maxBounds: HK_BOUNDS,
+      attributionControl: { compact: true },
+      style: {
+        version: 8,
+        sources: {
+          'osm-light': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution: OSM_ATTRIB
+          },
+          'osm-dark': {
+            type: 'raster',
+            tiles: [
+              'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+              'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution: `${OSM_ATTRIB} © <a href="https://carto.com/attributions">CARTO</a>`
+          }
         },
-        'osm-dark': {
-          type: 'raster',
-          tiles: [
-            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-          ],
-          tileSize: 256,
-          maxzoom: 19,
-          attribution: `${OSM_ATTRIB} © <a href="https://carto.com/attributions">CARTO</a>`
-        }
-      },
-      // Both basemaps exist; visibility toggles by colour mode so the
-      // theme switch never rebuilds the vector source above it.
-      layers: [
-        { id: 'basemap-light', type: 'raster', source: 'osm-light' },
-        { id: 'basemap-dark', type: 'raster', source: 'osm-dark', layout: { visibility: 'none' } }
-      ]
-    }
-  })
+        // Both basemaps exist; visibility toggles by colour mode so the
+        // theme switch never rebuilds the vector source above it.
+        layers: [
+          { id: 'basemap-light', type: 'raster', source: 'osm-light' },
+          { id: 'basemap-dark', type: 'raster', source: 'osm-dark', layout: { visibility: 'none' } }
+        ]
+      }
+    })
+  } catch (err) {
+    // MapLibre initializes WebGL synchronously in the constructor and throws
+    // here when it's unavailable (disabled, blocklisted GPU, ancient browser).
+    // No map instance exists yet, so the m.on('error') handler below can never
+    // fire for this — surface a message instead of a blank container.
+    console.error('[maplibre] WebGL unavailable', err)
+    mapUnavailable.value = true
+    detachProtocol?.()
+    detachProtocol = undefined
+    return
+  }
 
   m.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right')
   m.addControl(new maplibregl.GeolocateControl({
@@ -357,6 +370,15 @@ defineExpose({ map })
 
 <template>
   <div
+    v-if="mapUnavailable"
+    class="flex h-full w-full items-center justify-center p-6 text-center text-muted"
+  >
+    <p class="max-w-sm text-sm">
+      {{ $t('map.webglUnsupported') }}
+    </p>
+  </div>
+  <div
+    v-else
     ref="container"
     class="h-full w-full"
   />

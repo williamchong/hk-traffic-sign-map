@@ -58,6 +58,9 @@
   "localeSwitch": {
     "aria": "Change language"
   },
+  "map": {
+    "webglUnsupported": "This map needs WebGL, which your browser or device doesn’t support or has it disabled. Try updating your browser, enabling hardware acceleration, or using a different device. The About and FAQ pages still work without it."
+  },
   "about": {
     "metaTitle": "About",
     "h1": "About the HK Traffic Sign Map",
