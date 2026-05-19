@@ -30,23 +30,25 @@ const DPI = 400
 // `range` is the inclusive numeric span the sheet covers (from its title). Any
 // OCR result outside it is treated as a misread and dropped — a missed sign
 // degrades to a dot, which is acceptable; a MISLABELLED sign is not.
+// `group` is the sheet's drawing-title class (TRAFFIC SIGNS (REGULATORY) etc.),
+// written onto every code so the viewer can filter/colour by sign class.
 const SHEETS = [
-  { pdf: '(TS 101 - 205).pdf', prefix: 'TS', range: [101, 205] },
-  { pdf: '(TS 206 - 310).pdf', prefix: 'TS', range: [206, 310] },
-  { pdf: '(TS 311 - 400).pdf', prefix: 'TS', range: [311, 400] },
-  { pdf: '(TS 401 - 505).pdf', prefix: 'TS', range: [401, 505] },
-  { pdf: '(TS 506 - 600).pdf', prefix: 'TS', range: [506, 600] },
-  { pdf: '(TS 601 - 700).pdf', prefix: 'TS', range: [601, 700] },
-  { pdf: '(TS 701 - 805).pdf', prefix: 'TS', range: [701, 805] },
-  { pdf: '(TS 806 - 900).pdf', prefix: 'TS', range: [806, 900] },
-  { pdf: '(TS 901 - 1000).pdf', prefix: 'TS', range: [901, 1000] },
-  { pdf: '(TS 2101 - 2205).pdf', prefix: 'TS', range: [2101, 2205] },
-  { pdf: '(TS 2206 - 2310).pdf', prefix: 'TS', range: [2206, 2310] },
-  { pdf: '(TS 2601 - 2717).pdf', prefix: 'TS', range: [2601, 2717] },
-  { pdf: '(TS 3601 - 3705).pdf', prefix: 'TS', range: [3601, 3705] },
-  { pdf: '(TS 3706 - 3810).pdf', prefix: 'TS', range: [3706, 3810] },
-  { pdf: '(TS 3811 - 3936).pdf', prefix: 'TS', range: [3811, 3936] },
-  { pdf: '(TS 3937 - 4062).pdf', prefix: 'TS', range: [3937, 4062] }
+  { pdf: '(TS 101 - 205).pdf', prefix: 'TS', range: [101, 205], group: 'regulatory' },
+  { pdf: '(TS 206 - 310).pdf', prefix: 'TS', range: [206, 310], group: 'regulatory' },
+  { pdf: '(TS 311 - 400).pdf', prefix: 'TS', range: [311, 400], group: 'regulatory' },
+  { pdf: '(TS 401 - 505).pdf', prefix: 'TS', range: [401, 505], group: 'warning' },
+  { pdf: '(TS 506 - 600).pdf', prefix: 'TS', range: [506, 600], group: 'warning' },
+  { pdf: '(TS 601 - 700).pdf', prefix: 'TS', range: [601, 700], group: 'informatory' },
+  { pdf: '(TS 701 - 805).pdf', prefix: 'TS', range: [701, 805], group: 'supplementary' },
+  { pdf: '(TS 806 - 900).pdf', prefix: 'TS', range: [806, 900], group: 'supplementary' },
+  { pdf: '(TS 901 - 1000).pdf', prefix: 'TS', range: [901, 1000], group: 'temporary' },
+  { pdf: '(TS 2101 - 2205).pdf', prefix: 'TS', range: [2101, 2205], group: 'regulatory' },
+  { pdf: '(TS 2206 - 2310).pdf', prefix: 'TS', range: [2206, 2310], group: 'regulatory' },
+  { pdf: '(TS 2601 - 2717).pdf', prefix: 'TS', range: [2601, 2717], group: 'informatory' },
+  { pdf: '(TS 3601 - 3705).pdf', prefix: 'TS', range: [3601, 3705], group: 'informatory' },
+  { pdf: '(TS 3706 - 3810).pdf', prefix: 'TS', range: [3706, 3810], group: 'supplementary' },
+  { pdf: '(TS 3811 - 3936).pdf', prefix: 'TS', range: [3811, 3936], group: 'informatory' },
+  { pdf: '(TS 3937 - 4062).pdf', prefix: 'TS', range: [3937, 4062], group: 'warning' }
 ]
 
 function requireTool(cmd, hint) {
@@ -225,7 +227,7 @@ async function extractSheet(sheet, catalogue) {
         '-fuzz', '12%', '-fill', 'none', '-draw', 'color 1,1 floodfill',
         '-shave', '1x1', '-trim', '+repage', '-resize', '320x120',
         '+repage', join(SIGNS_DIR, `${code}.png`)])
-      catalogue[code] = { tier: classifyTier(sw, sh) }
+      catalogue[code] = { tier: classifyTier(sw, sh), group: sheet.group }
       extracted++
     }
   }

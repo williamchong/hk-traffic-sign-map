@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { signIconUrl } from '~/composables/useSignCatalogue'
+import { signIconUrl, categoryKeyOf } from '~/composables/useSignCatalogue'
 
 const { selectedSign, categories } = useTrafficLayers()
 
 const sign = computed(() => selectedSign.value)
 
-const category = computed(() =>
-  categories.find(c => c.key === sign.value?.properties.category)
-)
+const category = computed(() => {
+  const props = sign.value?.properties
+  return props ? categories.find(c => c.key === categoryKeyOf(props)) : undefined
+})
 
 // The real pictogram when this SIGNID is catalogued, else null (falls back
 // to the category colour dot).

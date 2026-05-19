@@ -1,5 +1,6 @@
-import type { ExpressionSpecification, FilterSpecification, LngLat } from 'maplibre-gl'
+import type { FilterSpecification, LngLat } from 'maplibre-gl'
 import { SIGN_CATEGORIES } from '~/composables/useSignCategories'
+import { categoryKeyExpr } from '~/composables/useSignCatalogue'
 
 // Singleton state (module scope) so the filter panel, popup and the map
 // component all share one source of truth without prop drilling.
@@ -14,12 +15,12 @@ export interface SelectedSign {
 }
 const selectedSign = ref<SelectedSign | null>(null)
 
-// With 316k signs, attribute text search isn't actionable (matches stay
-// scattered off-screen) and the fields are internal codes — so the only
-// filter is category visibility, applied GPU-side via setFilter.
+// The only filter is category visibility, applied GPU-side via setFilter.
+// `categoryKeyExpr` maps each feature to its sign-class key (catalogued group
+// or tile category); we keep the ones the user has enabled.
 const mapFilter = computed<FilterSpecification>(() => {
   const visible = SIGN_CATEGORIES.filter(c => enabled[c.key]).map(c => c.key)
-  return ['in', ['get', 'category'], ['literal', visible]] as ExpressionSpecification
+  return ['in', categoryKeyExpr, ['literal', visible]] as unknown as FilterSpecification
 })
 
 export function useTrafficLayers() {

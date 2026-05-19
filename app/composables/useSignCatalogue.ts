@@ -2,13 +2,22 @@ import catalogueJson from '~/data/signCatalogue.json'
 
 // Real sign pictograms extracted from the TD Index Plan, keyed by SIGNID
 // (e.g. "TS101"). `tier` is a visual-complexity band that drives level-of-
-// detail: simple iconic signs (roundels, triangles) stay legible small and
-// appear early; complex/text-heavy signs appear later and larger.
+// detail; `group` is the Index-Plan drawing-title class (the sheet the sign
+// came from), used to filter/colour by sign class.
+export type SignGroup
+  = 'regulatory' | 'warning' | 'informatory' | 'supplementary' | 'temporary'
+
 export interface SignCatalogueEntry {
   tier: 0 | 1 | 2
+  group: SignGroup
 }
 
 const catalogue = catalogueJson as Record<string, SignCatalogueEntry>
+
+// Every feature resolves to one category key: a catalogued group, or — via
+// the tile `category` — 'tourist' / 'other-traffic'. Poles have no SIGNID
+// and no pictogram → 'none', which no filter enables, so they never render.
+export type CategoryKey = SignGroup | 'other-traffic' | 'tourist' | 'none'
 
 // Per-tier LOD. `minzoom` is when the pictogram replaces the cheap dot;
 // `size` are [zoom, icon-size] stops. Every pictogram is rasterised to the
@@ -38,4 +47,41 @@ export function signIconUrl(signId: unknown): string | null {
   return typeof signId === 'string' && signId in catalogue
     ? `/signs/${signId}.png`
     : null
+}
+
+export const SIGN_GROUPS: readonly SignGroup[]
+  = ['regulatory', 'warning', 'informatory', 'supplementary', 'temporary']
+
+// SIGNIDs per group — drives both the colour/filter expression and the
+// per-group icon registration.
+export const codesByGroup: Record<SignGroup, string[]> = {
+  regulatory: [], warning: [], informatory: [], supplementary: [], temporary: []
+}
+for (const [code, { group }] of Object.entries(catalogue)) {
+  codesByGroup[group]?.push(code)
+}
+
+// MapLibre expression: a feature → its CategoryKey. Static (the catalogue is
+// fixed), so it's built once and reused for colour and the visibility filter.
+// SIGNID is only on the abbreviation class; poles fall through to 'none'.
+export const categoryKeyExpr: unknown = [
+  'case',
+  ...SIGN_GROUPS.flatMap(g => [
+    ['in', ['get', 'SIGNID'], ['literal', codesByGroup[g]]], g
+  ]),
+  ['==', ['get', 'category'], 'tourist-sign'], 'tourist',
+  ['==', ['get', 'category'], 'traffic-sign-abbreviation'], 'other-traffic',
+  'none'
+]
+
+// Same classification in JS, for the details panel.
+export function categoryKeyOf(props: Record<string, unknown>): CategoryKey {
+  const signId = props.SIGNID
+  if (typeof signId === 'string') {
+    const entry = catalogue[signId]
+    if (entry) return entry.group
+  }
+  if (props.category === 'tourist-sign') return 'tourist'
+  if (props.category === 'traffic-sign-abbreviation') return 'other-traffic'
+  return 'none'
 }

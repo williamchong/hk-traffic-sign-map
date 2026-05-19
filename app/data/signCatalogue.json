@@ -1,839 +1,1118 @@
 {
   "TS101": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS102": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS103": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS104": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS106": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS107": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS108": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS109": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS110": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS111": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS112": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS114": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS115": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS116": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS117": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS118": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS119": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS120": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS122": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS123": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS124": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS125": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS134": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS137": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS138": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS139": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS144": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS143": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS145": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS146": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS147": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS148": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS149": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS150": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS151": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS152": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS153": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS154": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS155": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS156": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS157": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS158": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS159": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS160": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS161": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS162": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS163": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS164": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS165": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS166": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS167": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS168": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS169": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS170": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS173": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS174": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS175": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS176": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS177": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS178": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS179": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS180": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS181": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS182": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS183": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS184": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS191": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS196": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS197": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS209": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS210": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS211": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS214": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS220": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS222": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS223": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS224": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS225": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS227": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS272": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS326": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS335": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS344": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS346": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS357": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS353": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS356": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS365": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS367": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS379": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS321": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS352": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS401": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS407": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS402": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS404": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS405": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS406": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS417": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS412": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS415": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS416": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS418": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS470": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS426": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS430": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS431": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS440": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS441": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS446": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS490": {
-    "tier": 1
+    "tier": 1,
+    "group": "warning"
   },
   "TS456L": {
-    "tier": 1
+    "tier": 1,
+    "group": "warning"
   },
   "TS460": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS461": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS462": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS481": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS465": {
-    "tier": 1
+    "tier": 1,
+    "group": "warning"
   },
   "TS507": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS510": {
-    "tier": 2
+    "tier": 2,
+    "group": "warning"
   },
   "TS511": {
-    "tier": 1
+    "tier": 1,
+    "group": "warning"
   },
   "TS524": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS549": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS553": {
-    "tier": 0
+    "tier": 0,
+    "group": "warning"
   },
   "TS555": {
-    "tier": 1
+    "tier": 1,
+    "group": "warning"
   },
   "TS566": {
-    "tier": 2
+    "tier": 2,
+    "group": "warning"
   },
   "TS602": {
-    "tier": 0
+    "tier": 0,
+    "group": "informatory"
   },
   "TS604": {
-    "tier": 0
+    "tier": 0,
+    "group": "informatory"
   },
   "TS605": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS606": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS607": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS608": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS609": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS611": {
-    "tier": 0
+    "tier": 0,
+    "group": "informatory"
   },
   "TS613": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS614": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS617": {
-    "tier": 0
+    "tier": 0,
+    "group": "informatory"
   },
   "TS618": {
-    "tier": 1
+    "tier": 1,
+    "group": "informatory"
   },
   "TS620": {
-    "tier": 0
+    "tier": 0,
+    "group": "informatory"
   },
   "TS671": {
-    "tier": 0
+    "tier": 0,
+    "group": "informatory"
   },
   "TS705": {
-    "tier": 1
+    "tier": 1,
+    "group": "supplementary"
   },
   "TS706": {
-    "tier": 1
+    "tier": 1,
+    "group": "supplementary"
   },
   "TS714": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS715": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS718": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS719": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS721": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS737": {
-    "tier": 1
+    "tier": 1,
+    "group": "supplementary"
   },
   "TS738": {
-    "tier": 1
+    "tier": 1,
+    "group": "supplementary"
   },
   "TS760": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS761": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS764": {
-    "tier": 1
+    "tier": 1,
+    "group": "supplementary"
   },
   "TS785": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS788": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS789": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS799": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS791": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS794": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS796": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS800": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS802L": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS805": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS808H": {
-    "tier": 1
+    "tier": 1,
+    "group": "supplementary"
   },
   "TS811": {
-    "tier": 0
+    "tier": 0,
+    "group": "supplementary"
   },
   "TS812": {
-    "tier": 1
+    "tier": 1,
+    "group": "supplementary"
   },
   "TS835L": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS843": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS844": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS847": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS868": {
-    "tier": 2
+    "tier": 2,
+    "group": "supplementary"
   },
   "TS905": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS906": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS916": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS921": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS922": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS923": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS924": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS925": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS930": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS932": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS938": {
-    "tier": 1
+    "tier": 1,
+    "group": "temporary"
   },
   "TS947": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS949": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS950": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS951": {
-    "tier": 0
+    "tier": 0,
+    "group": "temporary"
   },
   "TS2101": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2102": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2115": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2116": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2117": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2118": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2119": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2120": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2121": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2122": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2123": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2124": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2125": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2126": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2127": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2128": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2129": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2130": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2131": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2132": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2133": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2134": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2135": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2136": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2137": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2138": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2139": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2140": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2144": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2142": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2143": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2145": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2146": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2147": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2148": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2149": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2150": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2151": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2152": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2153": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2154": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2155": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2156": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2157": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2158": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2159": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2160": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2161": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2162": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2163": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2164": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2166": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2167": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2168": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2172": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2173": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2174": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2175": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2176": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2177": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2178": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2179": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2180": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2181": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2182": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2184": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2185": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2187": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2188": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2189": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2192": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2193": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2194": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2195": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2196": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2197": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2198": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2199": {
-    "tier": 1
+    "tier": 1,
+    "group": "regulatory"
   },
   "TS2200": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2201": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2202": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2203": {
-    "tier": 0
+    "tier": 0,
+    "group": "regulatory"
   },
   "TS2230": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2254": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2235": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2236": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2240": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2248": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2244": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2245": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2242": {
-    "tier": 2
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS2601": {
-    "tier": 2
+    "tier": 2,
+    "group": "informatory"
   },
   "TS2613": {
-    "tier": 2
+    "tier": 2,
+    "group": "informatory"
   },
   "TS588": {
-    "tier": 1
+    "tier": 1,
+    "group": "warning"
   },
   "TS589": {
-    "tier": 1
+    "tier": 1,
+    "group": "warning"
   }
 }

@@ -2,7 +2,7 @@
 import type { Map as MaplibreMap, ExpressionSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
-import { TIER_LOD, codesByTier } from '~/composables/useSignCatalogue'
+import { TIER_LOD, codesByTier, categoryKeyExpr } from '~/composables/useSignCatalogue'
 
 // maplibre-gl touches `window` at import time and is large; it's
 // dynamically imported inside onMounted so it never enters the SSR pass
@@ -28,8 +28,10 @@ const map = shallowRef<MaplibreMap>()
 // Colour each feature by its `category` (falls back to grey if unmapped).
 // Spreading a string[] into the expression defeats maplibre's tuple typing,
 // so widen through `unknown` — the runtime shape is a valid `match`.
+// Colour each feature by its resolved sign-class key (catalogued group, or
+// tile category for tourist / uncatalogued), falling back to grey.
 const categoryColor = [
-  'match', ['get', 'category'],
+  'match', categoryKeyExpr,
   ...categoryColorStops,
   '#94a3b8'
 ] as unknown as ExpressionSpecification
