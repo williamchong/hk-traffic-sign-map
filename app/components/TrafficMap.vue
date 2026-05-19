@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature } from 'maplibre-gl'
+import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
 import { TIER_LOD, codesByTier, categoryKeyExpr } from '~/composables/useSignCatalogue'
@@ -25,11 +25,9 @@ const OSM_ATTRIB = '© <a href="https://www.openstreetmap.org/copyright">OpenStr
 const container = ref<HTMLDivElement>()
 const map = shallowRef<MaplibreMap>()
 
-// Colour each feature by its `category` (falls back to grey if unmapped).
-// Spreading a string[] into the expression defeats maplibre's tuple typing,
-// so widen through `unknown` — the runtime shape is a valid `match`.
 // Colour each feature by its resolved sign-class key (catalogued group, or
-// tile category for tourist / uncatalogued), falling back to grey.
+// tile category for tourist / uncatalogued), falling back to grey. Spreading
+// a string[] defeats maplibre's tuple typing, so widen through `unknown`.
 const categoryColor = [
   'match', categoryKeyExpr,
   ...categoryColorStops,
@@ -145,6 +143,45 @@ onMounted(async () => {
       'paint': { ...circlePaint }
     })
 
+    // Highlight overlay for the sign shown in the detail panel. Its own
+    // GeoJSON source + overlap-allowed layers, raised to the very top on
+    // every selection, so the picked sign (especially while cycling through
+    // an overlapping cluster) is always visible above the collision soup.
+    m.addSource('sel', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+    m.addLayer({
+      id: 'sel-halo',
+      type: 'circle',
+      source: 'sel',
+      paint: {
+        'circle-radius': expr(['interpolate', ['linear'], ['zoom'], 12, 14, 16, 22, 19, 30]),
+        'circle-color': 'rgba(37,99,235,0.12)',
+        'circle-stroke-color': '#2563eb',
+        'circle-stroke-width': 3
+      }
+    })
+    m.addLayer({
+      id: 'sel-dot',
+      type: 'circle',
+      source: 'sel',
+      paint: {
+        'circle-radius': expr(['interpolate', ['linear'], ['zoom'], 11, 3, 16, 6, 19, 9]),
+        'circle-color': categoryColor,
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': 1
+      }
+    })
+    m.addLayer({
+      id: 'sel-icon',
+      type: 'symbol',
+      source: 'sel',
+      layout: {
+        'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
+        'icon-size': 0.4,
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true
+      }
+    })
+
     // LOD: at each tier's minzoom the pictogram is drawn over the dot,
     // later/larger the more complex the sign.
     void (async () => {
@@ -206,6 +243,24 @@ onMounted(async () => {
       m.setLayoutProperty('basemap-dark', 'visibility', dark ? 'visible' : 'none')
       m.setLayoutProperty('basemap-light', 'visibility', dark ? 'none' : 'visible')
     }, { immediate: true })
+
+    // Mirror the selected sign into the highlight source and lift those
+    // layers above everything (incl. the async-added tier layers) so the
+    // sign in the panel is always drawn on top.
+    const sel = m.getSource('sel') as GeoJSONSource
+    watch(selectedSign, (s) => {
+      sel.setData({
+        type: 'FeatureCollection',
+        features: s
+          ? [{
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: [s.lngLat.lng, s.lngLat.lat] },
+              properties: s.properties
+            }]
+          : []
+      })
+      if (s) for (const id of ['sel-halo', 'sel-dot', 'sel-icon']) m.moveLayer(id)
+    })
   })
 
   // A click can land on several overlapping/collided signs. Collect them all
