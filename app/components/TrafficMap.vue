@@ -168,10 +168,9 @@ onMounted(async () => {
             'filter': tierFilter(t, expr(mapFilter.value)),
             'layout': {
               'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
-              // Shrink toward the bottom of the tier's size band when zoomed
-              // out (more signs fit before colliding) and grow as you zoom in
-              // (room opens up) — "resize within a boundary" instead of drop.
-              'icon-size': expr(['interpolate', ['linear'], ['zoom'], ...lod.size]),
+              // Constant size (see TIER_LOD): zooming in must not enlarge
+              // icons, or it would collide already-shown signs out of view.
+              'icon-size': lod.size,
               // No artificial gap between signs, so collision only drops a
               // sign when it truly overlaps another.
               'icon-padding': 1,

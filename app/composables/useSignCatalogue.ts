@@ -20,16 +20,18 @@ const catalogue = catalogueJson as Record<string, SignCatalogueEntry>
 export type CategoryKey = SignGroup | 'other-traffic' | 'tourist' | 'none'
 
 // Per-tier LOD. `minzoom` is when the pictogram replaces the cheap dot;
-// `size` are [zoom, icon-size] stops. Every pictogram is rasterised to the
-// same 120px height, so a given icon-size renders every sign at the same
-// on-screen height regardless of its shape (a wide plate just gets wider).
-// Tier sets that common height: simple signs come in earlier and a touch
-// smaller; complex/detailed signs come in later and noticeably bigger so
-// their detail stays legible.
+// `size` is a CONSTANT icon-size (not zoom-interpolated) on purpose: if it
+// grew with zoom, zooming in would enlarge every icon and push already-shown
+// signs out by collision. Holding it constant means zooming in only spreads
+// points apart, so collisions monotonically decrease and a visible sign never
+// disappears as you zoom in. Every pictogram is 120px tall, so one constant
+// renders every sign at the same on-screen height; tiers set that height —
+// simple signs appear earlier and smaller, complex/detailed ones later and
+// bigger so their detail stays legible.
 export const TIER_LOD = [
-  { minzoom: 13, size: [13, 0.20, 16, 0.24, 19, 0.30] },
-  { minzoom: 14.5, size: [14.5, 0.26, 17, 0.32, 19, 0.38] },
-  { minzoom: 16, size: [16, 0.38, 19, 0.54] }
+  { minzoom: 13, size: 0.22 },
+  { minzoom: 14.5, size: 0.30 },
+  { minzoom: 16, size: 0.44 }
 ] as const
 
 // Codes grouped by tier — used to filter one symbol layer per tier so each
