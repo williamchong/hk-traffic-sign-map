@@ -1,21 +1,22 @@
 <script setup lang="ts">
-const title = 'FAQ & User Guide'
-const description = 'Frequently asked questions and a quick user guide for the '
-  + 'HK Traffic Sign Map: data source, how to read and filter signs, update '
-  + 'frequency, and mobile use.'
+const { t } = useI18n()
+const faq = useFaqItems()
+
+const fullTitle = `${t('faq.metaTitle')} — ${t('site.name')}`
 
 useSeoMeta({
-  title,
-  description,
-  ogTitle: `${title} — ${SITE.name}`,
-  ogDescription: description
+  title: () => t('faq.metaTitle'),
+  description: () => t('faq.metaDescription'),
+  ogTitle: () => fullTitle,
+  ogDescription: () => t('faq.metaDescription')
 })
 
-// FAQPage + one Question node per item, from the same FAQ array the page
-// renders, so the structured data can never disagree with the visible copy.
+// FAQPage + one Question node per item, from the same localized FAQ array
+// the page renders, so the structured data can't disagree with the visible
+// copy in either locale.
 useSchemaOrg([
   defineWebPage({ '@type': ['CollectionPage', 'FAQPage'] }),
-  ...FAQ.map(item => defineQuestion({
+  ...faq.value.map(item => defineQuestion({
     name: item.q,
     acceptedAnswer: item.a
   }))
@@ -23,7 +24,7 @@ useSchemaOrg([
 </script>
 
 <template>
-  <ContentShell title="FAQ & User Guide">
+  <ContentShell :title="$t('faq.h1')">
     <FaqContent />
   </ContentShell>
 </template>

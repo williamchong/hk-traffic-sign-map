@@ -1,14 +1,16 @@
 <script setup lang="ts">
 // Presentational only — shared by /faq and the in-map info modal.
 // Plain semantic <h*>/<p> (no accordion) so every answer is in the
-// prerendered DOM and crawlable; the same FAQ array feeds FAQPage
-// schema.org on the /faq page.
+// prerendered DOM and crawlable; the same localized FAQ array feeds
+// FAQPage schema.org on the /faq page.
+const faq = useFaqItems()
+const localePath = useLocalePath()
 </script>
 
 <template>
   <div class="space-y-5 text-sm leading-relaxed">
     <section
-      v-for="item in FAQ"
+      v-for="item in faq"
       :key="item.q"
       class="space-y-1"
     >
@@ -22,16 +24,16 @@
 
     <nav class="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-sm">
       <NuxtLink
-        to="/"
+        :to="localePath('/')"
         class="text-primary underline"
       >
-        Open the map
+        {{ $t('nav.openMap') }}
       </NuxtLink>
       <NuxtLink
-        to="/about"
+        :to="localePath('/about')"
         class="text-primary underline"
       >
-        About this project
+        {{ $t('nav.aboutProject') }}
       </NuxtLink>
     </nav>
   </div>

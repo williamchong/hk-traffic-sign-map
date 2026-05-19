@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { categories, enabled, toggleAll } = useTrafficLayers()
+const localePath = useLocalePath()
 
 const allOn = computed(() => categories.every(c => enabled[c.key]))
 
@@ -16,10 +17,10 @@ const expanded = ref(true)
     <div class="flex items-start justify-between gap-2">
       <div class="space-y-1">
         <h1 class="text-base font-semibold">
-          HK Traffic Signs
+          {{ $t('panel.title') }}
         </h1>
         <p class="text-xs text-muted">
-          Transport Department open data
+          {{ $t('panel.subtitle') }}
         </p>
       </div>
       <div class="flex items-center gap-0.5">
@@ -30,6 +31,7 @@ const expanded = ref(true)
         <ClientOnly>
           <LazyInfoButton />
         </ClientOnly>
+        <LocaleSwitcher />
         <ThemeCycleButton />
       </div>
     </div>
@@ -46,13 +48,13 @@ const expanded = ref(true)
           :name="expanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
           class="size-3"
         />
-        Categories
+        {{ $t('panel.categories') }}
       </button>
       <UButton
         v-if="expanded"
         size="xs"
         variant="link"
-        :label="allOn ? 'Hide all' : 'Show all'"
+        :label="allOn ? $t('panel.hideAll') : $t('panel.showAll')"
         @click="toggleAll(!allOn)"
       />
     </div>
@@ -72,24 +74,25 @@ const expanded = ref(true)
           class="size-3 shrink-0 rounded-full"
           :style="{ backgroundColor: c.color }"
         />
-        <span class="truncate">{{ c.label }}</span>
+        <span class="truncate">{{ $t(`categories.${c.key}`) }}</span>
       </label>
     </div>
 
     <!-- Always rendered (not folded) so these stay real <a> tags in the
-         prerendered index.html — the crawlable path to the SEO pages. -->
+         prerendered HTML — the crawlable path to the SEO pages. localePath
+         keeps the link in the active locale (e.g. /zh-HK/about). -->
     <nav class="flex gap-x-3 border-t border-default pt-2 text-xs text-muted">
       <NuxtLink
-        to="/about"
+        :to="localePath('/about')"
         class="hover:text-default"
       >
-        About
+        {{ $t('nav.about') }}
       </NuxtLink>
       <NuxtLink
-        to="/faq"
+        :to="localePath('/faq')"
         class="hover:text-default"
       >
-        FAQ &amp; guide
+        {{ $t('nav.faqGuide') }}
       </NuxtLink>
     </nav>
   </UCard>

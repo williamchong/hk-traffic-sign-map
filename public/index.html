@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  Static locale redirector for the root path.
+
+  The `prefix` i18n strategy makes every locale a prefixed URL (/en/*,
+  /zh-HK/*) and leaves `/` as a redirect. On a static host (GitHub Pages)
+  a server redirect isn't possible, so this file is the redirector: it is
+  noindex (the indexable pages are the prefixed locale URLs, which carry
+  the hreflang/canonical), points its own canonical at the default locale,
+  and sends visitors to their language. Static file — can't import config,
+  so keep the host (siteUrl in nuxt.config.ts) and the locale codes in
+  sync by hand. Targets use no trailing slash to match the prerendered
+  routes' own canonical URLs.
+-->
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://hk-signs-map.williamchong.cloud/en">
+<link rel="alternate" href="https://hk-signs-map.williamchong.cloud/en" hreflang="x-default">
+<link rel="alternate" href="https://hk-signs-map.williamchong.cloud/en" hreflang="en">
+<link rel="alternate" href="https://hk-signs-map.williamchong.cloud/zh-HK" hreflang="zh-HK">
+<title>HK Traffic Sign Map</title>
+<script>
+  (function () {
+    var zh = (navigator.languages || [navigator.language || ''])
+      .some(function (l) { return /^zh/i.test(l); })
+    location.replace(zh ? '/zh-HK' : '/en')
+  })()
+</script>
+<meta http-equiv="refresh" content="0; url=/en">
+</head>
+<body>
+<p><a href="/en">English</a> · <a href="/zh-HK">繁體中文</a></p>
+</body>
+</html>

@@ -1,0 +1,124 @@
+{
+  "site": {
+    "name": "HK Traffic Sign Map",
+    "tagline": "Every Hong Kong road traffic sign, on one interactive map.",
+    "summary": "HK Traffic Sign Map is a free interactive map of road traffic signs across Hong Kong, built from the Transport Department’s open data. Pan and zoom anywhere in the city to see which regulatory, warning, informatory and other signs are installed on each street."
+  },
+  "panel": {
+    "title": "HK Traffic Signs",
+    "subtitle": "Transport Department open data",
+    "categories": "Categories",
+    "showAll": "Show all",
+    "hideAll": "Hide all"
+  },
+  "categories": {
+    "regulatory": "Regulatory",
+    "warning": "Warning",
+    "informatory": "Informatory",
+    "supplementary": "Supplementary",
+    "temporary": "Temporary",
+    "other-traffic": "Other traffic sign",
+    "tourist": "Tourist sign"
+  },
+  "signPopup": {
+    "fields": {
+      "reference": "Reference",
+      "poleId": "Pole ID",
+      "type": "Type",
+      "group": "Group",
+      "bearing": "Bearing",
+      "updated": "Updated"
+    },
+    "fallbackTitle": "Sign",
+    "unknown": "Unknown",
+    "close": "Close",
+    "cycleHint": "{index} of {total} here · click again to cycle"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "title": "Theme: {mode} (click to cycle)",
+    "aria": "Theme: {mode}. Click to cycle light, dark, system."
+  },
+  "info": {
+    "aria": "About this map and FAQ"
+  },
+  "tabs": {
+    "about": "About",
+    "faq": "FAQ & Guide"
+  },
+  "nav": {
+    "openMap": "Open the map",
+    "about": "About",
+    "aboutProject": "About this project",
+    "faqGuide": "FAQ & guide",
+    "faqUserGuide": "FAQ & user guide"
+  },
+  "localeSwitch": {
+    "aria": "Change language"
+  },
+  "about": {
+    "metaTitle": "About",
+    "h1": "About the HK Traffic Sign Map",
+    "whatTitle": "What this is",
+    "whatP2": "Hong Kong has hundreds of thousands of road signs. This project puts every one in the Transport Department’s open dataset onto a single fast, zoomable map so you can see exactly which signs stand on any street — useful for drivers and learner drivers, road-safety and town-planning research, accessibility audits, or simple curiosity.",
+    "howTitle": "How to use it",
+    "how1": "Pan and zoom to any street; signs spread apart as you zoom in.",
+    "how2": "Click a sign or dot to inspect it. Click the same spot again to cycle through several overlapping signs.",
+    "how3": "Use the Categories panel to toggle sign classes on or off; fold the panel away for a larger map.",
+    "dataTitle": "Data & attribution",
+    "attribution": "Sign data is from the Hong Kong Transport Department’s “Traffic Aids Drawings (2nd generation)” open dataset on {dataGovHk}, used under the {terms}. The basemap is © {osm} contributors.",
+    "dataGovHkLabel": "data.gov.hk",
+    "termsLabel": "data.gov.hk Terms and Conditions",
+    "osmLabel": "OpenStreetMap",
+    "disclaimer": "This is an independent, informational project. It is not affiliated with the Transport Department and must not be relied on for navigation or as a legal authority on road traffic regulations."
+  },
+  "faq": {
+    "metaTitle": "FAQ & User Guide",
+    "metaDescription": "Frequently asked questions and a quick user guide for the HK Traffic Sign Map: data source, how to read and filter signs, update frequency, and mobile use.",
+    "h1": "FAQ & User Guide",
+    "items": [
+      {
+        "q": "What is the HK Traffic Sign Map?",
+        "a": "It is a free, interactive web map showing the location of road traffic signs throughout Hong Kong. Catalogued signs are drawn as their real pictogram; everything else appears as a colour-coded dot you can click to inspect."
+      },
+      {
+        "q": "Where does the sign data come from?",
+        "a": "From the Hong Kong Transport Department’s open dataset “Traffic Aids Drawings (2nd generation)”, published on data.gov.hk. The basemap is © OpenStreetMap contributors."
+      },
+      {
+        "q": "How current is the data?",
+        "a": "The Transport Department refreshes the source dataset roughly monthly. This site is rebuilt from that data, so it reflects the most recent published release rather than live, real-time changes."
+      },
+      {
+        "q": "How do I find and inspect a sign?",
+        "a": "Zoom into any street. Signs spread apart as you zoom in. Click a sign or dot to open its details; if several signs overlap, click again on the same spot to cycle through each one."
+      },
+      {
+        "q": "What do the colours and categories mean?",
+        "a": "Signs are grouped into their Index-Plan classes — Regulatory, Warning, Informatory, Supplementary and Temporary — plus Tourist and uncatalogued Other signs. Each class has its own colour in the legend and can be toggled on or off independently."
+      },
+      {
+        "q": "Why do some signs show as a coloured dot instead of a picture?",
+        "a": "A sign is drawn as its real pictogram once you zoom in past its level-of-detail threshold and if it exists in the pictogram catalogue. Until then, or for not-yet-catalogued signs, it stays a coloured dot so it is never hidden."
+      },
+      {
+        "q": "Can I filter which signs are shown?",
+        "a": "Yes. Use the Categories panel to toggle any sign class on or off, or hide them all at once. The panel can be folded away to give the map more room."
+      },
+      {
+        "q": "Does it work on a phone?",
+        "a": "Yes. The map is responsive, supports touch pan/zoom, and can centre on your location if you grant location permission."
+      },
+      {
+        "q": "Is this an official government website?",
+        "a": "No. It is an independent, informational project that visualises public open data. It is not affiliated with the Transport Department and must not be used for navigation or as a legal authority on road traffic regulations."
+      },
+      {
+        "q": "Is it free to use?",
+        "a": "Yes, it is free. The underlying sign data is provided under the data.gov.hk Terms and Conditions; the basemap is OpenStreetMap."
+      }
+    ]
+  }
+}

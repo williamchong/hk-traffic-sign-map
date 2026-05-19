@@ -1,17 +1,20 @@
 <script setup lang="ts">
-const title = 'About'
-const fullTitle = `About — ${SITE.name}`
-const description = SITE.summary
+const { t } = useI18n()
+
+// setup re-runs per locale route (each is prerendered separately, and a
+// locale switch navigates), so reading t() here is correct per locale.
+const fullTitle = `${t('about.metaTitle')} — ${t('site.name')}`
+const description = t('site.summary')
 
 useSeoMeta({
-  title,
-  description,
-  ogTitle: fullTitle,
-  ogDescription: description
+  title: () => t('about.metaTitle'),
+  description: () => t('site.summary'),
+  ogTitle: () => fullTitle,
+  ogDescription: () => t('site.summary')
 })
 
-// AboutPage node; WebSite/WebPage identity is injected globally by
-// @nuxtjs/seo from the site config.
+// AboutPage node; WebSite/WebPage identity + canonical/hreflang are
+// injected globally by @nuxtjs/seo + @nuxtjs/i18n.
 useSchemaOrg([
   defineWebPage({
     '@type': 'AboutPage',
@@ -22,7 +25,7 @@ useSchemaOrg([
 </script>
 
 <template>
-  <ContentShell title="About the HK Traffic Sign Map">
+  <ContentShell :title="$t('about.h1')">
     <AboutContent />
   </ContentShell>
 </template>

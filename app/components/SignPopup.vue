@@ -2,6 +2,7 @@
 import { signIconUrl, categoryKeyOf } from '~/composables/useSignCatalogue'
 
 const { selectedSign, categories } = useTrafficLayers()
+const { t } = useI18n()
 
 const sign = computed(() => selectedSign.value)
 
@@ -9,6 +10,11 @@ const category = computed(() => {
   const props = sign.value?.properties
   return props ? categories.find(c => c.key === categoryKeyOf(props)) : undefined
 })
+
+// Localized category name, or null when the feature has no category.
+const categoryLabel = computed(() =>
+  category.value ? t(`categories.${category.value.key}`) : null
+)
 
 // The real pictogram when this SIGNID is catalogued, else null (falls back
 // to the category colour dot).
@@ -20,7 +26,7 @@ const str = (v: unknown) => (v == null || v === '' ? null : String(v))
 const title = computed(() => {
   const p = sign.value?.properties ?? {}
   return str(p.SIGNID) ?? str(p.TextString) ?? str(p.REFNAME)
-    ?? category.value?.label ?? 'Sign'
+    ?? categoryLabel.value ?? t('signPopup.fallbackTitle')
 })
 
 // LAST_UPD_DATE is a packed number: YYYYMMDD or YYYYMMDDhhmmss.
@@ -34,12 +40,12 @@ const updated = computed(() => {
 const rows = computed(() => {
   const p = sign.value?.properties ?? {}
   return [
-    ['Reference', str(p.REFNAME)],
-    ['Pole ID', str(p.POLEID)],
-    ['Type', str(p.TYPE)],
-    ['Group', str(p.GG_NAME)],
-    ['Bearing', p.ANGLE != null ? `${Math.round(Number(p.ANGLE))}°` : null],
-    ['Updated', updated.value]
+    [t('signPopup.fields.reference'), str(p.REFNAME)],
+    [t('signPopup.fields.poleId'), str(p.POLEID)],
+    [t('signPopup.fields.type'), str(p.TYPE)],
+    [t('signPopup.fields.group'), str(p.GG_NAME)],
+    [t('signPopup.fields.bearing'), p.ANGLE != null ? `${Math.round(Number(p.ANGLE))}°` : null],
+    [t('signPopup.fields.updated'), updated.value]
   ].filter(([, v]) => v) as [string, string][]
 })
 
@@ -52,7 +58,7 @@ const coords = computed(() => {
 const cycleHint = computed(() => {
   const s = sign.value
   return s?.total && s.total > 1
-    ? `${s.index} of ${s.total} here · click again to cycle`
+    ? t('signPopup.cycleHint', { index: s.index, total: s.total })
     : null
 })
 </script>
@@ -81,7 +87,7 @@ const cycleHint = computed(() => {
             {{ title }}
           </h2>
           <p class="mt-0.5 text-xs text-muted">
-            {{ category?.label ?? 'Unknown' }}
+            {{ categoryLabel ?? $t('signPopup.unknown') }}
           </p>
           <p
             v-if="cycleHint"
@@ -96,7 +102,7 @@ const cycleHint = computed(() => {
         size="xs"
         color="neutral"
         variant="ghost"
-        aria-label="Close"
+        :aria-label="$t('signPopup.close')"
         @click="selectedSign = null"
       />
     </div>

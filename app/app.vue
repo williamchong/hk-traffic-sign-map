@@ -1,12 +1,20 @@
 <script setup lang="ts">
-// Site-wide defaults. /about and /faq override title/description per page;
-// @nuxtjs/seo resolves canonical URLs, og:url and the absolute og:image
-// from the `site` config in nuxt.config.ts.
+// Site-wide defaults, locale-aware. app.vue is the persistent root across
+// route changes, so title/meta MUST be reactive getters — switching locale
+// navigates here without remounting. useLocaleHead() supplies the per-locale
+// <html lang>, hreflang/x-default alternates and og:locale; @nuxtjs/seo
+// resolves canonical + absolute og:image from the site config, and
+// @nuxtjs/sitemap adds the per-URL alternates to sitemap.xml.
+const { t } = useI18n()
+
+// Per-locale <html lang>, hreflang/x-default alternates and og:locale.
+// Passing the ref straight to useHead is the documented i18n pattern.
+useHead(useLocaleHead())
+
 useHead({
-  // Own the title template so pages pass a short title ("About") and the
-  // brand is appended once — overrides @nuxtjs/seo's default which would
-  // otherwise double the site name (and on home: "X | X").
-  titleTemplate: t => (t && t !== SITE.name ? `${t} — ${SITE.name}` : SITE.name),
+  // Pages pass a short title ("About"); the brand is appended once.
+  titleTemplate: (title?: string) =>
+    (title && title !== t('site.name') ? `${title} — ${t('site.name')}` : t('site.name')),
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' }
   ],
@@ -18,10 +26,10 @@ useHead({
 })
 
 useSeoMeta({
-  title: SITE.name,
-  description: SITE.summary,
-  ogTitle: SITE.name,
-  ogDescription: SITE.summary,
+  title: () => t('site.name'),
+  description: () => t('site.summary'),
+  ogTitle: () => t('site.name'),
+  ogDescription: () => t('site.summary'),
   ogType: 'website',
   // Relative path is rewritten to an absolute URL by @nuxtjs/seo using
   // site.url; required for Open Graph / Twitter to resolve the image.
@@ -29,7 +37,7 @@ useSeoMeta({
   ogImageWidth: 1200,
   ogImageHeight: 630,
   ogImageType: 'image/jpeg',
-  ogImageAlt: 'Hong Kong traffic signs shown on the interactive map',
+  ogImageAlt: () => t('site.tagline'),
   twitterCard: 'summary_large_image',
   twitterImage: '/og-cover.jpg'
 })

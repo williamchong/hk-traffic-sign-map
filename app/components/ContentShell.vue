@@ -2,6 +2,8 @@
 // Chrome for the standalone /about and /faq pages. Deliberately a plain
 // component (not a Nuxt layout) so the map page's structure is untouched.
 defineProps<{ title: string }>()
+
+const localePath = useLocalePath()
 </script>
 
 <template>
@@ -9,12 +11,15 @@ defineProps<{ title: string }>()
     <header class="border-b border-default">
       <div class="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
         <NuxtLink
-          to="/"
+          :to="localePath('/')"
           class="text-sm font-semibold"
         >
-          {{ SITE.name }}
+          {{ $t('site.name') }}
         </NuxtLink>
-        <ThemeCycleButton />
+        <div class="flex items-center gap-0.5">
+          <LocaleSwitcher />
+          <ThemeCycleButton />
+        </div>
       </div>
     </header>
 

@@ -3,26 +3,27 @@
 // with the same content as the /about and /faq pages, so users get the
 // explanation without leaving the map. The SEO/crawlable path is the
 // separate prerendered links + pages, not this modal.
+const { t } = useI18n()
 const open = ref(false)
 
-const tabs = [
-  { label: 'About', slot: 'about' as const, icon: 'i-lucide-info' },
-  { label: 'FAQ & Guide', slot: 'faq' as const, icon: 'i-lucide-circle-help' }
-]
+const tabs = computed(() => [
+  { label: t('tabs.about'), slot: 'about' as const, icon: 'i-lucide-info' },
+  { label: t('tabs.faq'), slot: 'faq' as const, icon: 'i-lucide-circle-help' }
+])
 </script>
 
 <template>
   <UModal
     v-model:open="open"
-    :title="SITE.name"
-    :description="SITE.tagline"
+    :title="$t('site.name')"
+    :description="$t('site.tagline')"
   >
     <UButton
       icon="i-lucide-info"
       size="xs"
       color="neutral"
       variant="ghost"
-      aria-label="About this map and FAQ"
+      :aria-label="$t('info.aria')"
     />
 
     <template #body>

@@ -8,10 +8,11 @@ const colorMode = useColorMode()
 const MODES = ['light', 'dark', 'system'] as const
 type Mode = typeof MODES[number]
 
-const META: Record<Mode, { icon: string, label: string }> = {
-  light: { icon: 'i-lucide-sun', label: 'Light' },
-  dark: { icon: 'i-lucide-moon', label: 'Dark' },
-  system: { icon: 'i-lucide-monitor', label: 'System' }
+// Mode labels are localized via the i18n key `theme.<mode>`.
+const ICON: Record<Mode, string> = {
+  light: 'i-lucide-sun',
+  dark: 'i-lucide-moon',
+  system: 'i-lucide-monitor'
 }
 
 const isMode = (v: string): v is Mode => (MODES as readonly string[]).includes(v)
@@ -32,9 +33,9 @@ function cycle() {
       size="xs"
       variant="ghost"
       color="neutral"
-      :icon="META[current].icon"
-      :title="`Theme: ${META[current].label} (click to cycle)`"
-      :aria-label="`Theme: ${META[current].label}. Click to cycle light, dark, system.`"
+      :icon="ICON[current]"
+      :title="$t('theme.title', { mode: $t(`theme.${current}`) })"
+      :aria-label="$t('theme.aria', { mode: $t(`theme.${current}`) })"
       @click="cycle"
     />
     <template #fallback>

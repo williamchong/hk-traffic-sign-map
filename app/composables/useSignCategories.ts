@@ -6,20 +6,20 @@
 
 export interface SignCategory {
   key: string
-  label: string
   color: string
 }
 
 // Keys match the CategoryKey values produced by useSignCatalogue: the five
 // Index-Plan classes, plus uncatalogued traffic signs and tourist signs.
+// The display label is localized via the i18n key `categories.<key>`.
 export const SIGN_CATEGORIES: SignCategory[] = [
-  { key: 'regulatory', label: 'Regulatory', color: '#dc2626' },
-  { key: 'warning', label: 'Warning', color: '#f59e0b' },
-  { key: 'informatory', label: 'Informatory', color: '#2563eb' },
-  { key: 'supplementary', label: 'Supplementary', color: '#0d9488' },
-  { key: 'temporary', label: 'Temporary', color: '#ea580c' },
-  { key: 'other-traffic', label: 'Other traffic sign', color: '#64748b' },
-  { key: 'tourist', label: 'Tourist sign', color: '#9333ea' }
+  { key: 'regulatory', color: '#dc2626' },
+  { key: 'warning', color: '#f59e0b' },
+  { key: 'informatory', color: '#2563eb' },
+  { key: 'supplementary', color: '#0d9488' },
+  { key: 'temporary', color: '#ea580c' },
+  { key: 'other-traffic', color: '#64748b' },
+  { key: 'tourist', color: '#9333ea' }
 ]
 
 // Flat [value, color, value, color, …] list for a MapLibre `match` expression.
