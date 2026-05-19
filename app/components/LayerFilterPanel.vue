@@ -9,13 +9,16 @@ const allOn = computed(() => categories.every(c => enabled[c.key]))
     class="absolute left-4 top-4 z-10 w-72 max-w-[calc(100vw-2rem)]"
     :ui="{ body: 'p-4 sm:p-4 space-y-3' }"
   >
-    <div class="space-y-1">
-      <h1 class="text-base font-semibold">
-        HK Traffic Signs
-      </h1>
-      <p class="text-xs text-muted">
-        Transport Department open data
-      </p>
+    <div class="flex items-start justify-between gap-2">
+      <div class="space-y-1">
+        <h1 class="text-base font-semibold">
+          HK Traffic Signs
+        </h1>
+        <p class="text-xs text-muted">
+          Transport Department open data
+        </p>
+      </div>
+      <UColorModeButton size="xs" />
     </div>
 
     <div class="flex items-center justify-between">

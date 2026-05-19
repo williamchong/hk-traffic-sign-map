@@ -5,12 +5,17 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
 
 const { mapFilter, selectedSign } = useTrafficLayers()
+const colorMode = useColorMode()
 
 const TILE_SOURCE = 'signs'
 const SOURCE_LAYER = 'signs' // tippecanoe layer name (see scripts/sign-layers.mjs)
 
 // Hong Kong, centred so most signed road network is in view on load.
 const HK_CENTER: [number, number] = [114.155, 22.34]
+// Lock the viewport to HK — also caps the basemap/tile working set.
+const HK_BOUNDS: [[number, number], [number, number]] = [[113.80, 22.13], [114.45, 22.58]]
+
+const OSM_ATTRIB = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
 const container = ref<HTMLDivElement>()
 const map = shallowRef<maplibregl.Map>()
@@ -35,19 +40,35 @@ onMounted(() => {
     zoom: 11,
     minZoom: 9,
     maxZoom: 19,
+    maxBounds: HK_BOUNDS,
     attributionControl: { compact: true },
     style: {
       version: 8,
       sources: {
-        osm: {
+        'osm-light': {
           type: 'raster',
           tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
           tileSize: 256,
           maxzoom: 19,
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution: OSM_ATTRIB
+        },
+        'osm-dark': {
+          type: 'raster',
+          tiles: [
+            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+          ],
+          tileSize: 256,
+          maxzoom: 19,
+          attribution: `${OSM_ATTRIB} © <a href="https://carto.com/attributions">CARTO</a>`
         }
       },
-      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+      // Both basemaps exist; visibility toggles by colour mode so the
+      // theme switch never rebuilds the vector source above it.
+      layers: [
+        { id: 'basemap-light', type: 'raster', source: 'osm-light' },
+        { id: 'basemap-dark', type: 'raster', source: 'osm-dark', layout: { visibility: 'none' } }
+      ]
     }
   })
 
@@ -83,6 +104,12 @@ onMounted(() => {
     // Category visibility is a GPU-side filter — toggling is instant even
     // across 316k features (no DOM, no data refetch).
     watch(mapFilter, f => m.setFilter('sign-points', f), { immediate: true })
+
+    watch(() => colorMode.value, (mode) => {
+      const dark = mode === 'dark'
+      m.setLayoutProperty('basemap-dark', 'visibility', dark ? 'visible' : 'none')
+      m.setLayoutProperty('basemap-light', 'visibility', dark ? 'none' : 'visible')
+    }, { immediate: true })
   })
 
   // One click handler: a sign under the cursor selects it, empty space

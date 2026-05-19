@@ -42,6 +42,22 @@ pnpm build    # production build
 pnpm preview  # preview the production build
 ```
 
+## Deployment
+
+Build a static site and host it on any static/CDN provider:
+
+```bash
+pnpm data:build   # produce public/data/traffic-signs.pmtiles
+pnpm generate     # static output in .output/public
+```
+
+**The host must support HTTP `Range` requests (`206 Partial Content`).**
+PMTiles reads the 18 MB archive in small byte-range slices — that is what
+keeps the map fast. Cloudflare Pages, Netlify, S3+CloudFront and nginx all
+do this by default. The Nuxt Node preview server does **not** (it returns
+the whole file with `200`), so use it for local checks only, not as a
+production host.
+
 ## Data attribution
 
 Contains data from the Transport Department of the Government of the Hong Kong
