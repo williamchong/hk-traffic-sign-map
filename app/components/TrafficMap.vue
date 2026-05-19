@@ -2,6 +2,7 @@
 import type { Map as MaplibreMap, ExpressionSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
+import { TIER_LOD, codesByTier } from '~/composables/useSignCatalogue'
 
 // maplibre-gl touches `window` at import time and is large; it's
 // dynamically imported inside onMounted so it never enters the SSR pass
@@ -32,6 +33,23 @@ const categoryColor = [
   ...categoryColorStops,
   '#94a3b8'
 ] as unknown as ExpressionSpecification
+
+// maplibre's tuple typing rejects spread/dynamic expressions that are valid at
+// runtime; this is the one documented place we widen through `unknown`.
+const expr = (e: unknown) => e as ExpressionSpecification
+
+const tierLayerId = (t: number) => `sign-tier-${t}`
+// The SIGNID set per tier is static, so precompute that clause once and only
+// swap the (changing) category `base` in the watcher.
+const tierClause = TIER_LOD.map(
+  (_, t) => ['in', ['get', 'SIGNID'], ['literal', codesByTier[t] ?? []]]
+)
+const tierFilter = (t: number, base: ExpressionSpecification) =>
+  expr(['all', base, tierClause[t]])
+const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
+
+// Set on teardown so the async pictogram loader doesn't addLayer on a removed map.
+let disposed = false
 
 onMounted(async () => {
   const [{ default: maplibregl }, { Protocol }] = await Promise.all([
@@ -114,9 +132,55 @@ onMounted(async () => {
       }
     })
 
+    // LOD: above each tier's minzoom the cheap dot is replaced by the real
+    // pictogram, drawn later/larger the more complex the sign. Uncatalogued
+    // SIGNIDs (and the pole categories with no SIGNID) stay dots.
+    void (async () => {
+      try {
+        await Promise.all(codesByTier.flat().map(async (code) => {
+          const id = `sign-${code}`
+          if (m.hasImage(id)) return
+          const img = await m.loadImage(`/signs/${code}.png`)
+          if (!m.hasImage(id)) m.addImage(id, img.data)
+        }))
+        if (disposed || !m.getSource(TILE_SOURCE)) return
+
+        TIER_LOD.forEach((lod, t) => {
+          if (!codesByTier[t]?.length) return
+          m.addLayer({
+            'id': tierLayerId(t),
+            'type': 'symbol',
+            'source': TILE_SOURCE,
+            'source-layer': SOURCE_LAYER,
+            'minzoom': lod.minzoom,
+            'filter': tierFilter(t, expr(mapFilter.value)),
+            'layout': {
+              'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
+              'icon-size': expr(['interpolate', ['linear'], ['zoom'], ...lod.size]),
+              'icon-allow-overlap': false,
+              'icon-padding': 2,
+              // Lower tier = higher placement priority in a collision, so the
+              // simple regulatory signs win over decorative ones.
+              'symbol-sort-key': t
+            }
+          })
+        })
+      } catch (err) {
+        // A missing pictogram or a teardown mid-load just leaves dots.
+        console.error('[signs]', err)
+      }
+    })()
+
     // Category visibility is a GPU-side filter — toggling is instant even
-    // across 316k features (no DOM, no data refetch).
-    watch(mapFilter, f => m.setFilter('sign-points', f), { immediate: true })
+    // across 316k features (no DOM, no data refetch). The pictogram tiers
+    // ride the same filter, scoped to their own code set.
+    watch(mapFilter, (f) => {
+      m.setFilter('sign-points', f)
+      TIER_LOD.forEach((_, t) => {
+        const id = tierLayerId(t)
+        if (m.getLayer(id)) m.setFilter(id, tierFilter(t, expr(f)))
+      })
+    }, { immediate: true })
 
     watch(() => colorMode.value, (mode) => {
       const dark = mode === 'dark'
@@ -125,17 +189,23 @@ onMounted(async () => {
     }, { immediate: true })
   })
 
-  // One click handler: a sign under the cursor selects it, empty space
-  // clears the popup.
+  // A sign (dot or pictogram) under the cursor selects it; empty space clears
+  // the popup. Querying only existing layers avoids an error before the async
+  // tier layers are added.
   m.on('click', (e) => {
-    const [hit] = m.queryRenderedFeatures(e.point, { layers: ['sign-points'] })
+    const layers = signLayerIds.filter(id => m.getLayer(id))
+    const [hit] = m.queryRenderedFeatures(e.point, { layers })
     selectedSign.value = hit
       ? { properties: hit.properties, lngLat: e.lngLat }
       : null
   })
 
-  m.on('mouseenter', 'sign-points', () => (m.getCanvas().style.cursor = 'pointer'))
-  m.on('mouseleave', 'sign-points', () => (m.getCanvas().style.cursor = ''))
+  // Layer-scoped enter/leave only fire on transitions — far cheaper than
+  // hit-testing 316k features on every mousemove.
+  for (const id of signLayerIds) {
+    m.on('mouseenter', id, () => (m.getCanvas().style.cursor = 'pointer'))
+    m.on('mouseleave', id, () => (m.getCanvas().style.cursor = ''))
+  }
 
   m.on('error', e => console.error('[maplibre]', e.error?.message ?? e))
 
@@ -143,6 +213,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  disposed = true
   map.value?.remove()
   detachProtocol?.()
 })

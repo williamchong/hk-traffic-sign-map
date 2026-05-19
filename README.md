@@ -16,6 +16,12 @@ app deploys as a static site with no tile server or database.
     reprojecting HK1980 Grid → WGS84)
   - [tippecanoe](https://github.com/felixlaumon/tippecanoe) — `brew install tippecanoe`
     (builds the vector tiles / PMTiles)
+- For the sign-pictogram catalogue (optional; the committed
+  `public/signs/` + `app/data/signCatalogue.json` are already built):
+  - [Poppler](https://poppler.freedesktop.org) — `brew install poppler`
+    (`pdftoppm` rasterises the Index Plan PDFs)
+  - [ImageMagick](https://imagemagick.org) — `brew install imagemagick`
+  - [Tesseract](https://github.com/tesseract-ocr/tesseract) — `brew install tesseract`
 
 ## Setup
 
@@ -33,6 +39,31 @@ pnpm data:build
 
 Source data is updated monthly; rerun to refresh. Raw downloads are cached in
 `data/raw/` (gitignored).
+
+### Sign pictograms
+
+Above zoom ~13 catalogued signs render as their real pictogram instead of a
+coloured dot, with per-complexity level-of-detail (simple iconic signs appear
+earlier and smaller; complex/text signs later and larger). The pictograms and
+`app/data/signCatalogue.json` are committed, so this step is only needed to
+extend coverage:
+
+```bash
+pnpm data:catalogue
+```
+
+This rasterises the TD **Index Plan** PDFs, auto-detects the table grid (no
+hand-tuned pixel constants), and crops each cell to `public/signs/<CODE>.png`.
+Code and pictogram come from the *same cell*, so the binding is exact — we
+never equate the Cap 374G legal figure numbers with the TD `SIGNID` space
+(they diverge above the low regulatory range). A QA contact sheet is written to
+`/tmp/sign-catalogue-qa.png` — eyeball it before trusting new output.
+
+**Adding more sign sheets:** drop the PDF path and its title's numeric range
+into the `SHEETS` array in `scripts/build-sign-catalogue.mjs`. The range guard
+discards any OCR misread outside that span (a missed sign degrades to a dot; a
+mislabelled sign must never ship). Currently seeded: the regulatory
+`TS 101–205` sheet.
 
 ## Development
 
