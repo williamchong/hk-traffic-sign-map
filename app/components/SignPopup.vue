@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { signIconUrl } from '~/composables/useSignCatalogue'
+
 const { selectedSign, categories } = useTrafficLayers()
 
 const sign = computed(() => selectedSign.value)
@@ -6,6 +8,10 @@ const sign = computed(() => selectedSign.value)
 const category = computed(() =>
   categories.find(c => c.key === sign.value?.properties.category)
 )
+
+// The real pictogram when this SIGNID is catalogued, else null (falls back
+// to the category colour dot).
+const signImage = computed(() => signIconUrl(sign.value?.properties.SIGNID))
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v))
 
@@ -49,19 +55,26 @@ const coords = computed(() => {
     :ui="{ body: 'p-4 sm:p-4 space-y-3' }"
   >
     <div class="flex items-start justify-between gap-2">
-      <div class="min-w-0">
-        <div class="flex items-center gap-2">
-          <span
-            class="size-3 shrink-0 rounded-full"
-            :style="{ backgroundColor: category?.color ?? '#94a3b8' }"
-          />
+      <div class="flex min-w-0 items-start gap-3">
+        <img
+          v-if="signImage"
+          :src="signImage"
+          :alt="title"
+          class="size-12 shrink-0 rounded-md bg-white object-contain ring-1 ring-default"
+        >
+        <span
+          v-else
+          class="mt-1 size-3 shrink-0 rounded-full"
+          :style="{ backgroundColor: category?.color ?? '#94a3b8' }"
+        />
+        <div class="min-w-0">
           <h2 class="truncate font-semibold">
             {{ title }}
           </h2>
+          <p class="mt-0.5 text-xs text-muted">
+            {{ category?.label ?? 'Unknown' }}
+          </p>
         </div>
-        <p class="mt-0.5 text-xs text-muted">
-          {{ category?.label ?? 'Unknown' }}
-        </p>
       </div>
       <UButton
         icon="i-lucide-x"

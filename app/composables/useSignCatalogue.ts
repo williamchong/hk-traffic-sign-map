@@ -27,3 +27,12 @@ export const codesByTier: readonly (readonly string[])[] = (() => {
   for (const [code, { tier }] of Object.entries(catalogue)) acc[tier]?.push(code)
   return acc
 })()
+
+// Public path of a sign's pictogram, or null if it isn't catalogued. Shared
+// by the map (icon registration) and the details panel so the path contract
+// lives in one place.
+export function signIconUrl(signId: unknown): string | null {
+  return typeof signId === 'string' && signId in catalogue
+    ? `/signs/${signId}.png`
+    : null
+}
