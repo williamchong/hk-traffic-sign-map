@@ -2,6 +2,10 @@
 const { categories, enabled, toggleAll } = useTrafficLayers()
 
 const allOn = computed(() => categories.every(c => enabled[c.key]))
+
+// View-only: folds the list to shrink the panel. Not in useTrafficLayers
+// because it doesn't touch the map filter; checkbox state lives there.
+const expanded = ref(true)
 </script>
 
 <template>
@@ -22,8 +26,21 @@ const allOn = computed(() => categories.every(c => enabled[c.key]))
     </div>
 
     <div class="flex items-center justify-between">
-      <span class="text-xs font-medium text-muted">Categories</span>
+      <button
+        type="button"
+        class="flex cursor-pointer items-center gap-1 text-xs font-medium text-muted"
+        :aria-expanded="expanded"
+        aria-controls="category-list"
+        @click="expanded = !expanded"
+      >
+        <UIcon
+          :name="expanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+          class="size-3"
+        />
+        Categories
+      </button>
       <UButton
+        v-if="expanded"
         size="xs"
         variant="link"
         :label="allOn ? 'Hide all' : 'Show all'"
@@ -31,7 +48,11 @@ const allOn = computed(() => categories.every(c => enabled[c.key]))
       />
     </div>
 
-    <div class="space-y-2">
+    <div
+      v-show="expanded"
+      id="category-list"
+      class="space-y-2"
+    >
       <label
         v-for="c in categories"
         :key="c.key"
