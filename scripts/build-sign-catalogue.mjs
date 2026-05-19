@@ -152,6 +152,40 @@ function classifyTier(w, h) {
   return 0
 }
 
+// Mean alpha (0..1) of an image — the opaque fraction of its bounding box.
+function opaqueFraction(file) {
+  const r = spawnSync('magick', [file, '-alpha', 'extract',
+    '-format', '%[fx:mean]', 'info:'], { encoding: 'utf8' })
+  return parseFloat(r.stdout) || 0
+}
+
+// Turn a trimmed sheet-crop into the final pictogram. Round/triangular signs
+// have white bbox corners, so flood-filling the sheet white from the edge
+// shapes them cleanly. Bordered rectangular plates (no-stopping, route, text
+// panels) have an inked perimeter and no outside white — flood-filling them
+// would bleed through and eat the white face, so if the flood removes most of
+// the sign we keep the opaque rectangle instead. Output is always PNG32 so it
+// never degrades to an alpha-less greyscale image.
+function normalizeSign(symRaw, outPath) {
+  const trimmed = '/tmp/sym-t.png'
+  magick([symRaw, '-fuzz', '6%', '-trim', '+repage', trimmed])
+
+  const flooded = '/tmp/sym-f.png'
+  magick([trimmed, '-alpha', 'set', '-bordercolor', 'white', '-border', '1',
+    '-fuzz', '12%', '-fill', 'none', '-draw', 'color 0,0 floodfill',
+    '-shave', '1x1', '-channel', 'A', '-morphology', 'Erode', 'Octagon:1',
+    '+channel', '-trim', '+repage', flooded])
+
+  // < 0.40 ⇒ the flood ate the sign (a white-faced/borderless plate) →
+  // fall back to the intact opaque rectangle. Triangles sit near 0.5 and
+  // round signs higher, so they keep the shaped transparent version.
+  const base = opaqueFraction(flooded) < 0.40
+    ? [trimmed, '-alpha', 'set']
+    : [flooded]
+  magick([...base, '-resize', '320x120', '-background', 'none',
+    '+repage', `PNG32:${outPath}`])
+}
+
 async function extractSheet(sheet, catalogue) {
   const pdf = join(INDEX_PLAN_DIR, sheet.pdf)
   const base = `/tmp/idx-${sheet.prefix}`
@@ -192,9 +226,10 @@ async function extractSheet(sheet, catalogue) {
     for (const [rowTop, rowBot] of rowBands) {
       const y = rowTop
       const rh = rowBot - rowTop
-      // Symbol cell, trimmed to ink. Empty cells (e.g. spare numbers) vanish.
+      // Symbol cell, trimmed to ink. Tight horizontal padding (6px) so a
+      // neighbouring column's grid line isn't captured as a side border.
       const symRaw = `/tmp/sym.png`
-      magick([png, '-crop', `${bx1 - bx0 + 24}x${rh - 8}+${bx0 - 12}+${y + 4}`,
+      magick([png, '-crop', `${bx1 - bx0 + 12}x${rh - 8}+${bx0 - 6}+${y + 4}`,
         '+repage', '-fuzz', '8%', '-trim', '+repage', symRaw])
       const [sw, sh] = identify(symRaw)
       if (!sw || sw < 24 || sh < 24) continue // blank / divider speck
@@ -217,16 +252,7 @@ async function extractSheet(sheet, catalogue) {
       const code = `${sheet.prefix}${m[1]}${m[2]}`
       if (catalogue[code]) continue // first (left-most) occurrence wins
 
-      // Flood-fill the white sheet background away from the edges so the sign
-      // sits transparently on the map (interior whites — STOP text, sign
-      // centres — are enclosed by colour and survive). Then normalise to a
-      // constant 120px height (width follows the true aspect, capped at 320)
-      // so one icon-size renders every sign at the same on-screen height.
-      magick([symRaw,
-        '-alpha', 'set', '-bordercolor', 'white', '-border', '1',
-        '-fuzz', '12%', '-fill', 'none', '-draw', 'color 1,1 floodfill',
-        '-shave', '1x1', '-trim', '+repage', '-resize', '320x120',
-        '+repage', join(SIGNS_DIR, `${code}.png`)])
+      normalizeSign(symRaw, join(SIGNS_DIR, `${code}.png`))
       catalogue[code] = { tier: classifyTier(sw, sh), group: sheet.group }
       extracted++
     }

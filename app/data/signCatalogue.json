@@ -80,7 +80,7 @@
     "group": "regulatory"
   },
   "TS124": {
-    "tier": 2,
+    "tier": 1,
     "group": "regulatory"
   },
   "TS125": {
@@ -332,7 +332,7 @@
     "group": "regulatory"
   },
   "TS346": {
-    "tier": 2,
+    "tier": 1,
     "group": "regulatory"
   },
   "TS357": {
@@ -556,7 +556,7 @@
     "group": "informatory"
   },
   "TS705": {
-    "tier": 1,
+    "tier": 0,
     "group": "supplementary"
   },
   "TS706": {
@@ -652,7 +652,7 @@
     "group": "supplementary"
   },
   "TS812": {
-    "tier": 1,
+    "tier": 0,
     "group": "supplementary"
   },
   "TS835L": {
@@ -1064,7 +1064,7 @@
     "group": "regulatory"
   },
   "TS2230": {
-    "tier": 2,
+    "tier": 1,
     "group": "regulatory"
   },
   "TS2254": {
