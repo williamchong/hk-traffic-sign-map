@@ -179,7 +179,15 @@ onMounted(async () => {
       source: 'sel',
       layout: {
         'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
-        'icon-size': 0.4,
+        // Must stay ≥ the largest tier's zoom-ramped size at every zoom
+        // (TIER_LOD max is 0.55 at MAX_ZOOM): the selected sign is also
+        // drawn by its always-on sign-tier-N layer underneath, so a
+        // smaller overlay would let the bigger tier icon poke out as a
+        // double image. Slightly above the envelope → it fully covers
+        // and reads as one emphasised pictogram in the halo.
+        'icon-size': expr([
+          'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
+        ]),
         'icon-allow-overlap': true,
         'icon-ignore-placement': true
       }
