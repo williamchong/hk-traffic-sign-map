@@ -30,7 +30,11 @@ async function convertLayer({ file, category }, out) {
   const ogr = spawn('ogr2ogr', [
     '-f', 'GeoJSONSeq', '/vsistdout/', src,
     '-s_srs', SOURCE_SRS, '-t_srs', TARGET_SRS,
-    '-lco', 'RS=NO'
+    '-lco', 'RS=NO',
+    // Don't let a handful of malformed GML geometries abort an otherwise
+    // good layer — skip the bad features and keep going.
+    '-skipfailures',
+    '--config', 'GML_SKIP_CORRUPTED_FEATURES', 'YES'
   ])
   ogr.stderr.on('data', d => process.stderr.write(`[ogr2ogr ${file}] ${d}`))
 
@@ -50,6 +54,7 @@ async function convertLayer({ file, category }, out) {
   const [code] = await once(ogr, 'close')
   if (code !== 0) throw new Error(`ogr2ogr failed for ${file} (exit ${code})`)
   console.log(`  ${category}: ${count} features`)
+  return count
 }
 
 requireTool('ogr2ogr', 'brew install gdal')
@@ -59,12 +64,22 @@ await mkdir(dirname(OUTPUT_PMTILES), { recursive: true })
 await rm(COMBINED, { force: true })
 
 const out = createWriteStream(COMBINED)
+let total = 0
 for (const layer of SIGN_LAYERS) {
   console.log(`Reprojecting ${layer.file} …`)
-  await convertLayer(layer, out)
+  try {
+    total += await convertLayer(layer, out)
+  } catch (err) {
+    console.warn(`  ⚠ skipping ${layer.file}: ${err.message}`)
+  }
 }
 out.end()
 await once(out, 'finish')
+
+if (total === 0) {
+  console.error('No features converted — aborting before tippecanoe.')
+  process.exit(1)
+}
 
 console.log('\nBuilding vector tiles with tippecanoe …')
 const tip = spawn('tippecanoe', [

@@ -1,9 +1,16 @@
 <script setup lang="ts">
-// The interactive map is mounted in Phase 2 (TrafficMap.client.vue).
+// TrafficMap is a `.client.vue` component: Nuxt skips SSR for it entirely
+// (MapLibre needs WebGL/window), rendering its fallback until hydration.
 </script>
 
 <template>
-  <div class="h-dvh w-dvw flex items-center justify-center text-muted">
-    <p>HK Traffic Sign Map — map coming up next.</p>
+  <div class="relative h-dvh w-dvw overflow-hidden">
+    <TrafficMap>
+      <template #fallback>
+        <div class="flex h-full w-full items-center justify-center text-muted">
+          <p>Loading map…</p>
+        </div>
+      </template>
+    </TrafficMap>
   </div>
 </template>

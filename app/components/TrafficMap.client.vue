@@ -1,0 +1,100 @@
+<script setup lang="ts">
+import maplibregl from 'maplibre-gl'
+import { Protocol } from 'pmtiles'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import { categoryColorStops } from '~/composables/useSignCategories'
+
+const TILE_SOURCE = 'signs'
+const SOURCE_LAYER = 'signs' // tippecanoe layer name (see scripts/sign-layers.mjs)
+
+// Hong Kong, centred so most signed road network is in view on load.
+const HK_CENTER: [number, number] = [114.155, 22.34]
+
+const container = ref<HTMLDivElement>()
+const map = shallowRef<maplibregl.Map>()
+
+// Colour each feature by its `category` (falls back to grey if unmapped).
+// Spreading a string[] into the expression defeats maplibre's tuple typing,
+// so widen through `unknown` — the runtime shape is a valid `match`.
+const categoryColor = [
+  'match', ['get', 'category'],
+  ...categoryColorStops,
+  '#94a3b8'
+] as unknown as maplibregl.ExpressionSpecification
+
+onMounted(() => {
+  // pmtiles serves vector tiles out of one static file via HTTP range
+  // requests — registered once as a custom maplibre protocol.
+  maplibregl.addProtocol('pmtiles', new Protocol().tile)
+
+  const m = new maplibregl.Map({
+    container: container.value!,
+    center: HK_CENTER,
+    zoom: 11,
+    minZoom: 9,
+    maxZoom: 19,
+    attributionControl: { compact: true },
+    style: {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          maxzoom: 19,
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+    }
+  })
+
+  m.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right')
+  m.addControl(new maplibregl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true
+  }), 'top-right')
+  m.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left')
+
+  m.on('load', () => {
+    m.addSource(TILE_SOURCE, {
+      type: 'vector',
+      url: `pmtiles://${window.location.origin}/data/traffic-signs.pmtiles`,
+      attribution: 'Traffic sign data © Transport Department, HKSAR'
+    })
+
+    m.addLayer({
+      'id': 'sign-points',
+      'type': 'circle',
+      'source': TILE_SOURCE,
+      'source-layer': SOURCE_LAYER,
+      'paint': {
+        // Smaller dots when zoomed out keep dense areas readable.
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 16, 6, 19, 9],
+        'circle-color': categoryColor,
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 11, 0.3, 16, 1],
+        'circle-opacity': 0.9
+      }
+    })
+  })
+
+  m.on('error', e => console.error('[maplibre]', e.error?.message ?? e))
+
+  map.value = m
+})
+
+onBeforeUnmount(() => {
+  map.value?.remove()
+  maplibregl.removeProtocol('pmtiles')
+})
+
+defineExpose({ map })
+</script>
+
+<template>
+  <div
+    ref="container"
+    class="h-full w-full"
+  />
+</template>
