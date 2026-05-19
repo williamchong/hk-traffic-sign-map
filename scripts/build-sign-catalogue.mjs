@@ -215,10 +215,16 @@ async function extractSheet(sheet, catalogue) {
       const code = `${sheet.prefix}${m[1]}${m[2]}`
       if (catalogue[code]) continue // first (left-most) occurrence wins
 
-      // Normalise every pictogram onto a fixed 128px white plate so the map's
-      // `icon-size` ramp is one constant per tier (not per-image).
-      magick([symRaw, '-background', 'white', '-alpha', 'remove',
-        '-resize', '116x116', '-gravity', 'center', '-extent', '128x128',
+      // Normalise onto a fixed 128px transparent canvas (so the map's
+      // `icon-size` ramp is one constant per tier). The sheet background is
+      // white; flood-fill it away from the edges so the sign sits cleanly on
+      // the map — interior whites (STOP text, sign centres) are enclosed by
+      // colour and survive.
+      magick([symRaw,
+        '-alpha', 'set', '-bordercolor', 'white', '-border', '1',
+        '-fuzz', '12%', '-fill', 'none', '-draw', 'color 1,1 floodfill',
+        '-shave', '1x1', '-resize', '116x116',
+        '-background', 'none', '-gravity', 'center', '-extent', '128x128',
         '+repage', join(SIGNS_DIR, `${code}.png`)])
       catalogue[code] = { tier: classifyTier(sw, sh) }
       extracted++

@@ -60,7 +60,7 @@ const coords = computed(() => {
           v-if="signImage"
           :src="signImage"
           :alt="title"
-          class="size-12 shrink-0 rounded-md bg-white object-contain ring-1 ring-default"
+          class="size-12 shrink-0 object-contain"
         >
         <span
           v-else
