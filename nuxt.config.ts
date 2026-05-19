@@ -8,6 +8,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
+    '@nuxt/scripts',
     '@nuxtjs/seo',
     '@nuxtjs/i18n'
   ],
@@ -88,5 +89,20 @@ export default defineNuxtConfig({
   // OG-image renderer would be unused and only bloats the static build.
   ogImage: {
     enabled: false
+  },
+
+  // GA4 via Nuxt Scripts. Plain third-party setup by request:
+  // bundle/proxy off (loads gtag.js straight from googletagmanager.com,
+  // no origin reverse-proxy) and no consent gating (privacy mode off) —
+  // i.e. the opposite of Nuxt Scripts' default first-party mode for GA.
+  scripts: {
+    privacy: false,
+    registry: {
+      googleAnalytics: {
+        id: 'G-7PFV2DE82Q',
+        bundle: false,
+        proxy: false
+      }
+    }
   }
 })
