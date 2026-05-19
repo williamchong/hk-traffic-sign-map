@@ -8,7 +8,10 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "data:fetch": "node scripts/fetch-data.mjs",
+    "data:tiles": "node scripts/build-tiles.mjs",
+    "data:build": "node scripts/fetch-data.mjs && node scripts/build-tiles.mjs"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.106",
