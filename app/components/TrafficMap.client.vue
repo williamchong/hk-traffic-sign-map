@@ -4,6 +4,8 @@ import { Protocol } from 'pmtiles'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
 
+const { mapFilter, selectedSign } = useTrafficLayers()
+
 const TILE_SOURCE = 'signs'
 const SOURCE_LAYER = 'signs' // tippecanoe layer name (see scripts/sign-layers.mjs)
 
@@ -77,7 +79,23 @@ onMounted(() => {
         'circle-opacity': 0.9
       }
     })
+
+    // Category visibility is a GPU-side filter — toggling is instant even
+    // across 316k features (no DOM, no data refetch).
+    watch(mapFilter, f => m.setFilter('sign-points', f), { immediate: true })
   })
+
+  // One click handler: a sign under the cursor selects it, empty space
+  // clears the popup.
+  m.on('click', (e) => {
+    const [hit] = m.queryRenderedFeatures(e.point, { layers: ['sign-points'] })
+    selectedSign.value = hit
+      ? { properties: hit.properties, lngLat: e.lngLat }
+      : null
+  })
+
+  m.on('mouseenter', 'sign-points', () => (m.getCanvas().style.cursor = 'pointer'))
+  m.on('mouseleave', 'sign-points', () => (m.getCanvas().style.cursor = ''))
 
   m.on('error', e => console.error('[maplibre]', e.error?.message ?? e))
 

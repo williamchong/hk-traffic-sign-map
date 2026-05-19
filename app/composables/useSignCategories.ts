@@ -19,7 +19,3 @@ export const SIGN_CATEGORIES: SignCategory[] = [
 
 // Flat [value, color, value, color, …] list for a MapLibre `match` expression.
 export const categoryColorStops = SIGN_CATEGORIES.flatMap(c => [c.key, c.color])
-
-export function useSignCategories() {
-  return { categories: SIGN_CATEGORIES }
-}

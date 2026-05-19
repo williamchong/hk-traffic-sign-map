@@ -12,5 +12,8 @@
         </div>
       </template>
     </TrafficMap>
+
+    <LayerFilterPanel />
+    <SignPopup />
   </div>
 </template>
