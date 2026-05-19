@@ -41,7 +41,6 @@ const categoryColor = [
 const expr = (e: unknown) => e as ExpressionSpecification
 
 const tierLayerId = (t: number) => `sign-tier-${t}`
-const tierDotId = (t: number) => `sign-dot-${t}`
 // The SIGNID set per tier is static, so precompute that clause once and only
 // swap the (changing) category `base` in the watcher.
 const tierClause = TIER_LOD.map(
@@ -49,16 +48,11 @@ const tierClause = TIER_LOD.map(
 )
 const tierFilter = (t: number, base: ExpressionSpecification) =>
   expr(['all', base, tierClause[t]])
-// Features whose SIGNID has no pictogram keep the always-on dot; catalogued
-// ones get a per-tier dot that ends exactly where the pictogram begins.
-const notCatalogued = ['!', ['in', ['get', 'SIGNID'], ['literal', codesByTier.flat()]]]
-const uncataloguedFilter = (base: ExpressionSpecification) =>
-  expr(['all', base, notCatalogued])
-const signLayerIds = [
-  'sign-points',
-  ...TIER_LOD.map((_, t) => tierDotId(t)),
-  ...TIER_LOD.map((_, t) => tierLayerId(t))
-]
+// One dot under every sign at all zooms; the pictogram is drawn on top once
+// its tier's minzoom is reached. The icon covers the small centred dot when
+// it's actually placed, so the dot only shows through when the sign isn't
+// rendered yet (below minzoom) or was dropped by icon collision.
+const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 
 // Set on teardown so the async pictogram loader doesn't addLayer on a removed map.
 let disposed = false
@@ -138,32 +132,20 @@ onMounted(async () => {
       'circle-opacity': 0.9
     }
 
-    // Uncatalogued signs (and pole features with no SIGNID): always a dot.
+    // One dot under every visible sign at all zooms — the baseline marker.
+    // Pictogram layers draw on top from their tier's minzoom; a placed icon
+    // covers the small centred dot, so the dot only shows where the sign
+    // isn't rendered (below minzoom, or dropped by icon collision).
     m.addLayer({
       'id': 'sign-points',
       'type': 'circle',
       'source': TILE_SOURCE,
       'source-layer': SOURCE_LAYER,
-      'filter': uncataloguedFilter(expr(mapFilter.value)),
+      'filter': mapFilter.value,
       'paint': { ...circlePaint }
     })
 
-    // Catalogued signs: a dot only *below* their tier's pictogram minzoom, so
-    // the dot vanishes exactly when the real sign appears (no double-draw).
-    TIER_LOD.forEach((lod, t) => {
-      if (!codesByTier[t]?.length) return
-      m.addLayer({
-        'id': tierDotId(t),
-        'type': 'circle',
-        'source': TILE_SOURCE,
-        'source-layer': SOURCE_LAYER,
-        'maxzoom': lod.minzoom,
-        'filter': expr(['all', mapFilter.value, tierClause[t]]),
-        'paint': { ...circlePaint }
-      })
-    })
-
-    // LOD: at each tier's minzoom the pictogram replaces the dot, drawn
+    // LOD: at each tier's minzoom the pictogram is drawn over the dot,
     // later/larger the more complex the sign.
     void (async () => {
       try {
@@ -205,10 +187,8 @@ onMounted(async () => {
     // across 316k features (no DOM, no data refetch). The pictogram tiers
     // ride the same filter, scoped to their own code set.
     watch(mapFilter, (f) => {
-      m.setFilter('sign-points', uncataloguedFilter(expr(f)))
+      m.setFilter('sign-points', f)
       TIER_LOD.forEach((_, t) => {
-        const dot = tierDotId(t)
-        if (m.getLayer(dot)) m.setFilter(dot, expr(['all', f, tierClause[t]]))
         const ico = tierLayerId(t)
         if (m.getLayer(ico)) m.setFilter(ico, tierFilter(t, expr(f)))
       })
