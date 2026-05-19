@@ -75,7 +75,10 @@
     "dataGovHkLabel": "data.gov.hk",
     "termsLabel": "data.gov.hk 條款及細則",
     "osmLabel": "OpenStreetMap",
-    "disclaimer": "本網站為獨立的資訊性專案，與運輸署並無關連，不可用作導航用途，亦不可視為道路交通法規的法律依據。"
+    "disclaimer": "本網站為獨立的資訊性專案，與運輸署並無關連，不可用作導航用途，亦不可視為道路交通法規的法律依據。",
+    "colophon": "由 {author} 製作 · {source}",
+    "authorLabel": "William Chong",
+    "sourceLabel": "GitHub 原始碼"
   },
   "faq": {
     "metaTitle": "常見問題與使用指南",

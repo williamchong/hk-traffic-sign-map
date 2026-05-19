@@ -6,10 +6,14 @@
 // stay intact inside a translatable sentence.
 const localePath = useLocalePath()
 
+const UTM = '?utm_source=hk-traffic-sign-map&utm_medium=about'
+
 const LINKS = {
   dataGovHk: 'https://data.gov.hk/en-data/dataset/hk-td-tis_16-traffic-aids-drawings-v2',
   terms: 'https://data.gov.hk/en/terms-and-conditions',
-  osm: 'https://www.openstreetmap.org/copyright'
+  osm: 'https://www.openstreetmap.org/copyright',
+  source: `https://github.com/williamchong/hk-traffic-sign-map${UTM}`,
+  author: `https://blog.williamchong.cloud/${UTM}`
 }
 </script>
 
@@ -87,5 +91,29 @@ const LINKS = {
         {{ $t('nav.faqUserGuide') }}
       </NuxtLink>
     </nav>
+
+    <i18n-t
+      keypath="about.colophon"
+      tag="p"
+      scope="global"
+      class="text-muted text-xs"
+    >
+      <template #author>
+        <a
+          :href="LINKS.author"
+          target="_blank"
+          rel="noopener"
+          class="underline"
+        >{{ $t('about.authorLabel') }}</a>
+      </template>
+      <template #source>
+        <a
+          :href="LINKS.source"
+          target="_blank"
+          rel="noopener"
+          class="underline"
+        >{{ $t('about.sourceLabel') }}</a>
+      </template>
+    </i18n-t>
   </div>
 </template>

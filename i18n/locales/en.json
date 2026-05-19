@@ -75,7 +75,10 @@
     "dataGovHkLabel": "data.gov.hk",
     "termsLabel": "data.gov.hk Terms and Conditions",
     "osmLabel": "OpenStreetMap",
-    "disclaimer": "This is an independent, informational project. It is not affiliated with the Transport Department and must not be relied on for navigation or as a legal authority on road traffic regulations."
+    "disclaimer": "This is an independent, informational project. It is not affiliated with the Transport Department and must not be relied on for navigation or as a legal authority on road traffic regulations.",
+    "colophon": "Built by {author} · {source}",
+    "authorLabel": "William Chong",
+    "sourceLabel": "Source on GitHub"
   },
   "faq": {
     "metaTitle": "FAQ & User Guide",
