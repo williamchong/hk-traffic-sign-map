@@ -18,7 +18,7 @@ const allOn = computed(() => categories.every(c => enabled[c.key]))
           Transport Department open data
         </p>
       </div>
-      <UColorModeButton size="xs" />
+      <ThemeCycleButton />
     </div>
 
     <div class="flex items-center justify-between">
