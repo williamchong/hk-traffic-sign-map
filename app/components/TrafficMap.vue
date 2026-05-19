@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Map as MaplibreMap, ExpressionSpecification } from 'maplibre-gl'
+import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
 import { TIER_LOD, codesByTier, categoryKeyExpr } from '~/composables/useSignCatalogue'
@@ -208,15 +208,48 @@ onMounted(async () => {
     }, { immediate: true })
   })
 
-  // A sign (dot or pictogram) under the cursor selects it; empty space clears
-  // the popup. Querying only existing layers avoids an error before the async
-  // tier layers are added.
+  // A click can land on several overlapping/collided signs. Collect them all
+  // and, when the user clicks the same spot again, advance to the next one so
+  // every sign under the pointer is reachable despite collision.
+  let cycleKey = ''
+  let cycleIdx = 0
+  const featureKey = (f: MapGeoJSONFeature) => {
+    const [lng, lat] = (f.geometry as unknown as { coordinates: [number, number] }).coordinates
+    const p = f.properties
+    return `${lng.toFixed(6)},${lat.toFixed(6)}|${p.SIGNID ?? p.POLEID ?? p.REFNAME ?? ''}|${p.category ?? ''}`
+  }
+
   m.on('click', (e) => {
     const layers = signLayerIds.filter(id => m.getLayer(id))
-    const [hit] = m.queryRenderedFeatures(e.point, { layers })
-    selectedSign.value = hit
-      ? { properties: hit.properties, lngLat: e.lngLat }
-      : null
+    const box: [[number, number], [number, number]] = [
+      [e.point.x - 6, e.point.y - 6], [e.point.x + 6, e.point.y + 6]
+    ]
+    // De-dupe: a catalogued sign appears in both its dot and pictogram layer.
+    const seen = new Set<string>()
+    const hits = m.queryRenderedFeatures(box, { layers }).filter((f) => {
+      const k = featureKey(f)
+      return seen.has(k) ? false : (seen.add(k), true)
+    })
+
+    if (!hits.length) {
+      selectedSign.value = null
+      cycleKey = ''
+      return
+    }
+    // Same set of hits as the previous click → cycle; otherwise restart.
+    const key = hits.map(featureKey).join('~')
+    cycleIdx = key === cycleKey ? (cycleIdx + 1) % hits.length : 0
+    cycleKey = key
+
+    const f = hits[cycleIdx]
+    if (!f) return
+    const [lng, lat] = (f.geometry as unknown as { coordinates: [number, number] }).coordinates
+    selectedSign.value = {
+      properties: f.properties,
+      lngLat: new maplibregl.LngLat(lng, lat),
+      index: cycleIdx + 1,
+      total: hits.length
+    }
   })
 
   // Layer-scoped enter/leave only fire on transitions — far cheaper than

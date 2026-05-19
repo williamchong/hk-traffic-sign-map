@@ -47,6 +47,14 @@ const coords = computed(() => {
   const ll = sign.value?.lngLat
   return ll ? `${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : ''
 })
+
+// Shown when a click landed on several overlapping signs.
+const cycleHint = computed(() => {
+  const s = sign.value
+  return s?.total && s.total > 1
+    ? `${s.index} of ${s.total} here · click again to cycle`
+    : null
+})
 </script>
 
 <template>
@@ -74,6 +82,12 @@ const coords = computed(() => {
           </h2>
           <p class="mt-0.5 text-xs text-muted">
             {{ category?.label ?? 'Unknown' }}
+          </p>
+          <p
+            v-if="cycleHint"
+            class="mt-0.5 text-xs text-primary"
+          >
+            {{ cycleHint }}
           </p>
         </div>
       </div>

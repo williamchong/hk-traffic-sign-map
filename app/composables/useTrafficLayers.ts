@@ -12,6 +12,10 @@ const enabled = reactive<Record<string, boolean>>(
 export interface SelectedSign {
   properties: Record<string, unknown>
   lngLat: LngLat
+  // When a click hits several overlapping signs, which one of how many is
+  // shown (1-based). Repeated clicks on the same spot cycle through them.
+  index?: number
+  total?: number
 }
 const selectedSign = ref<SelectedSign | null>(null)
 
