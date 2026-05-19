@@ -1,0 +1,48 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Commands
+
+`pnpm` is broken in this environment — always use `corepack pnpm`.
+
+- `corepack pnpm dev` — dev server (http://localhost:3000)
+- `corepack pnpm lint` / `corepack pnpm typecheck` — must both pass before any commit
+- `corepack pnpm generate` — static build to `.output/public`; also used as the final pre-commit gate (it exercises the SSR/prerender path the dev server doesn't)
+- `corepack pnpm data:build` — fetch TD GML + (re)build `public/data/traffic-signs.pmtiles`
+- `corepack pnpm data:catalogue` — re-extract sign pictograms + `app/data/signCatalogue.json` from the Index Plan PDFs
+
+There is no test suite; verification is lint + typecheck + `generate`, plus a real-browser smoke test via the chrome-devtools MCP when map behaviour changes (the map only runs client-side with WebGL).
+
+Dev gotcha: after dependency/cache changes the Vite dep-optimizer can 504 ("Outdated Optimize Dep") and the map never mounts. Fix: kill dev, `rm -rf node_modules/.vite node_modules/.cache .nuxt/cache`, restart.
+
+## Two runtimes — do not cross-import
+
+`scripts/*.mjs` are Node build-time tools; `app/` ships to the browser. Shared constants (tile layer name, category/`SIGNID` conventions) are **intentionally duplicated** across the boundary rather than imported. `app/composables/useSignCategories.ts` keys must stay consistent with the category logic in `useSignCatalogue.ts`; `scripts/sign-layers.mjs` is the manifest the pipeline tags features with.
+
+## Data pipeline (build-time)
+
+1. `fetch-data.mjs` → raw GML into `data/raw/` (gitignored, resumable).
+2. `build-tiles.mjs` → `ogr2ogr` reprojects each layer **EPSG:2326 (HK1980 Grid) → EPSG:4326**, injects a `category` property per the `sign-layers.mjs` manifest, then `tippecanoe` packs everything into one `public/data/traffic-signs.pmtiles`. Source id and source-layer are both `signs`. tippecanoe maxzoom settles at 15 (MapLibre overzooms past it — fine for points).
+3. `build-sign-catalogue.mjs` (independent) rasterises the TD **Index Plan** PDFs, auto-detects the table grid, OCRs each cell's code, and writes `public/signs/<CODE>.png` + `app/data/signCatalogue.json` (`{ tier, group }`). Accuracy rules that must not be broken: code and pictogram come from the **same cell** (no cross-numbering join); a per-sheet numeric **range guard** drops OCR misreads (a missed sign degrades to a dot — a *mislabelled* sign must never ship); never equate Cap 374G legal figure numbers with TD `SIGNID` above the low regulatory range. Re-running it regenerates everything from source and does **not** preserve hand-added codes (e.g. TS588/TS589 are re-cropped manually after a full run). QA montage: `/tmp/sign-catalogue-qa.png` — eyeball before trusting new output.
+
+Key dataset fact: **`SIGNID` exists only on the `traffic-sign-abbreviation` class.** Pole classes (`DTAD_TS/PS/DS_POLE_PT`) have no `SIGNID` and no sign content — they are bare posts. Only abbreviation features can resolve to a pictogram; everything that maps to category key `none` (poles) is never rendered.
+
+## Runtime architecture (the part that needs multiple files)
+
+- `useSignCatalogue.ts` is the hub: loads `signCatalogue.json`, derives `codesByTier`/`codesByGroup`, and exports **`categoryKeyExpr`** — one static MapLibre expression mapping any feature to its category key: a catalogued Index-Plan group (`regulatory|warning|informatory|supplementary|temporary`), else by tile `category` → `tourist`/`other-traffic`, else `none`. `TIER_LOD` defines per-tier `minzoom` and a **constant** `icon-size`.
+- `useSignCategories.ts` = legend/filter rows + colours, keyed by those category keys.
+- `useTrafficLayers.ts` = singleton state: `enabled` per category, `selectedSign`, and `mapFilter` = `['in', categoryKeyExpr, enabledKeys]` — the one filter every layer rides.
+- `TrafficMap.vue` builds the map: an always-on `sign-points` circle (coloured by `categoryColor` = `match` on `categoryKeyExpr`) as the baseline marker; per-tier `sign-tier-N` symbol layers (`minzoom` = tier minzoom, constant size, `icon-allow-overlap` switches true at z18); a `sel` GeoJSON highlight overlay (halo+dot+icon) moved to the top on every selection; click collects all signs in a 6px box, de-dupes, and cycles through them on repeat clicks.
+
+### Invariants that caused churn — keep them
+
+- `icon-size` is **constant per tier, never zoom-interpolated**. If it grows with zoom, zooming in enlarges icons and collision-hides already-visible signs (jarring). Constant size ⇒ zooming in only spreads points apart ⇒ rendered-sign count is monotonic.
+- The always-on dot is the fallback so a sign is **never invisible** (below minzoom, or icon dropped by collision). This was tried both ways; the always-on dot won because the alternative left a confusing zoom band with neither dot nor sign.
+- All instances of a `SIGNID` are in exactly one tier ⇒ one appearance zoom. Collision-hiding a *duplicate* of an already-shown sign is acceptable.
+
+## Deployment
+
+Static (`corepack pnpm generate` → `.output/public`). **The host MUST serve HTTP `Range` (`206 Partial Content`)** — PMTiles reads the ~18 MB archive in byte-range slices. GitHub Pages, Cloudflare Pages, Netlify, S3+CloudFront, nginx all do. `nuxt preview` does **not** (returns the whole file with `200`) — local checks only.
+
+Commit style: gitmoji, phase-tagged (see `git log`).

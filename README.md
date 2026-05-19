@@ -40,13 +40,19 @@ pnpm data:build
 Source data is updated monthly; rerun to refresh. Raw downloads are cached in
 `data/raw/` (gitignored).
 
+Signs are grouped into their Index-Plan classes — Regulatory, Warning,
+Informatory, Supplementary, Temporary, plus Tourist and (uncatalogued) Other
+— each independently toggleable and colour-coded in the legend. Bare sign
+poles (no `SIGNID`, no sign content) are not rendered.
+
 ### Sign pictograms
 
-Above zoom ~13 catalogued signs render as their real pictogram instead of a
-coloured dot, with per-complexity level-of-detail (simple iconic signs appear
-earlier and smaller; complex/text signs later and larger). The pictograms and
-`app/data/signCatalogue.json` are committed, so this step is only needed to
-extend coverage:
+From each sign-class's zoom threshold, catalogued signs render as their real
+pictogram instead of a coloured dot, sized by a complexity tier (simple iconic
+signs appear earlier and smaller; complex/text signs later and larger; size is
+constant within a tier so zooming in never collision-hides a visible sign).
+The pictograms and `app/data/signCatalogue.json` are committed, so this step
+is only needed to extend or refresh coverage:
 
 ```bash
 pnpm data:catalogue
@@ -59,11 +65,14 @@ never equate the Cap 374G legal figure numbers with the TD `SIGNID` space
 (they diverge above the low regulatory range). A QA contact sheet is written to
 `/tmp/sign-catalogue-qa.png` — eyeball it before trusting new output.
 
-**Adding more sign sheets:** drop the PDF path and its title's numeric range
-into the `SHEETS` array in `scripts/build-sign-catalogue.mjs`. The range guard
-discards any OCR misread outside that span (a missed sign degrades to a dot; a
-mislabelled sign must never ship). Currently seeded: the regulatory
-`TS 101–205` sheet.
+All 16 `TS` Index Plan sheets are seeded (~279 codes). The regular
+regulatory/2100-series sheets extract cleanly; the dense warning/informatory
+sheets are heterogeneous so the grid auto-detector only catches part of them —
+uncaught codes simply stay dots (no regression). **Adding/adjusting sheets:**
+edit the `SHEETS` array in `scripts/build-sign-catalogue.mjs` (PDF, prefix,
+numeric `range`, drawing-title `group`). The range guard discards any OCR
+misread outside that span (a missed sign degrades to a dot; a mislabelled sign
+must never ship).
 
 ## Development
 
@@ -84,8 +93,8 @@ pnpm generate     # static output in .output/public
 
 **The host must support HTTP `Range` requests (`206 Partial Content`).**
 PMTiles reads the 18 MB archive in small byte-range slices — that is what
-keeps the map fast. Cloudflare Pages, Netlify, S3+CloudFront and nginx all
-do this by default. The Nuxt Node preview server does **not** (it returns
+keeps the map fast. GitHub Pages, Cloudflare Pages, Netlify, S3+CloudFront
+and nginx all do this by default. The Nuxt Node preview server does **not** (it returns
 the whole file with `200`), so use it for local checks only, not as a
 production host.
 
