@@ -25,13 +25,28 @@ const QA_MONTAGE = '/tmp/sign-catalogue-qa.png'
 const DPI = 400
 
 // Sheets to extract. SIGNID in the dataset is `TS` + the No.-column value, so
-// `prefix` is prepended to each cropped code. Start with the regulatory sheet;
-// append the other 17 PDFs here once spot-checked (the grid auto-detects).
+// `prefix` is prepended to each cropped code. The grid auto-detects, so adding
+// a sheet is just appending its PDF + title range here.
 // `range` is the inclusive numeric span the sheet covers (from its title). Any
 // OCR result outside it is treated as a misread and dropped — a missed sign
 // degrades to a dot, which is acceptable; a MISLABELLED sign is not.
 const SHEETS = [
-  { pdf: '(TS 101 - 205).pdf', prefix: 'TS', range: [101, 205] }
+  { pdf: '(TS 101 - 205).pdf', prefix: 'TS', range: [101, 205] },
+  { pdf: '(TS 206 - 310).pdf', prefix: 'TS', range: [206, 310] },
+  { pdf: '(TS 311 - 400).pdf', prefix: 'TS', range: [311, 400] },
+  { pdf: '(TS 401 - 505).pdf', prefix: 'TS', range: [401, 505] },
+  { pdf: '(TS 506 - 600).pdf', prefix: 'TS', range: [506, 600] },
+  { pdf: '(TS 601 - 700).pdf', prefix: 'TS', range: [601, 700] },
+  { pdf: '(TS 701 - 805).pdf', prefix: 'TS', range: [701, 805] },
+  { pdf: '(TS 806 - 900).pdf', prefix: 'TS', range: [806, 900] },
+  { pdf: '(TS 901 - 1000).pdf', prefix: 'TS', range: [901, 1000] },
+  { pdf: '(TS 2101 - 2205).pdf', prefix: 'TS', range: [2101, 2205] },
+  { pdf: '(TS 2206 - 2310).pdf', prefix: 'TS', range: [2206, 2310] },
+  { pdf: '(TS 2601 - 2717).pdf', prefix: 'TS', range: [2601, 2717] },
+  { pdf: '(TS 3601 - 3705).pdf', prefix: 'TS', range: [3601, 3705] },
+  { pdf: '(TS 3706 - 3810).pdf', prefix: 'TS', range: [3706, 3810] },
+  { pdf: '(TS 3811 - 3936).pdf', prefix: 'TS', range: [3811, 3936] },
+  { pdf: '(TS 3937 - 4062).pdf', prefix: 'TS', range: [3937, 4062] }
 ]
 
 function requireTool(cmd, hint) {
