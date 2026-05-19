@@ -1,6 +1,9 @@
 name: ci
 
-on: push
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
 
 jobs:
   ci:
@@ -32,3 +35,6 @@ jobs:
 
       - name: Typecheck
         run: pnpm run typecheck
+
+      - name: Build (static generate)
+        run: pnpm run generate
