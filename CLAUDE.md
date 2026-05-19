@@ -30,16 +30,18 @@ Key dataset fact: **`SIGNID` exists only on the `traffic-sign-abbreviation` clas
 
 ## Runtime architecture (the part that needs multiple files)
 
-- `useSignCatalogue.ts` is the hub: loads `signCatalogue.json`, derives `codesByTier`/`codesByGroup`, and exports **`categoryKeyExpr`** — one static MapLibre expression mapping any feature to its category key: a catalogued Index-Plan group (`regulatory|warning|informatory|supplementary|temporary`), else by tile `category` → `tourist`/`other-traffic`, else `none`. `TIER_LOD` defines per-tier `minzoom` and a **constant** `icon-size`.
+- `useSignCatalogue.ts` is the hub: loads `signCatalogue.json`, derives `codesByTier`/`codesByGroup`, and exports **`categoryKeyExpr`** — one static MapLibre expression mapping any feature to its category key: a catalogued Index-Plan group (`regulatory|warning|informatory|supplementary|temporary`), else by tile `category` → `tourist`/`other-traffic`, else `none`. `TIER_LOD` defines per-tier `minzoom` and the top-of-ramp `icon-size`; `SIGN_FIRST_SIZE` is the shared normalised height every tier shows at its reveal zoom.
 - `useSignCategories.ts` = legend/filter rows + colours, keyed by those category keys.
 - `useTrafficLayers.ts` = singleton state: `enabled` per category, `selectedSign`, and `mapFilter` = `['in', categoryKeyExpr, enabledKeys]` — the one filter every layer rides.
-- `TrafficMap.vue` builds the map: an always-on `sign-points` circle (coloured by `categoryColor` = `match` on `categoryKeyExpr`) as the baseline marker; per-tier `sign-tier-N` symbol layers (`minzoom` = tier minzoom, constant size, `icon-allow-overlap` switches true at z18); a `sel` GeoJSON highlight overlay (halo+dot+icon) moved to the top on every selection; click collects all signs in a 6px box, de-dupes, and cycles through them on repeat clicks.
+- `TrafficMap.vue` builds the map: an always-on `sign-points` circle (coloured by `categoryColor` = `match` on `categoryKeyExpr`) as the baseline marker; per-tier `sign-tier-N` symbol layers (`minzoom` = tier minzoom, `icon-size` ramps from shared `SIGN_FIRST_SIZE` up to the tier size, collision fully disabled); a `sel` GeoJSON highlight overlay (halo+dot+icon) moved to the top on every selection; click collects all signs in a 6px box, de-dupes, and cycles through them on repeat clicks.
 
 ### Invariants that caused churn — keep them
 
-- `icon-size` is **constant per tier, never zoom-interpolated**. If it grows with zoom, zooming in enlarges icons and collision-hides already-visible signs (jarring). Constant size ⇒ zooming in only spreads points apart ⇒ rendered-sign count is monotonic.
-- The always-on dot is the fallback so a sign is **never invisible** (below minzoom, or icon dropped by collision). This was tried both ways; the always-on dot won because the alternative left a confusing zoom band with neither dot nor sign.
-- All instances of a `SIGNID` are in exactly one tier ⇒ one appearance zoom. Collision-hiding a *duplicate* of an already-shown sign is acceptable.
+- **Collision is disabled** (`icon-allow-overlap`/`icon-ignore-placement` always `true`) because orientation is conveyed by sign rotation, so a sign must never be dropped or nudged by a neighbour. The old "constant `icon-size`, never zoom-interpolated" rule existed *only* to stop growing icons from collision-hiding already-shown signs — with collision off that coupling is gone, so it was deliberately retired. Do not reinstate per-zoom collision.
+- `icon-opacity` is **zoom-faded** (0.55 at z13 → 0.9 at z17, held at 0.9 — never fully opaque) on the tier layers. With collision off, signs pile up zoomed out and can still overlap at max zoom; the hard fade lets the stack show through while crowded, and the permanent 0.9 ceiling keeps residual high-zoom overlaps legible-through. Per-*sign* "is it overlapped" opacity is **not expressible in MapLibre** (collision can only hide, not report) — don't attempt it; this fade-by-zoom plus the constant ceiling is the deliberate substitute.
+- `icon-size` now ramps per tier: every tier starts at the **shared** `SIGN_FIRST_SIZE` at its reveal `minzoom` (normalised on-screen height — pictograms are all 120px tall) and interpolates up to the tier's `size` at `MAX_ZOOM`. Keep the *first-display* size shared across tiers (visual consistency); only the top-of-ramp size is tier-specific (legibility for complex signs).
+- The always-on dot is the fallback so a sign is **never invisible** below its tier's minzoom. This was tried both ways; the always-on dot won because the alternative left a confusing zoom band with neither dot nor sign.
+- All instances of a `SIGNID` are in exactly one tier ⇒ one appearance zoom.
 
 ## Deployment
 

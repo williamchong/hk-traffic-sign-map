@@ -2,7 +2,7 @@
 import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
-import { TIER_LOD, codesByTier, categoryKeyExpr } from '~/composables/useSignCatalogue'
+import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr } from '~/composables/useSignCatalogue'
 
 // maplibre-gl touches `window` at import time and is large; it's
 // dynamically imported inside onMounted so it never enters the SSR pass
@@ -19,6 +19,9 @@ const SOURCE_LAYER = 'signs' // tippecanoe layer name (see scripts/sign-layers.m
 const HK_CENTER: [number, number] = [114.155, 22.34]
 // Lock the viewport to HK — also caps the basemap/tile working set.
 const HK_BOUNDS: [[number, number], [number, number]] = [[113.80, 22.13], [114.45, 22.58]]
+// Map max zoom; also the upper anchor of the per-tier icon-size ramp so the
+// "proper" sign height is reached exactly at full zoom-in.
+const MAX_ZOOM = 19
 
 const OSM_ATTRIB = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
@@ -47,9 +50,9 @@ const tierClause = TIER_LOD.map(
 const tierFilter = (t: number, base: ExpressionSpecification) =>
   expr(['all', base, tierClause[t]])
 // One dot under every sign at all zooms; the pictogram is drawn on top once
-// its tier's minzoom is reached. The icon covers the small centred dot when
-// it's actually placed, so the dot only shows through when the sign isn't
-// rendered yet (below minzoom) or was dropped by icon collision.
+// its tier's minzoom is reached. The icon covers the small centred dot, so
+// the dot only shows through below the tier's minzoom (collision is disabled,
+// so a sign is never dropped once its tier is in range).
 const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 
 // Set on teardown so the async pictogram loader doesn't addLayer on a removed map.
@@ -74,7 +77,7 @@ onMounted(async () => {
     center: HK_CENTER,
     zoom: 11,
     minZoom: 9,
-    maxZoom: 19,
+    maxZoom: MAX_ZOOM,
     maxBounds: HK_BOUNDS,
     attributionControl: { compact: true },
     style: {
@@ -131,9 +134,9 @@ onMounted(async () => {
     }
 
     // One dot under every visible sign at all zooms — the baseline marker.
-    // Pictogram layers draw on top from their tier's minzoom; a placed icon
-    // covers the small centred dot, so the dot only shows where the sign
-    // isn't rendered (below minzoom, or dropped by icon collision).
+    // Pictogram layers draw on top from their tier's minzoom; the icon covers
+    // the small centred dot, so the dot only shows where the sign isn't
+    // rendered yet (below its tier's minzoom).
     m.addLayer({
       'id': 'sign-points',
       'type': 'circle',
@@ -205,19 +208,35 @@ onMounted(async () => {
             'filter': tierFilter(t, expr(mapFilter.value)),
             'layout': {
               'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
-              // Constant size (see TIER_LOD): zooming in must not enlarge
-              // icons, or it would collide already-shown signs out of view.
-              'icon-size': lod.size,
-              // No artificial gap between signs, so collision only drops a
-              // sign when it truly overlaps another.
-              'icon-padding': 1,
-              // Collide (clean) until you're zoomed in far enough that
-              // overlap is rare and legible, then show every sign.
-              'icon-allow-overlap': expr(['step', ['zoom'], false, 18, true]),
-              'icon-ignore-placement': expr(['step', ['zoom'], false, 18, true]),
-              // Lower tier = higher placement priority in a collision, so the
-              // simple regulatory signs win over decorative ones.
+              // Normalised first-display height (SIGN_FIRST_SIZE, shared by
+              // every tier) at the tier's reveal zoom, ramping up to the
+              // tier's "proper" size by max zoom. Safe to grow now that
+              // collision is off — it can't push already-shown signs away,
+              // and zooming in frees the space to render detail bigger.
+              'icon-size': expr([
+                'interpolate', ['linear'], ['zoom'],
+                lod.minzoom, SIGN_FIRST_SIZE,
+                MAX_ZOOM, lod.size
+              ]),
+              // Collision disabled outright: orientation is conveyed by sign
+              // rotation, so every sign must stay exactly where it is and
+              // never be dropped or nudged by a neighbour.
+              'icon-allow-overlap': true,
+              'icon-ignore-placement': true,
+              // Lower tier draws on top, so simple regulatory signs sit above
+              // decorative ones where pictograms overlap.
               'symbol-sort-key': t
+            },
+            'paint': {
+              // Collision is off, so signs pile up when zoomed out — and can
+              // still overlap even at max zoom. Fade hard while crowded (0.55
+              // at z13) so the stack shows through, easing to a 0.9 ceiling
+              // (never fully opaque): MapLibre can't tell which signs overlap,
+              // so the slight residual transparency keeps any leftover
+              // overlap at high zoom legible-through without hurting reading.
+              'icon-opacity': expr([
+                'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
+              ])
             }
           })
         })

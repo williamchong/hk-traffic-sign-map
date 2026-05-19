@@ -19,19 +19,21 @@ const catalogue = catalogueJson as Record<string, SignCatalogueEntry>
 // and no pictogram → 'none', which no filter enables, so they never render.
 export type CategoryKey = SignGroup | 'other-traffic' | 'tourist' | 'none'
 
-// Per-tier LOD. `minzoom` is when the pictogram replaces the cheap dot;
-// `size` is a CONSTANT icon-size (not zoom-interpolated) on purpose: if it
-// grew with zoom, zooming in would enlarge every icon and push already-shown
-// signs out by collision. Holding it constant means zooming in only spreads
-// points apart, so collisions monotonically decrease and a visible sign never
-// disappears as you zoom in. Every pictogram is 120px tall, so one constant
-// renders every sign at the same on-screen height; tiers set that height —
-// simple signs appear earlier and smaller, complex/detailed ones later and
-// bigger so their detail stays legible.
+// Every pictogram is authored 120px tall, so on-screen height is purely
+// `icon-size`. At the moment a tier's pictogram first replaces the cheap dot
+// (its `minzoom`) every sign is rendered at the SAME shared height —
+// `SIGN_FIRST_SIZE` — for visual consistency across tiers. From there the
+// icon ramps up to the tier's `size` (its "proper", legible height) by max
+// zoom: collision is disabled, so growing icons can no longer push
+// already-shown signs out of view, and zooming in spreads points apart,
+// freeing the space to draw each sign bigger. Tiers still differ at the top
+// of the ramp — simple signs appear earlier and stay compact, complex ones
+// appear later and grow larger so their detail stays readable.
+export const SIGN_FIRST_SIZE = 0.16
 export const TIER_LOD = [
-  { minzoom: 13, size: 0.22 },
-  { minzoom: 14.5, size: 0.30 },
-  { minzoom: 16, size: 0.44 }
+  { minzoom: 13, size: 0.30 },
+  { minzoom: 14.5, size: 0.40 },
+  { minzoom: 16, size: 0.55 }
 ] as const
 
 // Codes grouped by tier — used to filter one symbol layer per tier so each
