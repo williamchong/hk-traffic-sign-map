@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import maplibregl from 'maplibre-gl'
-import { Protocol } from 'pmtiles'
+import type { Map as MaplibreMap, ExpressionSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
+
+// maplibre-gl touches `window` at import time and is large; it's
+// dynamically imported inside onMounted so it never enters the SSR pass
+// and is code-split out of the initial bundle.
+let detachProtocol: (() => void) | undefined
 
 const { mapFilter, selectedSign } = useTrafficLayers()
 const colorMode = useColorMode()
@@ -18,7 +22,7 @@ const HK_BOUNDS: [[number, number], [number, number]] = [[113.80, 22.13], [114.4
 const OSM_ATTRIB = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
 const container = ref<HTMLDivElement>()
-const map = shallowRef<maplibregl.Map>()
+const map = shallowRef<MaplibreMap>()
 
 // Colour each feature by its `category` (falls back to grey if unmapped).
 // Spreading a string[] into the expression defeats maplibre's tuple typing,
@@ -27,15 +31,24 @@ const categoryColor = [
   'match', ['get', 'category'],
   ...categoryColorStops,
   '#94a3b8'
-] as unknown as maplibregl.ExpressionSpecification
+] as unknown as ExpressionSpecification
 
-onMounted(() => {
+onMounted(async () => {
+  const [{ default: maplibregl }, { Protocol }] = await Promise.all([
+    import('maplibre-gl'),
+    import('pmtiles')
+  ])
+  // Guard: with <ClientOnly> the container is in the DOM by onMounted, but
+  // the dynamic import is async so re-check before constructing.
+  if (!container.value) return
+
   // pmtiles serves vector tiles out of one static file via HTTP range
   // requests — registered once as a custom maplibre protocol.
   maplibregl.addProtocol('pmtiles', new Protocol().tile)
+  detachProtocol = () => maplibregl.removeProtocol('pmtiles')
 
   const m = new maplibregl.Map({
-    container: container.value!,
+    container: container.value,
     center: HK_CENTER,
     zoom: 11,
     minZoom: 9,
@@ -131,7 +144,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   map.value?.remove()
-  maplibregl.removeProtocol('pmtiles')
+  detachProtocol?.()
 })
 
 defineExpose({ map })
