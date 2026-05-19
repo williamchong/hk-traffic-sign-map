@@ -11,13 +11,16 @@ export interface SignCatalogueEntry {
 const catalogue = catalogueJson as Record<string, SignCatalogueEntry>
 
 // Per-tier LOD. `minzoom` is when the pictogram replaces the cheap dot;
-// `size` are [zoom, icon-size] stops (source plates are 128px, so a size of
-// ~0.19 ≈ 24px on screen). Complex signs come in later and bigger so they're
-// readable; simple ones come in earlier and smaller because they aren't.
+// `size` are [zoom, icon-size] stops. Every pictogram is rasterised to the
+// same 120px height, so a given icon-size renders every sign at the same
+// on-screen height regardless of its shape (a wide plate just gets wider).
+// Tier sets that common height: simple signs come in earlier and a touch
+// smaller; complex/detailed signs come in later and noticeably bigger so
+// their detail stays legible.
 export const TIER_LOD = [
-  { minzoom: 13, size: [13, 0.14, 16, 0.24, 19, 0.36] },
-  { minzoom: 14.5, size: [14.5, 0.18, 17, 0.30, 19, 0.42] },
-  { minzoom: 16, size: [16, 0.26, 19, 0.58] }
+  { minzoom: 13, size: [13, 0.20, 16, 0.24, 19, 0.30] },
+  { minzoom: 14.5, size: [14.5, 0.26, 17, 0.32, 19, 0.38] },
+  { minzoom: 16, size: [16, 0.38, 19, 0.54] }
 ] as const
 
 // Codes grouped by tier — used to filter one symbol layer per tier so each

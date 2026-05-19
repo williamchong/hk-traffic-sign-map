@@ -39,6 +39,7 @@ const categoryColor = [
 const expr = (e: unknown) => e as ExpressionSpecification
 
 const tierLayerId = (t: number) => `sign-tier-${t}`
+const tierDotId = (t: number) => `sign-dot-${t}`
 // The SIGNID set per tier is static, so precompute that clause once and only
 // swap the (changing) category `base` in the watcher.
 const tierClause = TIER_LOD.map(
@@ -46,7 +47,16 @@ const tierClause = TIER_LOD.map(
 )
 const tierFilter = (t: number, base: ExpressionSpecification) =>
   expr(['all', base, tierClause[t]])
-const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
+// Features whose SIGNID has no pictogram keep the always-on dot; catalogued
+// ones get a per-tier dot that ends exactly where the pictogram begins.
+const notCatalogued = ['!', ['in', ['get', 'SIGNID'], ['literal', codesByTier.flat()]]]
+const uncataloguedFilter = (base: ExpressionSpecification) =>
+  expr(['all', base, notCatalogued])
+const signLayerIds = [
+  'sign-points',
+  ...TIER_LOD.map((_, t) => tierDotId(t)),
+  ...TIER_LOD.map((_, t) => tierLayerId(t))
+]
 
 // Set on teardown so the async pictogram loader doesn't addLayer on a removed map.
 let disposed = false
@@ -117,24 +127,42 @@ onMounted(async () => {
       attribution: 'Traffic sign data © Transport Department, HKSAR'
     })
 
+    const circlePaint = {
+      // Smaller dots when zoomed out keep dense areas readable.
+      'circle-radius': expr(['interpolate', ['linear'], ['zoom'], 11, 2.5, 16, 6, 19, 9]),
+      'circle-color': categoryColor,
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': expr(['interpolate', ['linear'], ['zoom'], 11, 0.3, 16, 1]),
+      'circle-opacity': 0.9
+    }
+
+    // Uncatalogued signs (and pole features with no SIGNID): always a dot.
     m.addLayer({
       'id': 'sign-points',
       'type': 'circle',
       'source': TILE_SOURCE,
       'source-layer': SOURCE_LAYER,
-      'paint': {
-        // Smaller dots when zoomed out keep dense areas readable.
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 16, 6, 19, 9],
-        'circle-color': categoryColor,
-        'circle-stroke-color': '#ffffff',
-        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 11, 0.3, 16, 1],
-        'circle-opacity': 0.9
-      }
+      'filter': uncataloguedFilter(expr(mapFilter.value)),
+      'paint': { ...circlePaint }
     })
 
-    // LOD: above each tier's minzoom the cheap dot is replaced by the real
-    // pictogram, drawn later/larger the more complex the sign. Uncatalogued
-    // SIGNIDs (and the pole categories with no SIGNID) stay dots.
+    // Catalogued signs: a dot only *below* their tier's pictogram minzoom, so
+    // the dot vanishes exactly when the real sign appears (no double-draw).
+    TIER_LOD.forEach((lod, t) => {
+      if (!codesByTier[t]?.length) return
+      m.addLayer({
+        'id': tierDotId(t),
+        'type': 'circle',
+        'source': TILE_SOURCE,
+        'source-layer': SOURCE_LAYER,
+        'maxzoom': lod.minzoom,
+        'filter': expr(['all', mapFilter.value, tierClause[t]]),
+        'paint': { ...circlePaint }
+      })
+    })
+
+    // LOD: at each tier's minzoom the pictogram replaces the dot, drawn
+    // later/larger the more complex the sign.
     void (async () => {
       try {
         await Promise.all(codesByTier.flat().map(async (code) => {
@@ -175,10 +203,12 @@ onMounted(async () => {
     // across 316k features (no DOM, no data refetch). The pictogram tiers
     // ride the same filter, scoped to their own code set.
     watch(mapFilter, (f) => {
-      m.setFilter('sign-points', f)
+      m.setFilter('sign-points', uncataloguedFilter(expr(f)))
       TIER_LOD.forEach((_, t) => {
-        const id = tierLayerId(t)
-        if (m.getLayer(id)) m.setFilter(id, tierFilter(t, expr(f)))
+        const dot = tierDotId(t)
+        if (m.getLayer(dot)) m.setFilter(dot, expr(['all', f, tierClause[t]]))
+        const ico = tierLayerId(t)
+        if (m.getLayer(ico)) m.setFilter(ico, tierFilter(t, expr(f)))
       })
     }, { immediate: true })
 
