@@ -168,9 +168,17 @@ onMounted(async () => {
             'filter': tierFilter(t, expr(mapFilter.value)),
             'layout': {
               'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
+              // Shrink toward the bottom of the tier's size band when zoomed
+              // out (more signs fit before colliding) and grow as you zoom in
+              // (room opens up) — "resize within a boundary" instead of drop.
               'icon-size': expr(['interpolate', ['linear'], ['zoom'], ...lod.size]),
-              'icon-allow-overlap': false,
-              'icon-padding': 2,
+              // No artificial gap between signs, so collision only drops a
+              // sign when it truly overlaps another.
+              'icon-padding': 1,
+              // Collide (clean) until you're zoomed in far enough that
+              // overlap is rare and legible, then show every sign.
+              'icon-allow-overlap': expr(['step', ['zoom'], false, 18, true]),
+              'icon-ignore-placement': expr(['step', ['zoom'], false, 18, true]),
               // Lower tier = higher placement priority in a collision, so the
               // simple regulatory signs win over decorative ones.
               'symbol-sort-key': t
