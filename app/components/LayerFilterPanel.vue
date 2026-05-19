@@ -22,7 +22,16 @@ const expanded = ref(true)
           Transport Department open data
         </p>
       </div>
-      <ThemeCycleButton />
+      <div class="flex items-center gap-0.5">
+        <!-- Client-only + Lazy: the modal's Dialog/Tabs runtime stays out
+             of the prerendered homepage and its preloaded chunks. Safe —
+             the SEO/crawl path is the nav links below, not this button,
+             and the map itself is already client-only. -->
+        <ClientOnly>
+          <LazyInfoButton />
+        </ClientOnly>
+        <ThemeCycleButton />
+      </div>
     </div>
 
     <div class="flex items-center justify-between">
@@ -66,5 +75,22 @@ const expanded = ref(true)
         <span class="truncate">{{ c.label }}</span>
       </label>
     </div>
+
+    <!-- Always rendered (not folded) so these stay real <a> tags in the
+         prerendered index.html — the crawlable path to the SEO pages. -->
+    <nav class="flex gap-x-3 border-t border-default pt-2 text-xs text-muted">
+      <NuxtLink
+        to="/about"
+        class="hover:text-default"
+      >
+        About
+      </NuxtLink>
+      <NuxtLink
+        to="/faq"
+        class="hover:text-default"
+      >
+        FAQ &amp; guide
+      </NuxtLink>
+    </nav>
   </UCard>
 </template>
