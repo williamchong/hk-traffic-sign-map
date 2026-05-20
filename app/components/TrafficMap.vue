@@ -41,16 +41,16 @@ const categoryColor = [
 // runtime; this is the one documented place we widen through `unknown`.
 const expr = (e: unknown) => e as ExpressionSpecification
 
-// TD's ANGLE is the bearing (deg, clockwise from north) of the sign-face
-// normal. ~6% of features have no captured angle (null in GeoJSON) — fall
-// back to 0 so they render upright instead of breaking the expression.
-// Bundled with `map` alignment so the two can't drift apart at a call site:
-// rotate without map-alignment would glue icons to the viewport and defeat
-// the geo-orientation cue collision was disabled to preserve.
-const iconRotation = {
-  'icon-rotate': expr(['coalesce', ['get', 'ANGLE'], 0]),
-  'icon-rotation-alignment': 'map' as const
-}
+// TD's ANGLE was previously fed to icon-rotate on the assumption it was the
+// compass bearing of the sign-face normal. It isn't: the dataspec describes
+// it as the MicroStation symbol-cell rotation ("same as Ustn angle"), and
+// empirically same-code signs <30m apart share the same ANGLE in 59% of
+// pairs and differ by 180° in only 0.5% — TD draws both carriageways with a
+// single road-aligned symbol rotation, so opposite-bound signs always render
+// identically. Without inferring face direction from road centrelines at
+// build time we can't deliver the orientation cue the rotation was meant to
+// provide, so signs stay upright. ANGLE remains exposed in SignPopup as raw
+// data.
 
 const tierLayerId = (t: number) => `sign-tier-${t}`
 // The SIGNID set per tier is static, so precompute that clause once and only
@@ -224,7 +224,6 @@ onMounted(async () => {
         'icon-size': expr([
           'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
         ]),
-        ...iconRotation,
         'icon-allow-overlap': true,
         'icon-ignore-placement': true
       }
@@ -273,10 +272,10 @@ onMounted(async () => {
             lod.minzoom, SIGN_FIRST_SIZE,
             MAX_ZOOM, lod.size
           ]),
-          ...iconRotation,
-          // Collision disabled outright: orientation is conveyed by sign
-          // rotation, so every sign must stay exactly where it is and
-          // never be dropped or nudged by a neighbour.
+          // Collision disabled outright: every sign must stay exactly where
+          // it is and never be dropped or nudged by a neighbour. Each point
+          // is a real installed sign with a 1:1 ground meaning, so hiding it
+          // (even when icons overlap) breaks the map's contract.
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
           // Lower tier draws on top, so simple regulatory signs sit above
