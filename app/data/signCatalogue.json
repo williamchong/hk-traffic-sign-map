@@ -1057,7 +1057,7 @@
   "TS846": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": "SUNDAYS AND PUBLIC HOLIDAYS 8AM - 2PM"
   },
   "TS847": {
     "tier": 2,
@@ -1067,12 +1067,12 @@
   "TS848": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "USE DIPPED HEADLIGHTS"
+    "desc": "SATURDAYS NOON - 7PM SUNDAYS AND GENERAL HOLIDAYS AT NOON - 7PM"
   },
   "TS849": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7:30AM - 8:00PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": "7:30AM - 10PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
   },
   "TS858": {
     "tier": 2,
@@ -1082,7 +1082,7 @@
   "TS863": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "SATURDAYS 7AM - 7PM"
+    "desc": "6AM - 7:30AM"
   },
   "TS865": {
     "tier": 2,
@@ -1092,7 +1092,7 @@
   "TS868": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7:30AM - 10AM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": "7:30AM - 10:30AM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
   },
   "TS873": {
     "tier": 1,
@@ -1102,7 +1102,7 @@
   "TS874": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7PM - 8PM"
+    "desc": "7PM - 8AM"
   },
   "TS878": {
     "tier": 1,
@@ -1112,7 +1112,7 @@
   "TS879": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT BUSES AND PUBLIC LIGHT BUSES (SCHEDULED SERVICES)"
+    "desc": "EXCEPT BUSES AND PUBLIC LIGHT BUSES (SCHEDULED SERVICE)"
   },
   "TS887": {
     "tier": 2,
@@ -1967,7 +1967,7 @@
   "TS830": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE 9PM - MIDNIGHT EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": "EXCEPT SUNDAYS AND PUBLIC HOLIDAYS 5PM - MIDNIGHT"
   },
   "TS833": {
     "tier": 1,
@@ -3027,32 +3027,32 @@
   "TS828": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "MON - SAT 9AM - 7PM"
+    "desc": "USE DIPPED HEADLIGHTS"
   },
   "TS831": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "VEHICLE LENGTH OVER 7M"
+    "desc": "LENGTH OVER 7M"
   },
   "TS832": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "VEHICLE LENGTH OVER 8M"
+    "desc": "LENGTH OVER 8M"
   },
   "TS834": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "VEHICLE LENGTH OVER 10M"
+    "desc": "LENGTH OVER 10M"
   },
   "TS835": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "VEHICLE LENGTH OVER 11M"
+    "desc": "LENGTH OVER 11M"
   },
   "TS836": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "SLOW CYCLE TRACK"
+    "desc": "SLOW"
   },
   "TS838": {
     "tier": 1,
@@ -3111,7 +3111,7 @@
   "TS875": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": "7AM - 10AM 4PM - 7PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
   },
   "TS877": {
     "tier": 2,
@@ -3131,12 +3131,12 @@
   "TS888": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "MON - FRI 7AM - 8AM"
+    "desc": "8AM - MON - SAT 4PM - 7PM"
   },
   "TS889": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "8AM - SAT 4PM"
+    "desc": "8AM - 8PM MON - SAT"
   },
   "TS2141": {
     "tier": 2,
@@ -3575,7 +3575,7 @@
   "TS854": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE HOUSE PLATE SCHEDULED SERVICES"
+    "desc": "HOUSE PLATE"
   },
   "TS860": {
     "tier": 2,
