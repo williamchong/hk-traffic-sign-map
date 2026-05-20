@@ -101,7 +101,8 @@ export default defineNuxtConfig({
       googleAnalytics: {
         id: 'G-7PFV2DE82Q',
         bundle: false,
-        proxy: false
+        proxy: false,
+        trigger: 'onNuxtReady'
       }
     }
   }
