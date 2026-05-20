@@ -22,7 +22,7 @@
 // hand-curated bilingual overrides (TD Road Users' Code) that the RUNTIME
 // prefers over this — edited independently, no pipeline re-run needed.
 
-import { mkdir, rm, writeFile, readdir } from 'node:fs/promises'
+import { mkdir, rm, writeFile, readdir, readFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 
@@ -108,6 +108,35 @@ function runs(arr, thresh, min) {
     }
   }
   return out
+}
+
+// Indices of the longest strictly-increasing subsequence of `vals`, returned
+// as a Set for membership tests. Used to filter row-major OCR'd code numbers:
+// the true codes are monotonic in row-major order (codes increase down each
+// group then jump to the next group), so any outlier — a misread, a number
+// hallucinated from sign text — is off the LIS and can be dropped.
+function lisIndices(vals) {
+  const n = vals.length
+  if (!n) return new Set()
+  const tails = [], tIdx = [], prev = new Array(n).fill(-1)
+  for (let i = 0; i < n; i++) {
+    let lo = 0, hi = tails.length
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (tails[mid] < vals[i]) lo = mid + 1
+      else hi = mid
+    }
+    prev[i] = lo > 0 ? tIdx[lo - 1] : -1
+    tails[lo] = vals[i]
+    tIdx[lo] = i
+  }
+  const keep = new Set()
+  let k = tIdx[tails.length - 1]
+  while (k !== -1) {
+    keep.add(k)
+    k = prev[k]
+  }
+  return keep
 }
 
 // Cluster near-adjacent indices (within `merge`px) to their centres — turns a
@@ -287,103 +316,246 @@ async function extractSheet(sheet, catalogue) {
     return [gl + Math.round(groupPitch * 0.69), gl + Math.round(groupPitch * 0.98)]
   }
 
+  // Merged vertical rules for the No.-cell rule-snap fallback. The raw
+  // `vRules` list double-counts thick cell borders (two close rule lines
+  // ~15-25px apart); collapsing close rules into one logical line per ~30px
+  // gives the cell-divider positions we want to snap to.
+  const vrMerged = cluster(vRules, 30)
+  // No.-cell horizontal extent for `bx0`, snapped to the two logical rules
+  // immediately left of the symbol band: rR = No.|Symbol divider,
+  // rL = previous group's Description-end / this group's No-start (shared
+  // border). Returns null if the bracketing rules look implausible
+  // (narrower than 40px or wider than 60% of groupPitch) — better a dot
+  // than a misread from the wrong cell.
+  function noCellVR(bx0) {
+    const left = vrMerged.filter(x => x < bx0 - 4)
+    const rR = left.at(-1), rL = left.at(-2)
+    if (rR == null || rL == null) return null
+    const w = rR - rL
+    return (w < 40 || w > groupPitch * 0.6) ? null : [rL, rR]
+  }
+
+  // The No. cell read, threshold+trim, psm-7 single line. Returns
+  // [digits, suffix, num] validated by the regex + sheet range, or null
+  // (no/misread/out-of-range — all indistinguishable here and all correctly
+  // mean "no code").
+  const RNO = 45 // absolute px at the fixed 400-DPI render
+  function readNo(bx0, y, rh, cropW) {
+    const noBuf = magick([png,
+      '-crop', `${cropW}x${Math.round(rh * 0.46)}+${bx0 - noW - 8}+${y + 6}`,
+      '+repage', '-colorspace', 'Gray', '-threshold', '58%',
+      '-fuzz', '30%', '-trim', '+repage',
+      '-bordercolor', 'white', '-border', '18', '-resize', '220%', 'png:-'],
+    { binary: true })
+    const raw = ocrLine(noBuf, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+      .replace(/\s+/g, '').toUpperCase()
+    const mm = raw.match(/^(\d{2,4})([A-Z]?)$/)
+    if (!mm) return null
+    const n = Number(mm[1])
+    if (n < sheet.range[0] || n > sheet.range[1]) return null
+    return [mm[1], mm[2], n]
+  }
+  // vRule-snap read: snap horizontally to the detected No-cell rule pair,
+  // and read a CENTRED vertical band. Regulatory No. cells have the number
+  // top-aligned above a "TC nnn" reg-ref, but informatory cells hold ONLY
+  // the number, vertically centred — so the upper-46% crop slices it off.
+  // Try upper-46% first (matches regulatory), then the centred 66% band.
+  function readNoVR(bx0, y, rh) {
+    const c = noCellVR(bx0)
+    if (!c) return null
+    for (const vf of [0.46, 0.66]) {
+      const ch = Math.round(rh * vf)
+      const oy = y + Math.round(rh * (1 - vf) / 2)
+      const buf = magick([png,
+        '-crop', `${c[1] - c[0] - 10}x${ch}+${c[0] + 5}+${oy}`,
+        '+repage', '-colorspace', 'Gray', '-threshold', '58%',
+        '-fuzz', '30%', '-trim', '+repage',
+        '-bordercolor', 'white', '-border', '18', '-resize', '220%', 'png:-'],
+      { binary: true })
+      const raw = ocrLine(buf, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+        .replace(/\s+/g, '').toUpperCase()
+      const mm = raw.match(/^(\d{2,4})([A-Z]?)$/)
+      if (!mm) continue
+      const n = Number(mm[1])
+      if (n < sheet.range[0] || n > sheet.range[1]) continue
+      return [mm[1], mm[2], n]
+    }
+    return null
+  }
+  // Description cell, snapped to the grid rules (same row & group as the
+  // code/symbol — no cross-numbering). Cropped from the HD raster at the
+  // matching scale; grayscale+normalize (no hard threshold — it ate thin
+  // strokes), then a uniform-block OCR since cells wrap onto 2–3 lines.
+  function readDesc(bx0, y, rh) {
+    const [dc0, dc1] = descCell(bx0)
+    const descX0 = Math.max(0, dc0)
+    const descX1 = Math.min(W - 2, dc1)
+    if (descX1 - descX0 <= 30) return ''
+    const cw = (descX1 - descX0) * DESC_HD
+    const ch = (rh - 10) * DESC_HD
+    const cx = descX0 * DESC_HD
+    const cy = (y + 5) * DESC_HD
+    const descBuf = magick([pngHD,
+      '-crop', `${cw}x${ch}+${cx}+${cy}`,
+      '+repage', '-colorspace', 'Gray', '-normalize',
+      '-bordercolor', 'white', '-border', '18', 'png:-'],
+    { binary: true })
+    return cleanDescription(ocrBlock(descBuf,
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ()/&-.,'))
+  }
+
+  // Per-cell scratch shared between Pass 1 (primary, inline) and Pass 2
+  // (vRule fallback, sequence-guarded). Row-major: g outer, ri inner.
+  const cells = []
   let extracted = 0
-  for (const [bx0, bx1] of symBands) {
-    for (const [rowTop, rowBot] of rowBands) {
-      const y = rowTop
-      const rh = rowBot - rowTop
+
+  // PASS 1 — gather primary OCR results per cell (proxy noW + 45px right-cut
+  // fallback). Do NOT commit yet: the primary path can itself misread (e.g.
+  // a row's sign-text bleeds in and parses to an in-range but wrong number),
+  // and committing eagerly would (a) ship a mislabelled sign and (b) anchor
+  // pass 2's monotone guard to a wrong value, blocking valid recoveries on
+  // every subsequent row. The LIS filter below cleans this.
+  for (let g = 0; g < symBands.length; g++) {
+    const [bx0, bx1] = symBands[g]
+    for (let ri = 0; ri < rowBands.length; ri++) {
+      const [rowTop, rowBot] = rowBands[ri]
+      const y = rowTop, rh = rowBot - rowTop
       // Symbol cell, trimmed to ink. Tight horizontal padding (6px) so a
       // neighbouring column's grid line isn't captured as a side border.
-      const symRaw = `/tmp/sym.png`
       magick([png, '-crop', `${bx1 - bx0 + 12}x${rh - 8}+${bx0 - 6}+${y + 4}`,
-        '+repage', '-fuzz', '8%', '-trim', '+repage', symRaw])
-      const [sw, sh] = identify(symRaw)
-      if (!sw || sw < 24 || sh < 24) continue // blank / divider speck
-
-      // No. cell: the big code sits in the upper ~46% of the row (above the
-      // "(... )" reg-fig line). Trim to the glyphs and upscale so tesseract
-      // doesn't confuse 1↔4 / 9↔3 on the thin print.
-      //
-      // Read it as `cropW`-wide, threshold+trim, psm-7 single line. Returns
-      // the validated [digits, suffix] or null (no/misread/out-of-range — all
-      // indistinguishable here and all correctly mean "no code").
-      const readNo = (cropW) => {
-        const noBuf = magick([png,
-          '-crop', `${cropW}x${Math.round(rh * 0.46)}+${bx0 - noW - 8}+${y + 6}`,
-          '+repage', '-colorspace', 'Gray', '-threshold', '58%',
-          '-fuzz', '30%', '-trim', '+repage',
-          '-bordercolor', 'white', '-border', '18', '-resize', '220%', 'png:-'],
-        { binary: true })
-        const raw = ocrLine(noBuf, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-          .replace(/\s+/g, '').toUpperCase()
-        const mm = raw.match(/^(\d{2,4})([A-Z]?)$/)
-        if (!mm) return null
-        const n = Number(mm[1])
-        if (n < sheet.range[0] || n > sheet.range[1]) return null // misread
-        return [mm[1], mm[2]]
-      }
-      // Primary read = the full No. cell (unchanged historical behaviour).
-      // Fallback: rows holding a wide composite plate (NO STOPPING ZONE,
-      // PUBLIC LIGHT BUS, …) have a heavy plate border/corner hard against
-      // the No.|Symbol divider; at the 58% threshold it survives as a
-      // full-height bar that breaks tesseract's psm-7 read, so the cell OCR'd
-      // empty and the sign degraded to a bare dot for the MAJORITY of in-use
-      // signs. Re-reading with the right edge pulled `RNO` px off the symbol
-      // band drops that bar; the code digits sit well left of it. This is a
-      // FALLBACK (only when the full read failed), not a replacement, because
-      // a blind right-cut regresses sheets whose digits sit further right
-      // (verified by an all-16-sheet sweep) — keeping the full read primary
-      // guarantees zero regression while recovering the contaminated rows.
-      // `RNO` is an absolute px at the fixed 400-DPI render (the plate border
-      // is a sheet-independent CAD line, not a fraction of column pitch).
-      const RNO = 45
-      const m = readNo(noW) ?? (noW - RNO >= 24 ? readNo(noW - RNO) : null)
+        '+repage', '-fuzz', '8%', '-trim', '+repage', '/tmp/sym.png'])
+      const [sw, sh] = identify('/tmp/sym.png')
+      const entry = { g, ri, bx0, bx1, rt: rowTop, rb: rowBot, rh, sw, sh,
+        symEmpty: !sw || sw < 24 || sh < 24, primNum: null, primCode: null }
+      cells.push(entry)
+      if (entry.symEmpty) continue
+      const m = readNo(bx0, y, rh, noW)
+        ?? (noW - RNO >= 24 ? readNo(bx0, y, rh, noW - RNO) : null)
       if (!m) continue
-      const code = `${sheet.prefix}${m[0]}${m[1]}`
-      if (catalogue[code]) continue // first (left-most) occurrence wins
-
-      // Description cell, snapped to the grid rules (same row & group as the
-      // code/symbol — no cross-numbering). Cropped from the HD raster at the
-      // matching scale; grayscale+normalize (no hard threshold — it ate thin
-      // strokes), then a uniform-block OCR since cells wrap onto 2–3 lines.
-      const [dc0, dc1] = descCell(bx0)
-      const descX0 = Math.max(0, dc0)
-      const descX1 = Math.min(W - 2, dc1)
-      let desc = ''
-      if (descX1 - descX0 > 30) {
-        const cw = (descX1 - descX0) * DESC_HD
-        const ch = (rh - 10) * DESC_HD
-        const cx = descX0 * DESC_HD
-        const cy = (y + 5) * DESC_HD
-        const descBuf = magick([pngHD,
-          '-crop', `${cw}x${ch}+${cx}+${cy}`,
-          '+repage', '-colorspace', 'Gray', '-normalize',
-          '-bordercolor', 'white', '-border', '18', 'png:-'],
-        { binary: true })
-        desc = cleanDescription(ocrBlock(descBuf,
-          'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ()/&-.,'))
-      }
-
-      normalizeSign(symRaw, join(SIGNS_DIR, `${code}.png`))
-      catalogue[code] = { tier: classifyTier(sw, sh), group: sheet.group }
-      if (desc) catalogue[code].desc = desc
-      extracted++
+      entry.primNum = m[2]
+      entry.primCode = `${sheet.prefix}${m[0]}${m[1]}`
     }
   }
+
+  // LIS FILTER — primary reads should be strictly monotonic in row-major
+  // order (codes go down each group then jump up to the next). Any primary
+  // that breaks the backbone is an OCR misread; off-LIS entries are dropped
+  // here and re-tried by pass 2's vRule fallback. This also auto-removes
+  // pre-existing mislabels from `catalogue` in --sheet (merge) mode: if a
+  // prior run committed a misread code, the new LIS-filtered primary set
+  // doesn't include it, and we delete the stale catalogue entry + PNG so
+  // it doesn't keep shipping the wrong pictogram.
+  const primCells = cells.filter(c => c.primNum != null)
+  const lisSet = lisIndices(primCells.map(c => c.primNum))
+  const droppedCodes = []
+  primCells.forEach((c, j) => {
+    if (lisSet.has(j)) return
+    droppedCodes.push(c.primCode)
+    c.primNum = null
+    c.primCode = null
+  })
+  for (const code of droppedCodes) {
+    if (catalogue[code]) {
+      delete catalogue[code]
+      await rm(join(SIGNS_DIR, `${code}.png`)).catch(() => {})
+    }
+  }
+
+  // COMMIT PASS 1 — for every cell with an LIS-kept primary, run the symbol
+  // normalize + description OCR and add to catalogue. Identical work to the
+  // old inline path; just deferred until after the filter.
+  for (const c of cells) {
+    if (c.primNum == null || catalogue[c.primCode]) continue
+    magick([png, '-crop', `${c.bx1 - c.bx0 + 12}x${c.rh - 8}+${c.bx0 - 6}+${c.rt + 4}`,
+      '+repage', '-fuzz', '8%', '-trim', '+repage', '/tmp/sym.png'])
+    const desc = readDesc(c.bx0, c.rt, c.rh)
+    normalizeSign('/tmp/sym.png', join(SIGNS_DIR, `${c.primCode}.png`))
+    catalogue[c.primCode] = { tier: classifyTier(c.sw, c.sh), group: sheet.group }
+    if (desc) catalogue[c.primCode].desc = desc
+    extracted++
+  }
+
+  // PASS 2 — vRule-snap fallback for cells without a kept primary. Done as
+  // per-gap LIS over fallback CANDIDATES rather than greedy accept-as-you-go:
+  // a consistent-but-wrong fallback misread (a number that happens to fit the
+  // bounds) would otherwise permanently raise the lower bound and block all
+  // subsequent legitimate lower codes. Within each gap bounded by two LIS-
+  // kept primaries, we collect every candidate read, drop those outside the
+  // primary bounds, then keep only the longest monotone subset — so a single
+  // outlier can't poison the chain.
+  function commitFallback(c, code) {
+    if (catalogue[code]) return
+    magick([png, '-crop', `${c.bx1 - c.bx0 + 12}x${c.rh - 8}+${c.bx0 - 6}+${c.rt + 4}`,
+      '+repage', '-fuzz', '8%', '-trim', '+repage', '/tmp/sym.png'])
+    const desc = readDesc(c.bx0, c.rt, c.rh)
+    normalizeSign('/tmp/sym.png', join(SIGNS_DIR, `${code}.png`))
+    catalogue[code] = { tier: classifyTier(c.sw, c.sh), group: sheet.group }
+    if (desc) catalogue[code].desc = desc
+    extracted++
+  }
+  let gapLow = -Infinity
+  let gapCands = [] // { cell, num, code }
+  function flushGap(gapHigh) {
+    if (!gapCands.length) return
+    const fit = gapCands.filter(c => c.num > gapLow && c.num < gapHigh)
+    const keep = lisIndices(fit.map(c => c.num))
+    fit.forEach((c, j) => {
+      if (keep.has(j)) commitFallback(c.cell, c.code)
+    })
+    gapCands = []
+  }
+  for (const c of cells) {
+    if (c.primNum != null) {
+      flushGap(c.primNum)
+      gapLow = c.primNum
+      continue
+    }
+    if (c.symEmpty) continue
+    const m = readNoVR(c.bx0, c.rt, c.rh)
+    if (!m) continue
+    gapCands.push({ cell: c, num: m[2], code: `${sheet.prefix}${m[0]}${m[1]}` })
+  }
+  flushGap(Infinity)
   return extracted
 }
+
+// Optional dev sheet filter: `--sheet <pat>` processes ONLY sheets whose PDF
+// filename contains <pat>, merges into the existing signCatalogue.json (no
+// wipe), and overwrites PNGs only for codes from the matched sheets. The
+// canonical build runs unfiltered — full wipe + full regen across all 16
+// sheets — and stays the source of truth; this is purely for fast targeted
+// iteration on one sheet without re-OCRing the others.
+const sheetFilter = (() => {
+  const i = process.argv.indexOf('--sheet')
+  return i >= 0 ? process.argv[i + 1] : null
+})()
 
 requireTool('pdftoppm', 'brew install poppler')
 requireTool('magick', 'brew install imagemagick')
 requireTool('tesseract', 'brew install tesseract')
 
 await mkdir(SIGNS_DIR, { recursive: true })
-for (const f of await readdir(SIGNS_DIR).catch(() => [])) {
-  if (f.endsWith('.png')) await rm(join(SIGNS_DIR, f))
+const catalogue = {}
+if (sheetFilter) {
+  try {
+    Object.assign(catalogue, JSON.parse(await readFile(CATALOGUE_JSON, 'utf8')))
+    console.log(`--sheet "${sheetFilter}" → merging into existing ${Object.keys(catalogue).length} codes`)
+  } catch { /* no existing catalogue → start fresh */ }
+} else {
+  for (const f of await readdir(SIGNS_DIR).catch(() => [])) {
+    if (f.endsWith('.png')) await rm(join(SIGNS_DIR, f))
+  }
 }
 
-const catalogue = {}
-for (const sheet of SHEETS) {
+const sheetsToRun = sheetFilter
+  ? SHEETS.filter(s => s.pdf.includes(sheetFilter))
+  : SHEETS
+if (sheetFilter && !sheetsToRun.length) {
+  console.error(`No sheet matched "${sheetFilter}". Available:\n`
+    + SHEETS.map(s => '  ' + s.pdf).join('\n'))
+  process.exit(1)
+}
+for (const sheet of sheetsToRun) {
   process.stdout.write(`Extracting ${sheet.pdf} … `)
   const n = await extractSheet(sheet, catalogue)
   console.log(`${n} signs`)

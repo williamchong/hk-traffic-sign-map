@@ -863,11 +863,6 @@
     "group": "informatory",
     "desc": "5IN C A"
   },
-  "TS671": {
-    "tier": 0,
-    "group": "informatory",
-    "desc": "ICE BLOCK BB 7 B"
-  },
   "TS665": {
     "tier": 2,
     "group": "informatory",
@@ -1708,5 +1703,204 @@
     "tier": 2,
     "group": "informatory",
     "desc": "O BES"
+  },
+  "TS619": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS622": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "CONTROL POINT AHEAD REDUCE SPEED NOW"
+  },
+  "TS623": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "CROSS HARBOUR FERRY"
+  },
+  "TS624": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "CROSS HARBOUR FERRY"
+  },
+  "TS625": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "CROSS HARBOUR FERRY"
+  },
+  "TS628": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIRECTION TO PARKING PLACE"
+  },
+  "TS632": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIRECTION TO AIRPORT"
+  },
+  "TS633": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIRECTION TO AIRPORT"
+  },
+  "TS634": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIRECTION TO AIRPORT"
+  },
+  "TS637": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO FOOTBRIDGE"
+  },
+  "TS641": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+  },
+  "TS642": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+  },
+  "TS643": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO SUBWAY"
+  },
+  "TS644": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO SUBWAY"
+  },
+  "TS645": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO SUBWAY"
+  },
+  "TS646": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO SUBWAY"
+  },
+  "TS647": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO SUBWAY"
+  },
+  "TS648": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIRECTION TO SUBWAY"
+  },
+  "TS655": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "PEOPLE WITH DISABILITIES TO COLISEUM"
+  },
+  "TS656": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "PARKING PLACE FOR GOODS VEHICLES ONLY"
+  },
+  "TS657": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "PARKING PLACE FOR GOODS VEHICLES ONLY"
+  },
+  "TS669": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "ROUTE(1) CONF IRMAT ION"
+  },
+  "TS670": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "ROUTE(2) CONF IRMAT ION"
+  },
+  "TS673": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "PARKING PLACE FOR PEDAL CYCLE"
+  },
+  "TS675": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIRECTION TO POLICE"
+  },
+  "TS676": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "FERRY DIRECTION (S WT)"
+  },
+  "TS678": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "FERRY DIRECTION (S S W T)"
+  },
+  "TS679": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "FERRY DIRECTION (S S W T)"
+  },
+  "TS680": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "ROUTE(6) CONF IRMAT ION"
+  },
+  "TS681": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIVERSION ENDS"
+  },
+  "TS683": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIVERTED TRAFFIC"
+  },
+  "TS684": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIVERTED TRAFFIC"
+  },
+  "TS685": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIVERSION"
+  },
+  "TS686": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIVERSION"
+  },
+  "TS687": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": "DIVERSION"
+  },
+  "TS688": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "DIVERSION 100M"
+  },
+  "TS689": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "DIVERSION 200M"
+  },
+  "TS690": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "DIVERSTON 500M"
+  },
+  "TS693": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": "TUNNEL TOLL S6"
+  },
+  "TS695": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": "DIRECTION TO HOSPITAL"
   }
 }
