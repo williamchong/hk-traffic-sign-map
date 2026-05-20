@@ -11,10 +11,13 @@ export type SignGroup
 export interface SignCatalogueEntry {
   tier: 0 | 1 | 2
   group: SignGroup
-  // English meaning OCR'd from the Index Plan Description column. Best-effort
-  // (CAD lettering ⇒ ~85–90% clean), so it is only a fallback for codes the
-  // curated bilingual overrides below don't cover yet.
-  desc?: string
+  // Bilingual meaning extracted from the Index Plan Description column by the
+  // catalogue builder. Same `{en?, zh?}` shape as `signDescriptions.json`
+  // (which still wins at runtime when curated). Legacy entries from older
+  // builds may carry a bare string here — treated as `{en: <string>}` by
+  // `signDescription` below. The fields are independent: a sign can have
+  // English-only, Chinese-only, both, or neither.
+  desc?: string | { en?: string, zh?: string }
 }
 
 const catalogue = catalogueJson as Record<string, SignCatalogueEntry>
@@ -65,17 +68,24 @@ export function signIconUrl(signId: unknown): string | null {
     : null
 }
 
-// A sign's human meaning for the given UI locale: curated override first
-// (zh wording when the UI is Chinese), else its English text, else the
-// best-effort OCR text, else null. English is shown verbatim in the zh UI
-// when no zh override exists yet — source data beats an empty field.
+// A sign's human meaning for the given UI locale. Resolution order:
+//   curated zh (if zh UI) → catalogue zh (if zh UI) → curated en →
+//   catalogue en → null.
+// Curated overrides still win per-language so a hand-edited zh wording
+// never gets clobbered by a VLM-extracted one; the catalogue's bilingual
+// `desc` fills gaps the curated file hasn't reached. English shows verbatim
+// in the zh UI when neither source has zh — source beats an empty field.
 export function signDescription(
   signId: unknown,
   locale: 'en' | 'zh-HK'
 ): string | null {
   if (typeof signId !== 'string') return null
   const o = descOverrides[signId]
-  return (locale === 'zh-HK' && o?.zh) || o?.en || catalogue[signId]?.desc || null
+  const c = catalogue[signId]?.desc
+  const catEn = typeof c === 'string' ? c : c?.en
+  const catZh = typeof c === 'string' ? undefined : c?.zh
+  if (locale === 'zh-HK') return o?.zh || catZh || o?.en || catEn || null
+  return o?.en || catEn || null
 }
 
 export const SIGN_GROUPS: readonly SignGroup[]

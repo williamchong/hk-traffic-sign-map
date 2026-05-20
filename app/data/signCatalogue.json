@@ -2,357 +2,515 @@
   "TS101": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "STOP"
+    "desc": {
+      "en": "STOP",
+      "zh": "停"
+    }
   },
   "TS102": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "GIVE WAY"
+    "desc": {
+      "en": "GIVE WAY"
+    }
   },
   "TS103": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "STOP (MANUAL)"
+    "desc": {
+      "en": "STOP",
+      "zh": "停"
+    }
   },
   "TS104": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "GO (MANUAL)"
+    "desc": {
+      "en": "GO",
+      "zh": "走"
+    }
   },
   "TS106": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "AHEAD ONLY"
+    "desc": {
+      "en": "AHEAD ONLY"
+    }
   },
   "TS107": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "TURN LEFT"
+    "desc": {
+      "en": "TURN LEFT"
+    }
   },
   "TS108": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "TURN RIGHT"
+    "desc": {
+      "en": "TURN RIGHT"
+    }
   },
   "TS109": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "KEEP LEFT"
+    "desc": {
+      "en": "KEEP LEFT"
+    }
   },
   "TS110": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "KEEP RIGHT"
+    "desc": {
+      "en": "KEEP RIGHT"
+    }
   },
   "TS111": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "TURN LEFT AHEAD"
+    "desc": {
+      "en": "TURN LEFT AHEAD"
+    }
   },
   "TS112": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "TURN RIGHT AHEAD"
+    "desc": {
+      "en": "TURN RIGHT AHEAD"
+    }
   },
   "TS114": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PEDESTRIAN PRIORITY ZONE"
+    "desc": {
+      "en": "PEDESTRIAN PRIORITY ZONE"
+    }
   },
   "TS115": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO ENTRY"
+    "desc": {
+      "en": "NO ENTRY"
+    }
   },
   "TS116": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "ALL VEHICLES PROHIBITED BOTH DIRECTIONS"
+    "desc": {
+      "en": "ALL VEHICLES PROHIBITED BOTH DIRECTIONS"
+    }
   },
   "TS117": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "ALL MOTOR VEHICLES PROHIBITED"
+    "desc": {
+      "en": "ALL MOTOR VEHICLES PROHIBITED"
+    }
   },
   "TS118": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUSES PROHIBITED"
+    "desc": {
+      "en": "BUSES PROHIBITED"
+    }
   },
   "TS119": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUSES PROHIBITED"
+    "desc": {
+      "en": "PUBLIC LIGHT BUSES PROHIBITED"
+    }
   },
   "TS120": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "GOODS VEHICLES PROHIBITED"
+    "desc": {
+      "en": "GOODS VEHICLES PROHIBITED"
+    }
   },
   "TS121": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS122": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS123": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS124": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS125": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE",
+      "zh": "巴士"
+    }
   },
   "TS126": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FRANCHISED CONTRA-FLOW BUS LANE"
+    "desc": {
+      "en": "FRANCHISED CONTRA-FLOW BUS LANE"
+    }
   },
   "TS128": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "OFFSIDE LANE FOR BUSES"
+    "desc": {
+      "en": "OFFSIDE LANE FOR BUSES",
+      "zh": "Bus巴士"
+    }
   },
   "TS130": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "LEARNER DRIVERS PROHIBITED"
+    "desc": {
+      "en": "LEARNER DRIVERS PROHIBITED"
+    }
   },
   "TS132": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO RIGHT TURN"
+    "desc": {
+      "en": "NO RIGHT TURN"
+    }
   },
   "TS134": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO PEDESTRIANS"
+    "desc": {
+      "en": "NO PEDESTRIANS"
+    }
   },
   "TS136": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO PEDESTRIANS NO CYCLISTS"
+    "desc": {
+      "en": "NO PEDESTRIANS NO CYCLISTS"
+    }
   },
   "TS137": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO CYCLISTS"
+    "desc": {
+      "en": "NO CYCLISTS"
+    }
   },
   "TS138": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SILENT ZONE"
+    "desc": {
+      "en": "SILENT ZONE"
+    }
   },
   "TS139": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO OVERTAKING"
+    "desc": {
+      "en": "NO OVERTAKING"
+    }
   },
   "TS144": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WIDTH LIMIT 2.9M"
+    "desc": {
+      "en": "WIDTH LIMIT"
+    }
   },
   "TS143": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WIDTH LIMIT 2.7M"
+    "desc": {
+      "en": "WIDTH LIMIT"
+    }
   },
   "TS145": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 7.5M LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 7.5M LENGTH"
+    }
   },
   "TS146": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 8M LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 8M LENGTH"
+    }
   },
   "TS147": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 10M LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 10M LENGTH"
+    }
   },
   "TS148": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 11M LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 11M LENGTH"
+    }
   },
   "TS149": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 12M LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 12M LENGTH"
+    }
   },
   "TS150": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 7M LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 7M LENGTH"
+    }
   },
   "TS151": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 2M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS152": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 3M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS153": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 3.5M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS154": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS155": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.1M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS156": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.2M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS157": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.3M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS158": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.4M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS159": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.5M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS160": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 9M LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OF EXCEEDING 9M LENGTH"
+    }
   },
   "TS161": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 3 TONNES"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS162": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 4 TONNES"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS163": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 5.5 TONNES"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS164": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WIDTH LIMIT 2.7M"
+    "desc": {
+      "en": "WIDTH LIMIT"
+    }
   },
   "TS165": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WIDTH LIMIT 2.9M"
+    "desc": {
+      "en": "WIDTH LIMIT"
+    }
   },
   "TS166": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 24 TONNES"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS167": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.6M"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS168": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "AXLE WEIGHT LIMIT 2 TONNES"
+    "desc": {
+      "en": "WEIGHT LIMIT"
+    }
   },
   "TS169": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "AXLE WEIGHT LIMIT 4.5 TONNES"
+    "desc": {
+      "en": "AXLE WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS170": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "AXLE WEIGHT LIMIT 10 TONNES"
+    "desc": {
+      "en": "AXLE WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS173": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 30"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS174": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 50"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS175": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 70"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS176": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 80"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS177": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 100"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS178": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 23 TONNES"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS179": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS180": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "FOOTWAY AND CYCLEWAY"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS181": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "FOOTWAY AND CYCLEWAY"
+    "desc": {
+      "en": "FOOTWAY & CYCLEWAY"
+    }
   },
   "TS182": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "CYCLES ONLY"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS183": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "ONE WAY TRAFFIC"
+    "desc": {
+      "en": "WEIGHT LIMIT",
+      "zh": "公噸"
+    }
   },
   "TS184": {
     "tier": 0,
@@ -362,177 +520,268 @@
   "TS185": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 10 TONNES"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS186": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 15 TONNES"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS187": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "WEIGHT LIMIT 24 TONNES"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS188": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.6M"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS189": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "AXLE WEIGHT LIMIT 2 TONNES"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS190": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "AXLE WEIGHT LIMIT 4.5 TONNES"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS191": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "AXLE WEIGHT LIMIT 10 TONNES"
+    "desc": {
+      "en": "KEEP LEFT UNLESS OVERTAKING",
+      "zh": "靠左駛"
+    }
   },
   "TS192": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE (4)"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS193": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE (5)"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS194": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE (3)"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS195": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE (5)"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS196": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 70"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS197": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 80"
+    "desc": {
+      "en": "SPEED LIMIT"
+    }
   },
   "TS198": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE (4)"
+    "desc": {
+      "en": "NO STOPPING ZONE",
+      "zh": "終End止"
+    }
   },
   "TS200": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FOOTWAY AND CYCLEWAY"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE",
+      "zh": "上午七時至下午七時"
+    }
   },
   "TS201": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FOOTWAY AND CYCLEWAY"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE",
+      "zh": "上午七時至下午九時"
+    }
   },
   "TS202": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "CYCLES ONLY"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE",
+      "zh": "上午七時至下午十時"
+    }
   },
   "TS203": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "ONE WAY TRAFFIC"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE",
+      "zh": "上午七時至下午十一時"
+    }
   },
   "TS204": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE",
+      "zh": "上午七時至午夜十二時"
+    }
   },
   "TS205": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE (4)"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE",
+      "zh": "全日生效"
+    }
   },
   "TS208": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUS NO STOPPING ZONE (1)"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE (1)",
+      "zh": "公共小巴禁止停車區"
+    }
   },
   "TS209": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUS NO STOPPING ZONE (2)"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE (2)",
+      "zh": "公共小巴禁止停車區"
+    }
   },
   "TS210": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUS NO STOPPING ZONE (3)"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE (3)",
+      "zh": "公共小巴禁止停車區"
+    }
   },
   "TS211": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUS NO STOPPING ZONE (4)"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS NO STOPPING ZONE (4)",
+      "zh": "公共小巴禁止停車區"
+    }
   },
   "TS214": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "END OF PUBLIC LIGHT BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "END OF PUBLIC LIGHT BUS NO STOPPING ZONE",
+      "zh": "公共小巴禁止停車區終"
+    }
   },
   "TS220": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "ROAD CLOSED"
+    "desc": {
+      "en": "ROAD CLOSED",
+      "zh": "道路封閉"
+    }
   },
   "TS222": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "EXIT POINT"
+    "desc": {
+      "en": "EXIT POINT",
+      "zh": "出"
+    }
   },
   "TS223": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "EXIT RESTRICTION"
+    "desc": {
+      "en": "EXIT RESTRICTION",
+      "zh": "不准駛出"
+    }
   },
   "TS224": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "ACCESS RESTRICTION"
+    "desc": {
+      "en": "ACCESS RESTRICTION",
+      "zh": "不准駛入"
+    }
   },
   "TS225": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "CYCLISTS DISMOUNT USE PEDESTRIAN CROSSING"
+    "desc": {
+      "en": "CYCLISTS DISMOUNT USE PEDESTRIAN CROSSING",
+      "zh": "騎單車者到此下車由附近行人過路"
+    }
   },
   "TS227": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "CYCLING RESTRICTION"
+    "desc": {
+      "en": "CYCLING RESTRICTION"
+    }
   },
   "TS272": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "TUNNEL AREA END"
+    "desc": {
+      "en": "TUNNEL AREA END",
+      "zh": "離道管制區域終"
+    }
   },
   "TS326": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PARKING TIME PLATE FOR TAXI"
+    "desc": {
+      "en": "PARKING TIME PLATE FOR TAXI",
+      "zh": "禁止一至六停泊的士或其他車輛"
+    }
   },
   "TS337": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "MIDDLE LANE FOR FRANCHISED BUSES"
+    "desc": {
+      "en": "MIDDLE LANE FOR FRANCHISED BUSES",
+      "zh": "巴士"
+    }
   },
   "TS338": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "MIDDLE LANE FOR FRANCHISED BUSES"
+    "desc": {
+      "en": "MIDDLE LANE FOR FRANCHISED BUSES"
+    }
   },
   "TS344": {
     "tier": 1,
@@ -547,22 +796,30 @@
   "TS353": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "START AND CONTINUATION OF AN EXPRESSWAY"
+    "desc": {
+      "en": "START AND CONTINUATION OF AN EXPRESSWAY"
+    }
   },
   "TS354": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "END OF AN EXPRESSWAY"
+    "desc": {
+      "en": "END OF AN EXPRESSWAY"
+    }
   },
   "TS356": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 70KMH"
+    "desc": {
+      "en": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 70KM/H"
+    }
   },
   "TS358": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 55KMH"
+    "desc": {
+      "en": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 55KM/H"
+    }
   },
   "TS365": {
     "tier": 0,
@@ -572,92 +829,131 @@
   "TS367": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "DRIVING TEST VEHICLES ONLY MON-FRI 7:30AM-9PM EXCEPT GENERAL HOLIDAYS"
+    "desc": {
+      "en": "DRIVING TEST VEHICLES ONLY MON-FRI 7:30AM-9PM EXCEPT GENERAL HOLIDAYS"
+    }
   },
   "TS379": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "MIDDLE LANE FOR BUSES"
+    "desc": {
+      "en": "MIDDLE LANE FOR BUSES",
+      "zh": "巴士"
+    }
   },
   "TS380": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR BUSES"
+    "desc": {
+      "en": "NEARSIDE LANE FOR BUSES",
+      "zh": "巴士"
+    }
   },
   "TS386": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS ONLY"
+    "desc": {
+      "en": "FRANCHISED BUS ONLY",
+      "zh": "專利巴士使用"
+    }
   },
   "TS401": {
     "tier": 0,
     "group": "warning",
-    "desc": "STOP OR GIVE WAY SIGN AHEAD"
+    "desc": {
+      "en": "STOP OR GIVE WAY SIGN AHEAD"
+    }
   },
   "TS402": {
     "tier": 0,
     "group": "warning",
-    "desc": "TRAFFIC MERGES FROM LEFT"
+    "desc": {
+      "en": "TRAFFIC MERGES FROM LEFT"
+    }
   },
   "TS404": {
     "tier": 0,
     "group": "warning",
-    "desc": "MERGING INTO TRAFFIC ON RIGHT"
+    "desc": {
+      "en": "MERGING INTO TRAFFIC ON RIGHT"
+    }
   },
   "TS405": {
     "tier": 0,
     "group": "warning",
-    "desc": "MERGING INTO TRAFFIC ON LEFT"
+    "desc": {
+      "en": "MERGING INTO TRAFFIC ON LEFT"
+    }
   },
   "TS412": {
     "tier": 0,
     "group": "warning",
-    "desc": "DOUBLE BEND FIRST TO LEFT AHEAD"
+    "desc": {
+      "en": "DOUBLE BEND FIRST TO LEFT AHEAD"
+    }
   },
   "TS414": {
     "tier": 2,
     "group": "warning",
-    "desc": "PERMANENT SPEED DEVIATION"
+    "desc": {
+      "en": "PERMANENT SPEED DEVIATION"
+    }
   },
   "TS416": {
     "tier": 0,
     "group": "warning",
-    "desc": "ROAD NARROWS ON RIGHT AHEAD"
+    "desc": {
+      "en": "ROAD NARROWS ON RIGHT AHEAD"
+    }
   },
   "TS418": {
     "tier": 0,
     "group": "warning",
-    "desc": "CROSS ROADS AHEAD"
+    "desc": {
+      "en": "CROSS ROADS AHEAD"
+    }
   },
   "TS430": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL UPWARDS AHEAD 1:5"
+    "desc": {
+      "en": "STEEP HILL UPWARDS AHEAD 1:5"
+    }
   },
   "TS431": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL UPWARDS AHEAD 1:8"
+    "desc": {
+      "en": "STEEP HILL UPWARDS AHEAD 1:8"
+    }
   },
   "TS440": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 4.2M"
+    "desc": {
+      "en": "WEIGHT RESTRICTED AHEAD 4.2M"
+    }
   },
   "TS441": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 4.3M"
+    "desc": {
+      "en": "WEIGHT RESTRICTED AHEAD 4.3M"
+    }
   },
   "TS446": {
     "tier": 0,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 2.4M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 2.4M"
+    }
   },
   "TS451": {
     "tier": 1,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.0M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.0M"
+    }
   },
   "TS456L": {
     "tier": 1,
@@ -667,232 +963,348 @@
   "TS460": {
     "tier": 0,
     "group": "warning",
-    "desc": "PEDESTRIAN ON OR CROSSING ROAD AHEAD"
+    "desc": {
+      "en": "PEDESTRIAN ON OR CROSSING ROAD AHEAD"
+    }
   },
   "TS461": {
     "tier": 0,
     "group": "warning",
-    "desc": "PEDESTRIAN CROSSING AHEAD"
+    "desc": {
+      "en": "PEDESTRIAN CROSSING AHEAD"
+    }
   },
   "TS462": {
     "tier": 0,
     "group": "warning",
-    "desc": "PEOPLE WITH DISABILITIES AHEAD"
+    "desc": {
+      "en": "PEOPLE WITH DISABILITIES AHEAD"
+    }
   },
   "TS465": {
     "tier": 1,
     "group": "warning",
-    "desc": "CATTLE"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD"
+    }
   },
   "TS507": {
     "tier": 0,
     "group": "warning",
-    "desc": "SLOW WET TAR"
+    "desc": {
+      "en": "SLOW WET TAR",
+      "zh": "慢慢濕柏油"
+    }
   },
   "TS510": {
     "tier": 2,
     "group": "warning",
-    "desc": "CROSSING NOT IN USE"
+    "desc": {
+      "en": "CROSSING NOT IN USE",
+      "zh": "行人線停用"
+    }
   },
   "TS511": {
     "tier": 1,
     "group": "warning",
-    "desc": "PEDESTRIANS"
+    "desc": {
+      "en": "PEDESTRIANS",
+      "zh": "行人"
+    }
   },
   "TS524": {
     "tier": 0,
     "group": "warning",
-    "desc": "LIGHT RAILWAY VEHICLES OR TRAMS AHEAD"
+    "desc": {
+      "en": "LIGHT RAILWAY OR TRAM AHEAD"
+    }
   },
   "TS532": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS BUS W"
+    "desc": {
+      "en": "BEND SIGN AND REDUCE SPEED NOW"
+    }
   },
   "TS553": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS"
+    "desc": {
+      "en": "ADVANCE DIRECTION SIGN FOR SIDE ROADS"
+    }
   },
   "TS555": {
     "tier": 1,
     "group": "warning",
-    "desc": "PROHIBITION OF ALL VEHICLES OFFSIDE LANE AHEAD"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OFFSIDE FROM BUS"
+    }
   },
   "TS566": {
     "tier": 2,
     "group": "warning",
-    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS BUS"
+    "desc": {
+      "en": "LANTAU TAXIS",
+      "zh": "大嶼山的士"
+    }
   },
   "TS588": {
     "tier": 1,
     "group": "warning",
-    "desc": "PERMANENT SHARP DEVIATION WITH YELLOW BORDER"
+    "desc": {
+      "en": "PERMANENT SHARP DEVIATION WITH YELLOW BORDER"
+    }
   },
   "TS589": {
     "tier": 1,
     "group": "warning",
-    "desc": "PERMANENT SHARP DEVIATION WITH YELLOW BORDER"
+    "desc": {
+      "en": "PERMANENT SHARP DEVIATION"
+    }
   },
   "TS602": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PASS EITHER SIDE"
+    "desc": {
+      "en": "PASS EITHER SIDE"
+    }
   },
   "TS603": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DUAL CARRIAGEWAY AHEAD"
+    "desc": {
+      "en": "DUAL CARRIAGEWAY AHEAD",
+      "zh": "分隔車路在前"
+    }
   },
   "TS604": {
     "tier": 0,
     "group": "informatory",
-    "desc": "SINGLE TRACK ROAD WITH PASSING PLACES"
+    "desc": {
+      "en": "SINGLE TRACK ROAD WITH PASSING PLACES",
+      "zh": "窄有避車處行路"
+    }
   },
   "TS605": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE 400M"
+    "desc": {
+      "en": "DISTANCE INDICATOR NEARSIDE LANE 400M"
+    }
   },
   "TS606": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE 300M"
+    "desc": {
+      "en": "DISTANCE INDICATOR NEARSIDE LANE 200M"
+    }
   },
   "TS607": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE 200M"
+    "desc": {
+      "en": "DISTANCE INDICATOR NEARSIDE LANE 100M"
+    }
   },
   "TS608": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE 100M"
+    "desc": {
+      "en": "DISTANCE INDICATOR OFFSIDE LANE 300M"
+    }
   },
   "TS609": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR OFFSIDE LANE 300M"
+    "desc": {
+      "en": "DISTANCE INDICATOR OFFSIDE LANE 200M"
+    }
   },
   "TS611": {
     "tier": 0,
     "group": "informatory",
-    "desc": "GET IN LANE"
+    "desc": {
+      "en": "GET IN LANE",
+      "zh": "行車線"
+    }
   },
   "TS612": {
     "tier": 2,
     "group": "informatory",
-    "desc": "CENSUS POINT"
+    "desc": {
+      "en": "CENSUS POINT",
+      "zh": "交通調查站"
+    }
   },
   "TS613": {
     "tier": 1,
     "group": "informatory",
-    "desc": "STOP AT CENSUS POINT"
+    "desc": {
+      "en": "STOP AT CENSUS POINT",
+      "zh": "在交通調查站停車"
+    }
   },
   "TS614": {
     "tier": 1,
     "group": "informatory",
-    "desc": "SLOW CENSUS POINT"
+    "desc": {
+      "en": "SLOW CENSUS POINT",
+      "zh": "慢駛交通調查站"
+    }
   },
   "TS617": {
     "tier": 0,
     "group": "informatory",
-    "desc": "NO THROUGH ROAD ON SIDE ROAD TO RIGHT"
+    "desc": {
+      "en": "NO THROUGH ROAD ON THE RIGHT"
+    }
   },
   "TS618": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION SIGN"
+    "desc": {
+      "en": "DIRECTION SIGN"
+    }
   },
   "TS620": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PASSING PLACE"
+    "desc": {
+      "en": "PASSING PLACE",
+      "zh": "避車處"
+    }
   },
   "TS665": {
     "tier": 2,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS666": {
     "tier": 2,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS667": {
     "tier": 2,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS668": {
     "tier": 2,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS703": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "OVER 10 TONNES"
+    "desc": {
+      "en": "OVER 10 TONNES",
+      "zh": "逾十公噸"
+    }
   },
   "TS704": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "OVER 12 TONNES"
+    "desc": {
+      "en": "OVER 12 TONNES",
+      "zh": "逾十二公噸"
+    }
   },
   "TS705": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "EXCEPT GOODS VEHICLES"
+    "desc": {
+      "en": "EXCEPT GOODS VEHICLES",
+      "zh": "貨車例外"
+    }
   },
   "TS706": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT BUSES AND SCHOOL PRIVATE LIGHT BUSES"
+    "desc": {
+      "en": "EXCEPT BUSES AND SCHOOL PRIVATE LIGHT BUSES",
+      "zh": "四士及學校私家小巴例外"
+    }
   },
   "TS708": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "EXCEPT FRANCHISED BUSES"
+    "desc": {
+      "en": "EXCEPT FRANCHISED BUSES",
+      "zh": "專利巴士例外"
+    }
   },
   "TS709": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "EXCEPT PUBLIC LIGHT BUSES"
+    "desc": {
+      "en": "EXCEPT PUBLIC LIGHT BUSES",
+      "zh": "公共小巴例外"
+    }
   },
   "TS714": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE",
+      "zh": "上午七時至下午七時"
+    }
   },
   "TS715": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE",
+      "zh": "上午七時至下午八時"
+    }
   },
   "TS717": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE",
+      "zh": "上午十時至下午九時"
+    }
   },
   "TS718": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE",
+      "zh": "上午七時至下午十時"
+    }
   },
   "TS719": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE",
+      "zh": "上午七時至下午十一時"
+    }
   },
   "TS720": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE",
+      "zh": "上午七時至午夜十二時"
+    }
   },
   "TS721": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "AT ANY TIME",
+      "zh": "全日適用"
+    }
   },
   "TS727": {
     "tier": 2,
@@ -922,92 +1334,146 @@
   "TS750": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "FALLEN TREE"
+    "desc": {
+      "en": "FALLEN TREE",
+      "zh": "樹木傾倒"
+    }
   },
   "TS751": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "SURVEYING"
+    "desc": {
+      "en": "SURVEYING",
+      "zh": "測量"
+    }
   },
   "TS754": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "SIGN CLEANING"
+    "desc": {
+      "en": "SIGN CLEANING",
+      "zh": "清洗路牌"
+    }
   },
   "TS755": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "GRASS CUTTING"
+    "desc": {
+      "en": "GRASS CUTTING",
+      "zh": "進行剪草"
+    }
   },
   "TS760": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "SAFE SPEED 20 KM/H"
+    "desc": {
+      "en": "SAFE SPEED 20 KM/H",
+      "zh": "安全時速二十公里"
+    }
   },
   "TS761": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "SAFE SPEED 30 KM/H"
+    "desc": {
+      "en": "SAFE SPEED 30 KM/H",
+      "zh": "安全時速三十公里"
+    }
   },
   "TS764": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "SAFE SPEED 60 KM/H"
+    "desc": {
+      "en": "SAFE SPEED 60 KM/H",
+      "zh": "安全時速六十公里"
+    }
   },
   "TS770": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "200 M"
+    "desc": {
+      "en": "200 M",
+      "zh": "二百米"
+    }
   },
   "TS775": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "700 M"
+    "desc": {
+      "en": "700 M",
+      "zh": "七百米"
+    }
   },
   "TS780": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "1 KM"
+    "desc": {
+      "en": "1 KM",
+      "zh": "一公里"
+    }
   },
   "TS781": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "2 KM"
+    "desc": {
+      "en": "2 KM",
+      "zh": "兩公里"
+    }
   },
   "TS785": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 2 KM"
+    "desc": {
+      "en": "FOR 2 KM",
+      "zh": "此段兩公里"
+    }
   },
   "TS788": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 5 KM"
+    "desc": {
+      "en": "FOR 5 KM",
+      "zh": "此段五公里"
+    }
   },
   "TS789": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 50 M"
+    "desc": {
+      "en": "FOR 50 M",
+      "zh": "此段五十米"
+    }
   },
   "TS791": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 10 KM"
+    "desc": {
+      "en": "FOR 10 KM",
+      "zh": "此段十公里"
+    }
   },
   "TS794": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 15 KM"
+    "desc": {
+      "en": "FOR 15 KM",
+      "zh": "此段十五公里"
+    }
   },
   "TS796": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "STOP 100 M"
+    "desc": {
+      "en": "STOP 30 M",
+      "zh": "三十米前停車"
+    }
   },
   "TS800": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "LOW GEAR FOR 2 KM"
+    "desc": {
+      "en": "LOW GEAR FOR 1 KM",
+      "zh": "一公里半內低波行車"
+    }
   },
   "TS802L": {
     "tier": 0,
@@ -1017,12 +1483,18 @@
   "TS803": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "LOW GEAR FOR 2 KM"
+    "desc": {
+      "en": "LOW GEAR FOR 2.5 KM",
+      "zh": "兩公里半內低波行車"
+    }
   },
   "TS805": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "UNACCOMPANIED CHILDREN PERMITTED"
+    "desc": {
+      "en": "UNACCOMPANIED CHILDREN PERMITTED",
+      "zh": "兒童無須成人陪同"
+    }
   },
   "TS808H": {
     "tier": 1,
@@ -1032,12 +1504,18 @@
   "TS811": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "SAFE HEIGHT 5.5M"
+    "desc": {
+      "en": "SAFE HEIGHT 5.5M",
+      "zh": "安全高度五米五"
+    }
   },
   "TS814": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "GOODS VEHICLES"
+    "desc": {
+      "en": "GOODS VEHICLES",
+      "zh": "貨車"
+    }
   },
   "TS835L": {
     "tier": 2,
@@ -1047,907 +1525,1342 @@
   "TS843": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "6AM - 7PM"
+    "desc": {
+      "en": "6AM-7PM",
+      "zh": "上午六時至下午七時"
+    }
   },
   "TS844": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "9PM - 7AM"
+    "desc": {
+      "en": "SUNDAYS AND PUBLIC HOLIDAYS 8AM-9PM",
+      "zh": "星期日及公眾假期上午八時至下午九時"
+    }
   },
   "TS846": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "SUNDAYS AND PUBLIC HOLIDAYS 8AM - 2PM"
+    "desc": {
+      "en": "SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "星期日及公眾假期"
+    }
   },
   "TS847": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "8PM - 7AM"
+    "desc": {
+      "en": "8PM-7AM",
+      "zh": "下午八時至上午七時"
+    }
   },
   "TS848": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "SATURDAYS NOON - 7PM SUNDAYS AND GENERAL HOLIDAYS AT NOON - 7PM"
+    "desc": {
+      "en": "SATURDAYS 7AM-7PM SUNDAYS AND PUBLIC HOLIDAYS AT NOON-7PM",
+      "zh": "星期六上午七時至下午七時星期日及公眾假期正午至下午七時"
+    }
   },
   "TS849": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7:30AM - 10PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": {
+      "en": "7:30AM-8:00PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "上午七時半至下午八時星期日及公眾假期例外"
+    }
   },
   "TS858": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7:30AM - 8AM"
+    "desc": {
+      "en": "7:30AM-8AM",
+      "zh": "上午七時半至上午八時"
+    }
   },
   "TS863": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "6AM - 7:30AM"
+    "desc": {
+      "en": "10AM-7PM",
+      "zh": "上午十時至下午七時"
+    }
   },
   "TS865": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "NOON - 1:30PM"
+    "desc": {
+      "en": "6AM-7:30AM",
+      "zh": "上午六時至上午七時半"
+    }
   },
   "TS868": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7:30AM - 10:30AM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": {
+      "en": "NOON-1:30PM",
+      "zh": "正午一時至一時半"
+    }
   },
   "TS873": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT FRANCHISED BUSES AND TAXIS"
+    "desc": {
+      "en": "EXCEPT FRANCHISED BUSES AND TAXIS",
+      "zh": "專利巴士及的士例外"
+    }
   },
   "TS874": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7PM - 8AM"
+    "desc": {
+      "en": "7PM-8AM",
+      "zh": "下午七時至上午八時"
+    }
   },
   "TS878": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT BUSES AND PRIVATE LIGHT BUSES"
+    "desc": {
+      "en": "EXCEPT BUSES AND PRIVATE LIGHT BUSES",
+      "zh": "巴士及私家小型巴士例外"
+    }
   },
   "TS879": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT BUSES AND PUBLIC LIGHT BUSES (SCHEDULED SERVICE)"
+    "desc": {
+      "en": "EXCEPT BUSES AND PUBLIC LIGHT BUSES (SCHEDULED SERVICES)",
+      "zh": "巴士及專線小巴例外"
+    }
   },
   "TS887": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "10AM - NOON"
+    "desc": {
+      "en": "10AM-NOON",
+      "zh": "上午十時至正午十二時"
+    }
   },
   "TS905": {
     "tier": 0,
     "group": "temporary",
-    "desc": "TURN RIGHT"
+    "desc": {
+      "en": "TURN RIGHT"
+    }
   },
   "TS906": {
     "tier": 0,
     "group": "temporary",
-    "desc": "AHEAD ONLY"
+    "desc": {
+      "en": "AHEAD ONLY"
+    }
   },
   "TS916": {
     "tier": 0,
     "group": "temporary",
-    "desc": "PASS EITHER SIDE"
+    "desc": {
+      "en": "PASS EITHER SIDE"
+    }
   },
   "TS917": {
     "tier": 0,
     "group": "temporary",
-    "desc": "SINGLE FILE TRAFFIC"
+    "desc": {
+      "en": "SINGLE FILE TRAFFIC",
+      "zh": "單排行車"
+    }
   },
   "TS921": {
     "tier": 0,
     "group": "temporary",
-    "desc": "NO RIGHT TURN"
+    "desc": {
+      "en": "NO RIGHT TURN"
+    }
   },
   "TS922": {
     "tier": 0,
     "group": "temporary",
-    "desc": "ONE WAY TRAFFIC"
+    "desc": {
+      "en": "ONE WAY TRAFFIC"
+    }
   },
   "TS923": {
     "tier": 0,
     "group": "temporary",
-    "desc": "NO ENTRY"
+    "desc": {
+      "en": "NO ENTRY"
+    }
   },
   "TS924": {
     "tier": 0,
     "group": "temporary",
-    "desc": "TURN LEFT"
+    "desc": {
+      "en": "TURN LEFT"
+    }
   },
   "TS925": {
     "tier": 0,
     "group": "temporary",
-    "desc": "TWO WAY TRAFFIC"
+    "desc": {
+      "en": "TWO WAY TRAFFIC"
+    }
   },
   "TS930": {
     "tier": 0,
     "group": "temporary",
-    "desc": "NO THROUGH ROAD FOR MOTOR VEHICLES"
+    "desc": {
+      "en": "NO THROUGH ROAD FOR MOTOR VEHICLES"
+    }
   },
   "TS932": {
     "tier": 0,
     "group": "temporary",
-    "desc": "TURN RIGHT"
+    "desc": {
+      "en": "TURN RIGHT"
+    }
   },
   "TS938": {
     "tier": 1,
     "group": "temporary",
-    "desc": "SLOW, POLICE"
+    "desc": {
+      "en": "SLOW, POLICE",
+      "zh": "慢駛警察警崗"
+    }
   },
   "TS947": {
     "tier": 0,
     "group": "temporary",
-    "desc": "ROAD AHEAD CLOSED"
+    "desc": {
+      "en": "ROAD AHEAD CLOSED",
+      "zh": "前面道路封閉"
+    }
   },
   "TS949": {
     "tier": 0,
     "group": "temporary",
-    "desc": "SLOW, POLICE USED WITH CONE MILES ON SIGN MILES"
+    "desc": {
+      "en": "SLOW, POLICE"
+    }
   },
   "TS950": {
     "tier": 0,
     "group": "temporary",
-    "desc": "STOP, POLICE USED WITH CONE MILES ON SIGN MILES"
+    "desc": {
+      "en": "STOP, POLICE"
+    }
   },
   "TS951": {
     "tier": 0,
     "group": "temporary",
-    "desc": "ACCIDENT, POLICE USED WITH CONE MILES ON SIGN MILES"
+    "desc": {
+      "en": "ACCIDENT, POLICE",
+      "zh": "意外警察警崗"
+    }
   },
   "TS2101": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2102": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2115": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2116": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2117": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2118": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2119": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2120": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2121": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2122": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2123": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2124": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2125": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2126": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2127": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2128": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2129": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2130": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2131": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2132": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2133": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2134": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2135": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2136": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2137": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2138": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2139": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "END OF NO STOPPING ZONE"
+    "desc": {
+      "en": "END OF NO STOPPING ZONE"
+    }
   },
   "TS2140": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "PLS NO STOPPING ZONE"
+    "desc": {
+      "en": "PLS NO STOPPING ZONE"
+    }
   },
   "TS2142": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "PLS NO STOPPING ZONE"
+    "desc": {
+      "en": "PLS NO STOPPING ZONE"
+    }
   },
   "TS2143": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "1-HOUR METERS CARD-OPERATED",
+      "zh": "一小時咪錶（以咭操作）"
+    }
   },
   "TS2145": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2146": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2147": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2148": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2149": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2150": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2151": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2152": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2153": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2154": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2155": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2156": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2157": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "END OF GOODS VEHICLE NO STOPPING ZONE"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2158": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2159": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE"
+    }
   },
   "TS2160": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2161": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2162": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2163": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2164": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2166": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2167": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2168": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2169": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "PLS NO STOPPING ZONE"
+    }
   },
   "TS2170": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "GOODS VEHICLE NO STOPPING ZONE"
+    }
   },
   "TS2172": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2173": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2174": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2175": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2176": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2177": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2178": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2179": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2180": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2181": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2182": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "BUS LANE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2184": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2185": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS LANE"
+    }
   },
   "TS2187": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "END OF BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "FOOD & ENVIRONMENTAL HYGIENE DEPARTMENT VEHICLES ONLY",
+      "zh": "食物環境衞生署車輛專用"
+    }
   },
   "TS2188": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "FOOD & ENVIRONMENTAL HYGIENE DEPARTMENT VEHICLES ONLY",
+      "zh": "食物環境衞生署車輛專用"
+    }
   },
   "TS2189": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "BUS NO STOPPING ZONE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2192": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2193": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2194": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2195": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "FRANCHISED BUS LANE"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2196": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2197": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2198": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "WIND SUSCEPTIBLE VEHICLES PROHIBITED"
+    "desc": {
+      "en": "WIND SUSCEPTIBLE VEHICLES PROHIBITED"
+    }
   },
   "TS2199": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "WIND SUSCEPTIBLE VEHICLES PROHIBITED"
+    "desc": {
+      "en": "WIND SUSCEPTIBLE VEHICLES PROHIBITED"
+    }
   },
   "TS2200": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "ALL MOTOR CYCLES & MOTOR TRICYCLES PROHIBITED"
+    "desc": {
+      "en": "ALL MOTOR CYCLES & THREE-WHEELERS PROHIBITED"
+    }
   },
   "TS2201": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "ALL MOTOR CYCLES PROHIBITED EXCEPT MOTOR TRICYCLES"
+    "desc": {
+      "en": "ALL MOTOR CYCLES PROHIBITED EXCEPT MOTOR TRICYCLES"
+    }
   },
   "TS2202": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.7M"
+    "desc": {
+      "en": "HEIGHT LIMIT 4.7M"
+    }
   },
   "TS2203": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HEIGHT LIMIT 4.8M"
+    "desc": {
+      "en": "HEIGHT LIMIT 4.8M"
+    }
   },
   "TS2204": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2205": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "2-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "FRANCHISED BUS LANE"
+    }
   },
   "TS2230": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE",
+      "zh": "禁止停車區"
+    }
   },
   "TS2235": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS"
+    "desc": {
+      "en": "2-HOUR METERS",
+      "zh": "二小時停車錶"
+    }
   },
   "TS2240": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "5-HOUR METERS"
+    "desc": {
+      "en": "5-HOUR METERS",
+      "zh": "一小時停車錶"
+    }
   },
   "TS2244": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS"
+    "desc": {
+      "en": "1-HOUR METERS",
+      "zh": "一小時停車錶"
+    }
   },
   "TS2245": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "1-HOUR METERS"
+    "desc": {
+      "en": "1-HOUR METERS",
+      "zh": "一小時停車錶"
+    }
   },
   "TS2601": {
     "tier": 2,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS",
+      "zh": "行車線方向"
+    }
   },
   "TS2613": {
     "tier": 2,
     "group": "informatory",
-    "desc": "AUTOTOLL ONLY"
+    "desc": {
+      "en": "AUTOTOLL ONLY",
+      "zh": "祇准自動繳費車輛"
+    }
   },
   "TS619": {
     "tier": 2,
     "group": "informatory",
-    "desc": "CROSS HARBOUR FERRY"
+    "desc": {
+      "en": "CROSS HARBOUR FERRY"
+    }
   },
   "TS622": {
     "tier": 1,
     "group": "informatory",
-    "desc": "CONTROL POINT AHEAD REDUCE SPEED NOW"
+    "desc": {
+      "en": "CONTROL POINT AHEAD REDUCE SPEED NOW",
+      "zh": "前置管制站請即慢駛"
+    }
   },
   "TS623": {
     "tier": 2,
     "group": "informatory",
-    "desc": "CROSS HARBOUR FERRY"
+    "desc": {
+      "en": "CONTROL POINT AHEAD REDUCE SPEED NOW"
+    }
   },
   "TS624": {
     "tier": 2,
     "group": "informatory",
-    "desc": "CROSS HARBOUR FERRY"
+    "desc": {
+      "en": "CROSS HARBOUR FERRY"
+    }
   },
   "TS625": {
     "tier": 2,
     "group": "informatory",
-    "desc": "CROSS HARBOUR FERRY"
+    "desc": {
+      "en": "CROSS HARBOUR FERRY"
+    }
   },
   "TS628": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO PARKING PLACE"
+    "desc": {
+      "en": "DIRECTION TO PARKING PLACE"
+    }
   },
   "TS632": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO AIRPORT"
+    "desc": {
+      "en": "DIRECTION TO AIRPORT"
+    }
   },
   "TS633": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO AIRPORT"
+    "desc": {
+      "en": "DIRECTION TO AIRPORT"
+    }
   },
   "TS634": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO AIRPORT"
+    "desc": {
+      "en": "DIRECTION TO AIRPORT"
+    }
   },
   "TS637": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO FOOTBRIDGE"
+    "desc": {
+      "en": "DIRECTION TO FOOTBRIDGE"
+    }
   },
   "TS641": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
+    }
   },
   "TS642": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
+    }
   },
   "TS643": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS644": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS645": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS646": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS647": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS648": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS655": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PEOPLE WITH DISABILITIES TO COLISEUM"
+    "desc": {
+      "en": "PEOPLE WITH DISABILITIES TO COLISEUM",
+      "zh": "體育館"
+    }
   },
   "TS656": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PARKING PLACE FOR GOODS VEHICLES ONLY"
+    "desc": {
+      "en": "PARKING PLACE FOR GOODS VEHICLES ONLY"
+    }
   },
   "TS657": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PARKING PLACE FOR GOODS VEHICLES ONLY"
+    "desc": {
+      "en": "PARKING PLACE FOR GOODS VEHICLES ONLY"
+    }
   },
   "TS669": {
     "tier": 0,
     "group": "informatory",
-    "desc": "ROUTE(1) CONFIRMATION"
+    "desc": {
+      "en": "ROUTE(1) CONFIRMATION"
+    }
   },
   "TS670": {
     "tier": 0,
     "group": "informatory",
-    "desc": "ROUTE(2) CONFIRMATION"
+    "desc": {
+      "en": "ROUTE(2) CONFIRMATION"
+    }
   },
   "TS673": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PARKING PLACE FOR PEDAL CYCLE"
+    "desc": {
+      "en": "PARKING PLACE FOR PEDAL CYCLE"
+    }
   },
   "TS675": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO POLICE"
+    "desc": {
+      "en": "DIRECTION TO POLICE",
+      "zh": "警崗"
+    }
   },
   "TS676": {
     "tier": 2,
     "group": "informatory",
-    "desc": "FERRY DIRECTION (SLOW VARIES WITH DESTINATION)"
+    "desc": {
+      "en": "FERRY DIRECTION (SLOW VARIES WITH DESTINATION)",
+      "zh": "目的地"
+    }
   },
   "TS678": {
     "tier": 1,
     "group": "informatory",
-    "desc": "FERRY DIRECTION (SIDE VARIES WITH DESTINATION)"
+    "desc": {
+      "en": "FERRY DIRECTION (SIDE VARIES WITH DESTINATION)",
+      "zh": "目的地"
+    }
   },
   "TS679": {
     "tier": 1,
     "group": "informatory",
-    "desc": "FERRY DIRECTION (SIDE VARIES WITH DESTINATION)"
+    "desc": {
+      "en": "FERRY DIRECTION (SIDE VARIES WITH DESTINATION)",
+      "zh": "目的地"
+    }
   },
   "TS680": {
     "tier": 0,
     "group": "informatory",
-    "desc": "ROUTE(6) CONFIRMATION"
+    "desc": {
+      "en": "ROUTE(6) CONFIRMATION"
+    }
   },
   "TS681": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIVERSION ENDS"
+    "desc": {
+      "en": "DIVERSION ENDS",
+      "zh": "改道終止"
+    }
   },
   "TS683": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIVERTED TRAFFIC"
+    "desc": {
+      "en": "DIVERTED TRAFFIC",
+      "zh": "改道車輛"
+    }
   },
   "TS684": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIVERTED TRAFFIC"
+    "desc": {
+      "en": "DIVERTED TRAFFIC",
+      "zh": "改道車輛"
+    }
   },
   "TS685": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIVERSION"
+    "desc": {
+      "en": "DIVERSION",
+      "zh": "改道"
+    }
   },
   "TS686": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIVERSION"
+    "desc": {
+      "en": "DIVERSION",
+      "zh": "改道"
+    }
   },
   "TS687": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIVERSION"
+    "desc": {
+      "en": "DIVERSION",
+      "zh": "改道"
+    }
   },
   "TS688": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DIVERSION 100M"
+    "desc": {
+      "en": "DIVERSION 100M",
+      "zh": "改道一百米"
+    }
   },
   "TS689": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DIVERSION 200M"
+    "desc": {
+      "en": "DIVERSION 200M",
+      "zh": "改道二百米"
+    }
   },
   "TS690": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DIVERSION 500M"
+    "desc": {
+      "en": "DIVERSION 500M",
+      "zh": "改道五百米"
+    }
   },
   "TS693": {
     "tier": 0,
     "group": "informatory",
-    "desc": "TUNNEL TOLL"
+    "desc": {
+      "en": "TUNNEL TOLL",
+      "zh": "收費"
+    }
   },
   "TS695": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO HOSPITAL"
+    "desc": {
+      "en": "DIRECTION TO HOSPITAL"
+    }
   },
   "TS238": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "LIGHT SIGNAL"
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
   },
   "TS240": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "LIGHT SIGNAL"
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
   },
   "TS242": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "LIGHT SIGNAL"
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
   },
   "TS244": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "LIGHT SIGNAL"
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
   },
   "TS245": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "LIGHT SIGNAL"
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
   },
   "TS246": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "LIGHT SIGNAL"
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
   },
   "TS318": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "POLICE VEHICLES ONLY"
+    "desc": {
+      "en": "POLICE VEHICLES ONLY",
+      "zh": "核准警車使用"
+    }
   },
   "TS366": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "TRAFFIC SIGN DIRECTION"
+    "desc": {
+      "en": "TRAFFIC SIGN FOR ALL DIRECTION"
+    }
   },
   "TS406": {
     "tier": 0,
     "group": "warning",
-    "desc": "DUAL CARRIAGEWAY ROAD ENDS"
+    "desc": {
+      "en": "DUAL CARRIAGEWAY ROAD ENDS"
+    }
   },
   "TS415": {
     "tier": 0,
     "group": "warning",
-    "desc": "ROAD NARROWS ON BOTH SIDES AHEAD"
+    "desc": {
+      "en": "ROAD NARROWS ON BOTH SIDES AHEAD"
+    }
   },
   "TS426": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL DOWNWARDS AHEAD 1:5"
+    "desc": {
+      "en": "STEEP HILL DOWNWARDS AHEAD 1:5"
+    }
   },
   "TS557": {
     "tier": 2,
     "group": "warning",
-    "desc": "LOOK RIGHT"
+    "desc": {
+      "en": "LOOK RIGHT",
+      "zh": "望右"
+    }
   },
   "TS561": {
     "tier": 0,
     "group": "warning",
-    "desc": "TUNNEL CLOSED AHEAD AMBER LIGHT"
+    "desc": {
+      "en": "TUNNEL CLOSED ADVANCE WARNING WITH AMBER LIGHT"
+    }
   },
   "TS573": {
     "tier": 1,
     "group": "warning",
-    "desc": "LOWERING OF SPEED LIMIT AHEAD 80KM/H"
+    "desc": {
+      "en": "LOWERING OF SPEED LIMIT AHEAD",
+      "zh": "前速80km/h"
+    }
   },
   "TS577": {
     "tier": 0,
     "group": "warning",
-    "desc": "CYCLIST AHEAD"
+    "desc": {
+      "en": "CYCLIST AHEAD"
+    }
   },
   "TS578": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP GRADIENT ON CYCLE TRACK FROM RIGHT AHEAD"
+    "desc": {
+      "en": "STEEP GRADIENT ON CYCLE TRACK FROM RIGHT AHEAD"
+    }
   },
   "TS584": {
     "tier": 0,
     "group": "warning",
-    "desc": "PEDESTRIAN SUBPASS PLATE"
+    "desc": {
+      "en": "PEDESTRIAN SHOULDER BLANTAUE"
+    }
   },
   "TS799": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "LOW GEAR FOR 1 KM"
+    "desc": {
+      "en": "GIVE WAY 100 M",
+      "zh": "一百米前讓路"
+    }
   },
   "TS726": {
     "tier": 1,
@@ -1957,832 +2870,1216 @@
   "TS758": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "WORKS ACCESS"
+    "desc": {
+      "en": "WORKS ACCESS",
+      "zh": "地盤通路"
+    }
   },
   "TS812": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "SAFE HEIGHT 5.3M"
+    "desc": {
+      "en": "SAFE HEIGHT 5.3M",
+      "zh": "安全高度五米三"
+    }
   },
   "TS830": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT SUNDAYS AND PUBLIC HOLIDAYS 5PM - MIDNIGHT"
+    "desc": {
+      "en": "TIME PLATE 9PM-MIDNIGHT EXCEPT SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "下午九時至午夜十二時星期日及公眾假期例外"
+    }
   },
   "TS833": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "OVER 7M"
+    "desc": {
+      "en": "OVER 7M",
+      "zh": "逾七米"
+    }
   },
   "TS837": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "OVER 10M"
+    "desc": {
+      "en": "OVER 10M",
+      "zh": "逾十米"
+    }
   },
   "TS839": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "OVER 11M"
+    "desc": {
+      "en": "OVER 11M",
+      "zh": "逾十一米"
+    }
   },
   "TS857": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "VEHICLES OVER 7M"
+    "desc": {
+      "en": "EXCEPT TAXI PICK UP OR DROP OFF",
+      "zh": "的士上落客除外"
+    }
   },
   "TS876": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "VEHICLES OVER 8M"
+    "desc": {
+      "en": "VEHICLES OVER 8M",
+      "zh": "車長超逾八米"
+    }
   },
   "TS2144": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "1-HOUR METERS CARD-OPERATED"
+    "desc": {
+      "en": "2-HOUR METERS CARD-OPERATED",
+      "zh": "二小時咪錶（以咭操作）"
+    }
   },
   "TS2236": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS"
+    "desc": {
+      "en": "2-HOUR METERS",
+      "zh": "二小時停車錶"
+    }
   },
   "TS2604": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DIRECTION FOR PEDESTRIAN"
+    "desc": {
+      "en": "DIRECTION FOR PEDESTRIAN"
+    }
   },
   "TS2605": {
     "tier": 2,
     "group": "informatory",
-    "desc": "EXPRESSWAY STARTS 500 M AHEAD"
+    "desc": {
+      "en": "EXPRESSWAY STARTS 500M AHEAD",
+      "zh": "快速公路在前面五百米開始"
+    }
   },
   "TS2608": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO EXPRESSWAY"
+    "desc": {
+      "en": "DIRECTION TO EXPRESSWAY",
+      "zh": "快速公路"
+    }
   },
   "TS2609": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO EXPRESSWAY"
+    "desc": {
+      "en": "DIRECTION TO EXPRESSWAY",
+      "zh": "快速公路"
+    }
   },
   "TS2610": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO EXPRESSWAY"
+    "desc": {
+      "en": "DIRECTION TO EXPRESSWAY",
+      "zh": "快速公路"
+    }
   },
   "TS2611": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO EXPRESSWAY"
+    "desc": {
+      "en": "DIRECTION TO EXPRESSWAY",
+      "zh": "快速公路"
+    }
   },
   "TS2615": {
     "tier": 2,
     "group": "informatory",
-    "desc": "RED LIGHT CAMERA AHEAD"
+    "desc": {
+      "en": "RED LIGHT CAMERA AHEAD",
+      "zh": "交通燈照相機在前"
+    }
   },
   "TS2616": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PARK & RIDE DIRECTION SIGN"
+    "desc": {
+      "en": "PARK & RIDE DIRECTION SIGN"
+    }
   },
   "TS2617": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PARK & RIDE DIRECTION SIGN"
+    "desc": {
+      "en": "PARK & RIDE DIRECTION SIGN"
+    }
   },
   "TS2618": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PARK & RIDE DIRECTION SIGN"
+    "desc": {
+      "en": "PARK & RIDE DIRECTION SIGN"
+    }
   },
   "TS2619": {
     "tier": 1,
     "group": "informatory",
-    "desc": "FERRY DIRECTION"
+    "desc": {
+      "en": "FERRY DIRECTION",
+      "zh": "中環"
+    }
   },
   "TS2622": {
     "tier": 1,
     "group": "informatory",
-    "desc": "NEARSIDE LANE SIGN DIRECTION ON TRAMS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS2624": {
     "tier": 1,
     "group": "informatory",
-    "desc": "END OF RAIL ONLY LANE"
+    "desc": {
+      "en": "END OF RAIL ONLY LANE",
+      "zh": "軌道車線終止"
+    }
   },
   "TS2625": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PARK & RIDE DIRECTION SIGN"
+    "desc": {
+      "en": "PARK & RIDE DIRECTION SIGN"
+    }
   },
   "TS2626": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PARK & RIDE DIRECTION SIGN"
+    "desc": {
+      "en": "PARK & RIDE DIRECTION SIGN"
+    }
   },
   "TS2627": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PARK & RIDE DIRECTION SIGN"
+    "desc": {
+      "en": "PARK & RIDE DIRECTION SIGN"
+    }
   },
   "TS2630": {
     "tier": 2,
     "group": "informatory",
-    "desc": "PEDESTRIAN SIGN CENTRAL MID-LEVELS ESCALATORS"
+    "desc": {
+      "en": "PEDESTRIAN SIGN CENTRAL MID-LEVELS ESCALATORS"
+    }
   },
   "TS2631": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PASSING PLACE AHEAD"
+    "desc": {
+      "en": "PASSING PLACE AHEAD",
+      "zh": "前面讓車處"
+    }
   },
   "TS2634": {
     "tier": 0,
     "group": "informatory",
-    "desc": "ROUTE/JUNCTION CONFIRMATION"
+    "desc": {
+      "en": "ROUTE/LI CONFIRMATION"
+    }
   },
   "TS2637": {
     "tier": 2,
     "group": "informatory",
-    "desc": "EMERGENCY LAY-BY 200 M"
+    "desc": {
+      "en": "EMERGENCY LAY-BY 200M",
+      "zh": "緊急避車處200m"
+    }
   },
   "TS2638": {
     "tier": 2,
     "group": "informatory",
-    "desc": "EMERGENCY LAY-BY 1 KM"
+    "desc": {
+      "en": "EMERGENCY LAY-BY 1KM",
+      "zh": "緊急避車處1km"
+    }
   },
   "TS2639": {
     "tier": 2,
     "group": "informatory",
-    "desc": "EMERGENCY LAY-BY 2 KM"
+    "desc": {
+      "en": "EMERGENCY LAY-BY 2KM",
+      "zh": "緊急避車處2km"
+    }
   },
   "TS2641": {
     "tier": 1,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "NEARSIDE LANE SIGN RAIL ON TRAMS"
+    }
   },
   "TS2642": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2644": {
     "tier": 2,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2645": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON MAIN LINE SIGN ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2647": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2649": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON MAIN LINE LANE SIGN ON MAIN LINE"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2650": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON SLIP ROAD ON MAIN LINE"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD SIGN ON MAIN LINE"
+    }
   },
   "TS2651": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON MAIN LINE ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2653": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON MAIN LINE SIGN ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2655": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON MAIN LINE"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2658": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CARRIAGE WAY TURNING RIGHT AT JUNCTIONS"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2659": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CARRIAGE WAY TURNING RIGHT AT JUNCTIONS"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2660": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON SLIP ROAD ON MAIN LINE"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2665": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO HIGH-TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO HIGH-TRANSIT RAILWAY"
+    }
   },
   "TS2666": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
+    }
   },
   "TS2667": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
+    }
   },
   "TS2669": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2670": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2671": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2672": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2675": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2676": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2677": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2678": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2680": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2681": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2682": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2683": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    }
   },
   "TS2686": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO LIGHT RAIL STOP"
+    "desc": {
+      "en": "DIRECTION TO LIGHT RAIL STOP"
+    }
   },
   "TS2687": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO LIGHT RAIL STOP"
+    "desc": {
+      "en": "DIRECTION TO LIGHT RAIL STOP"
+    }
   },
   "TS2688": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO LIGHT RAIL STOP"
+    "desc": {
+      "en": "DIRECTION TO LIGHT RAIL STOP"
+    }
   },
   "TS2690": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO A&E"
+    "desc": {
+      "en": "DIRECTION TO A&E",
+      "zh": "急症室"
+    }
   },
   "TS2701": {
     "tier": 1,
     "group": "informatory",
-    "desc": "QUEUING ORDER FOR NT TAXI"
+    "desc": {
+      "en": "QUEUING ORDER FOR NT TAXI",
+      "zh": "第一輛"
+    }
   },
   "TS2713": {
     "tier": 1,
     "group": "informatory",
-    "desc": "CYCLE PARKING FACILITIES AHEAD"
+    "desc": {
+      "en": "CYCLE PARKING AHEAD"
+    }
   },
   "TS610": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR OFFSIDE LANE 150M"
+    "desc": {
+      "en": "DISTANCE INDICATOR OFFSIDE LANE 150M"
+    }
   },
   "TS615": {
     "tier": 1,
     "group": "informatory",
-    "desc": "NO THROUGH ROAD"
+    "desc": {
+      "en": "NO THROUGH ROAD"
+    }
   },
   "TS649": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS650": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO SUBWAY"
+    "desc": {
+      "en": "DIRECTION TO SUBWAY",
+      "zh": "隧道"
+    }
   },
   "TS652": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO TOILETS"
+    "desc": {
+      "en": "DIRECTION TO TOILETS",
+      "zh": "公廁"
+    }
   },
   "TS661": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION FOR PEDESTRIANS"
+    "desc": {
+      "en": "DIRECTION FOR PEDESTRIANS"
+    }
   },
   "TS662": {
     "tier": 0,
     "group": "informatory",
-    "desc": "BUSES MEDIUM AND HEAVY GOODS VEHICLES KEEP LEFT KEEP LEFT SIGN FOR TUNNEL"
+    "desc": {
+      "en": "BUSES MEDIUM AND HEAVY GOODS VEHICLES KEEP LEFT KEEP LEFT SIGN FOR TUNNEL",
+      "zh": "中型及重型貨車靠左行駛"
+    }
   },
   "TS671": {
     "tier": 0,
     "group": "informatory",
-    "desc": "ROUTE(8) CONFIRMATION"
+    "desc": {
+      "en": "ROUTE(8) CONFIRMATION"
+    }
   },
   "TS672": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PARKING PLACE FOR PEDAL CYCLE"
+    "desc": {
+      "en": "PARKING PLACE FOR PEDAL CYCLE"
+    }
   },
   "TS674": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DIRECTION TO POLICE"
+    "desc": {
+      "en": "DIRECTION TO POLICE",
+      "zh": "警崗"
+    }
   },
   "TS129": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "END OF BUS LANE"
+    "desc": {
+      "en": "END OF BUS LANE",
+      "zh": "巴士線終止"
+    }
   },
   "TS131": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO LEFT TURN"
+    "desc": {
+      "en": "NO LEFT TURN"
+    }
   },
   "TS133": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "NO U-TURNS"
+    "desc": {
+      "en": "NO U-TURNS"
+    }
   },
   "TS135": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "RICKSHAWS AND HANDCARTS PROHIBITED"
+    "desc": {
+      "en": "RICKSHAWS AND HANDCARTS PROHIBITED"
+    }
   },
   "TS140": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "KEEP LEFT UNLESS OVERTAKING"
+    "desc": {
+      "en": "KEEP LEFT UNLESS OVERTAKING",
+      "zh": "靠左駛禁超越前方慢車靠左行駛"
+    }
   },
   "TS336": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR BUSES"
+    "desc": {
+      "en": "NEARSIDE LANE FOR BUS",
+      "zh": "巴士"
+    }
   },
   "TS339": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "MIDDLE LANE FOR FRANCHISED BUSES"
+    "desc": {
+      "en": "MIDDLE LANE FOR FRANCHISED BUSES"
+    }
   },
   "TS340": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PARKING METER"
+    "desc": {
+      "en": "PARKING METER"
+    }
   },
   "TS341": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FIRE APPLIANCES ONLY"
+    "desc": {
+      "en": "FIRE APPLIANCES ONLY",
+      "zh": "核准消防車輛使用"
+    }
   },
   "TS342": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "FIRE APPLIANCES ONLY"
+    "desc": {
+      "en": "FIRE APPLIANCES ONLY",
+      "zh": "核准消防車輛使用"
+    }
   },
   "TS347": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "VEHICLES WITH DISABLED PERSON'S PARKING PERMIT CERTIFICATE"
+    "desc": {
+      "en": "VEHICLES WITH DISABLED PERSON'S PARKING PERMIT OR PARKING CERTIFICATE FOR OTHERS"
+    }
   },
   "TS348": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "VEHICLES WITH DISABLED PERSON'S PARKING PERMIT CERTIFICATE FOR OTHERS"
+    "desc": {
+      "en": "VEHICLES WITH DISABLED PERSON'S PARKING PERMIT OR PARKING CERTIFICATE FOR OTHERS"
+    }
   },
   "TS349": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "AUTHORISED VEHICLES ONLY"
+    "desc": {
+      "en": "AUTHORISED VEHICLES ONLY",
+      "zh": "認可車輛使用"
+    }
   },
   "TS350": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "OFFSIDE LANE FOR FRANCHISED BUSES"
+    "desc": {
+      "en": "NEARSIDE LANE FOR BUS",
+      "zh": "巴士"
+    }
   },
   "TS403": {
     "tier": 0,
     "group": "warning",
-    "desc": "TRAFFIC MERGES FROM RIGHT"
+    "desc": {
+      "en": "TRAFFIC MERGES FROM RIGHT"
+    }
   },
   "TS407": {
     "tier": 0,
     "group": "warning",
-    "desc": "TWO WAY TRAFFIC"
+    "desc": {
+      "en": "TWO WAY TRAFFIC"
+    }
   },
   "TS408": {
     "tier": 0,
     "group": "warning",
-    "desc": "TWO WAY TRAFFIC ACROSS A ONE-WAY CARRIAGEWAY AHEAD"
+    "desc": {
+      "en": "TWO WAY TRAFFIC ACROSS A ONE-WAY CARRIAGEWAY AHEAD"
+    }
   },
   "TS409": {
     "tier": 0,
     "group": "warning",
-    "desc": "TRAFFIC SIGNALS AHEAD"
+    "desc": {
+      "en": "TRAFFIC SIGNALS AHEAD"
+    }
   },
   "TS410": {
     "tier": 0,
     "group": "warning",
-    "desc": "BEND TO LEFT AHEAD"
+    "desc": {
+      "en": "BEND TO LEFT AHEAD"
+    }
   },
   "TS411": {
     "tier": 0,
     "group": "warning",
-    "desc": "BEND TO RIGHT AHEAD"
+    "desc": {
+      "en": "BEND TO RIGHT AHEAD"
+    }
   },
   "TS413": {
     "tier": 0,
     "group": "warning",
-    "desc": "DOUBLE BEND FIRST TO LEFT AHEAD"
+    "desc": {
+      "en": "DOUBLE BEND FIRST TO LEFT AHEAD"
+    }
   },
   "TS417": {
     "tier": 0,
     "group": "warning",
-    "desc": "ROAD NARROWS ON LEFT AHEAD"
+    "desc": {
+      "en": "ROAD NARROWS ON LEFT AHEAD"
+    }
   },
   "TS419": {
     "tier": 0,
     "group": "warning",
-    "desc": "T-JUNCTION AHEAD TO LEFT"
+    "desc": {
+      "en": "T-JUNCTION AHEAD TO LEFT"
+    }
   },
   "TS420": {
     "tier": 0,
     "group": "warning",
-    "desc": "T-JUNCTION AHEAD TO RIGHT"
+    "desc": {
+      "en": "T-JUNCTION AHEAD TO RIGHT"
+    }
   },
   "TS421": {
     "tier": 0,
     "group": "warning",
-    "desc": "SIDE ROAD TO RIGHT AHEAD"
+    "desc": {
+      "en": "SIDE ROAD TO RIGHT AHEAD"
+    }
   },
   "TS422": {
     "tier": 0,
     "group": "warning",
-    "desc": "SIDE ROAD TO LEFT AHEAD"
+    "desc": {
+      "en": "SIDE ROAD TO LEFT AHEAD"
+    }
   },
   "TS423": {
     "tier": 0,
     "group": "warning",
-    "desc": "STAGGERED JUNCTION FROM RIGHT FIRST AHEAD"
+    "desc": {
+      "en": "STAGGERED JUNCTION FROM LEFT FIRST AHEAD"
+    }
   },
   "TS424": {
     "tier": 0,
     "group": "warning",
-    "desc": "STAGGERED JUNCTION FROM LEFT FIRST AHEAD"
+    "desc": {
+      "en": "STAGGERED JUNCTION FROM RIGHT FIRST AHEAD"
+    }
   },
   "TS425": {
     "tier": 0,
     "group": "warning",
-    "desc": "ROUNDABOUT AHEAD"
+    "desc": {
+      "en": "ROUNDABOUT"
+    }
   },
   "TS427": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL DOWNWARDS AHEAD 1:8"
+    "desc": {
+      "en": "STEEP HILL DOWNWARDS AHEAD 1:8"
+    }
   },
   "TS428": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL DOWNWARDS AHEAD 1:10"
+    "desc": {
+      "en": "STEEP HILL DOWNWARDS AHEAD 1:10"
+    }
   },
   "TS429": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL DOWNWARDS AHEAD 1:4"
+    "desc": {
+      "en": "STEEP HILL UPWARDS AHEAD 1:8"
+    }
   },
   "TS432": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL UPWARDS AHEAD 1:10"
+    "desc": {
+      "en": "STEEP HILL UPWARDS AHEAD 1:10"
+    }
   },
   "TS433": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 4.6M"
+    "desc": {
+      "en": "STEEP HILL RESTRICTED AHEAD 4.5M"
+    }
   },
   "TS434": {
     "tier": 0,
     "group": "warning",
-    "desc": "UNEVEN ROAD SURFACE"
+    "desc": {
+      "en": "UNEVEN ROAD SURFACE"
+    }
   },
   "TS435": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 2.0M"
+    "desc": {
+      "en": "WEIGHT RESTRICTED AHEAD 2.0M"
+    }
   },
   "TS437": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 3.5M"
+    "desc": {
+      "en": "WEIGHT RESTRICTED AHEAD 3.5M"
+    }
   },
   "TS438": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 4.0M"
+    "desc": {
+      "en": "WEIGHT RESTRICTED AHEAD 4.0M"
+    }
   },
   "TS439": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 4.1M"
+    "desc": {
+      "en": "WEIGHT RESTRICTED AHEAD 4.1M"
+    }
   },
   "TS442": {
     "tier": 0,
     "group": "warning",
-    "desc": "WEIGHT RESTRICTED AHEAD 4.4M"
+    "desc": {
+      "en": "WEIGHT RESTRICTED AHEAD 4.4M"
+    }
   },
   "TS443": {
     "tier": 0,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.5M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.5M"
+    }
   },
   "TS444": {
     "tier": 0,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.7M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.7M"
+    }
   },
   "TS445": {
     "tier": 0,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.8M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.8M"
+    }
   },
   "TS447": {
     "tier": 0,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 2.8M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 2.8M"
+    }
   },
   "TS450": {
     "tier": 1,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 3.5M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 3.5M"
+    }
   },
   "TS452": {
     "tier": 1,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.1M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.1M"
+    }
   },
   "TS456": {
     "tier": 1,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.5M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.5M"
+    }
   },
   "TS457": {
     "tier": 1,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.7M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.7M"
+    }
   },
   "TS458": {
     "tier": 1,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.8M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.8M"
+    }
   },
   "TS459": {
     "tier": 1,
     "group": "warning",
-    "desc": "HEIGHT RESTRICTED AHEAD 4.6M"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.6M"
+    }
   },
   "TS463": {
     "tier": 0,
     "group": "warning",
-    "desc": "CHILDREN"
+    "desc": {
+      "en": "CHILDREN"
+    }
   },
   "TS464": {
     "tier": 0,
     "group": "warning",
-    "desc": "HORSES"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD 4.5M"
+    }
   },
   "TS467": {
     "tier": 0,
     "group": "warning",
-    "desc": "OVERHEAD CABLE"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD"
+    }
   },
   "TS468": {
     "tier": 0,
     "group": "warning",
-    "desc": "LOW FLYING AIRCRAFT OR SUDDEN AIRCRAFT NOISE"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD"
+    }
   },
   "TS469": {
     "tier": 0,
     "group": "warning",
-    "desc": "QUAYSIDE OR RIVER BANK AHEAD"
+    "desc": {
+      "en": "HEIGHT RESTRICTED AHEAD"
+    }
   },
   "TS470": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE WARNING OF BUS LANE FOR FRANCHISED BUSES ONLY ON MAIN ROAD"
+    "desc": {
+      "en": "ADVANCE WARNING OF BUS LANE FOR FRANCHISED BUSES ROAD"
+    }
   },
   "TS477": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE WARNING OF BUS LANE ON MAIN ROAD"
+    "desc": {
+      "en": "ADVANCE WARNING OF BUS LANE",
+      "zh": "巴士"
+    }
   },
   "TS478": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE WARNING OF BUS LANE"
+    "desc": {
+      "en": "ADVANCE WARNING OF BUS LANE",
+      "zh": "巴士"
+    }
   },
   "TS479": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE WARNING OF BUS LANE FOR FRANCHISED BUSES ONLY ON MAIN ROAD"
+    "desc": {
+      "en": "ADVANCE WARNING OF BUS LANE",
+      "zh": "巴士"
+    }
   },
   "TS480": {
     "tier": 1,
     "group": "warning",
-    "desc": "CYCLISTS DISMOUNT"
+    "desc": {
+      "en": "CYCLISTS DISMOUNT",
+      "zh": "騎單車者下車"
+    }
   },
   "TS481": {
     "tier": 0,
     "group": "warning",
-    "desc": "WARNING OF BUS LANE"
+    "desc": {
+      "en": "PEDESTRIAN ON OR CROSSING ROAD LOOK LEFT"
+    }
   },
   "TS483": {
     "tier": 0,
     "group": "warning",
-    "desc": "CYCLISTS DISMOUNT"
+    "desc": {
+      "en": "CYCLISTS DISMOUNT",
+      "zh": "騎單車者下車"
+    }
   },
   "TS484": {
     "tier": 0,
     "group": "warning",
-    "desc": "CYCLISTS KEEP TO THE LEFT"
+    "desc": {
+      "en": "CYCLISTS KEEP TO THE LEFT",
+      "zh": "單車須靠左駛"
+    }
   },
   "TS485": {
     "tier": 1,
     "group": "warning",
-    "desc": "STEEP ROAD CYCLISTS ADVISED TO WALK"
+    "desc": {
+      "en": "STEEP ROAD CYCLISTS ADVISED TO WALK",
+      "zh": "斜路單車者應下車步行"
+    }
   },
   "TS486": {
     "tier": 0,
     "group": "warning",
-    "desc": "FALLING OR FALLEN ROCK"
+    "desc": {
+      "en": "FALLING OR FALLEN ROCK"
+    }
   },
   "TS487": {
     "tier": 0,
     "group": "warning",
-    "desc": "FALLING OR FALLEN ROCK"
+    "desc": {
+      "en": "FALLING OR FALLEN ROCK"
+    }
   },
   "TS489": {
     "tier": 0,
     "group": "warning",
-    "desc": "SLIPPERY ROAD"
+    "desc": {
+      "en": "SLIPPERY ROAD"
+    }
   },
   "TS490": {
     "tier": 0,
     "group": "warning",
-    "desc": "OTHER DANGER AHEAD"
+    "desc": {
+      "en": "OTHER DANGER AHEAD"
+    }
   },
   "TS492": {
     "tier": 0,
     "group": "warning",
-    "desc": "RIGHT LANE CLOSED AHEAD"
+    "desc": {
+      "en": "RIGHT LANE CLOSED AHEAD"
+    }
   },
   "TS499": {
     "tier": 0,
     "group": "warning",
-    "desc": "RIGHT LANE CLOSED AHEAD"
+    "desc": {
+      "en": "RIGHT LANE CLOSED AHEAD"
+    }
   },
   "TS500": {
     "tier": 0,
     "group": "warning",
-    "desc": "LEFT LANE CLOSED AHEAD"
+    "desc": {
+      "en": "LEFT LANE CLOSED AHEAD"
+    }
   },
   "TS501": {
     "tier": 0,
     "group": "warning",
-    "desc": "DIVERSION TO ANOTHER CARRIAGEWAY TO RIGHT AHEAD"
+    "desc": {
+      "en": "DIVERSION TO ANOTHER CARRIAGEWAY TO RIGHT AHEAD"
+    }
   },
   "TS502": {
     "tier": 0,
     "group": "warning",
-    "desc": "DIVERSION TO ANOTHER CARRIAGEWAY TO LEFT AHEAD"
+    "desc": {
+      "en": "DIVERSION TO ANOTHER CARRIAGEWAY TO LEFT AHEAD"
+    }
   },
   "TS504": {
     "tier": 2,
     "group": "warning",
-    "desc": "TEMPORARY SHARP DEVIATION"
+    "desc": {
+      "en": "BARRICADE"
+    }
   },
   "TS505": {
     "tier": 0,
     "group": "warning",
-    "desc": "RAMP"
+    "desc": {
+      "en": "RAMP",
+      "zh": "道路起伏"
+    }
   },
   "TS506": {
     "tier": 2,
     "group": "warning",
-    "desc": "RAMP AHEAD"
+    "desc": {
+      "en": "RAMP AHEAD",
+      "zh": "前面道路起伏"
+    }
   },
   "TS508": {
     "tier": 2,
     "group": "warning",
-    "desc": "ROAD AHEAD CLOSED"
+    "desc": {
+      "en": "ROAD AHEAD CLOSED",
+      "zh": "前面道路封閉"
+    }
   },
   "TS512": {
     "tier": 1,
     "group": "warning",
-    "desc": "PEDESTRIANS"
+    "desc": {
+      "en": "PEDESTRIANS",
+      "zh": "行人"
+    }
   },
   "TS513": {
     "tier": 1,
     "group": "warning",
-    "desc": "PEDESTRIANS"
+    "desc": {
+      "en": "PEDESTRIANS",
+      "zh": "行人"
+    }
   },
   "TS517": {
     "tier": 0,
     "group": "warning",
-    "desc": "SLOW WORKS ACCESS"
+    "desc": {
+      "en": "SLOW WORKS ACCESS",
+      "zh": "慢駛工地出入"
+    }
   },
   "TS518": {
     "tier": 2,
     "group": "warning",
-    "desc": "BOLLARD"
+    "desc": {
+      "en": "BOLLARD"
+    }
   },
   "TS519": {
     "tier": 0,
     "group": "warning",
-    "desc": "FOG OR MIST AHEAD"
+    "desc": {
+      "en": "FOG OR MIST AHEAD",
+      "zh": "霧"
+    }
   },
   "TS520": {
     "tier": 0,
     "group": "warning",
-    "desc": "CYCLEWAY AHEAD"
+    "desc": {
+      "en": "CYCLEWAY AHEAD"
+    }
   },
   "TS522": {
     "tier": 0,
     "group": "warning",
-    "desc": "PUBLIC LIGHT BUSES PROHIBITED ZONE"
+    "desc": {
+      "en": "PUBLIC LIGHT BUSES PROHIBITED ZONE"
+    }
   },
   "TS525": {
     "tier": 0,
     "group": "warning",
-    "desc": "ALL GOODS VEHICLES KEEP AWAY"
+    "desc": {
+      "en": "ALL GOODS VEHICLES KEEP AWAY"
+    }
   },
   "TS539": {
     "tier": 0,
     "group": "warning",
-    "desc": "ROAD HUMP OR SERIES OF ROAD HUMPS AHEAD"
+    "desc": {
+      "en": "ROAD HUMP OR SERIES OF ROAD HUMPS AHEAD"
+    }
   },
   "TS540": {
     "tier": 0,
     "group": "warning",
-    "desc": "GOODS VEHICLES NEARSIDE LANE"
+    "desc": {
+      "en": "GOODS VEHICLES NEARSIDE LANE"
+    }
   },
   "TS541": {
     "tier": 0,
     "group": "warning",
-    "desc": "BUS LANE ADVANCE DIRECTION SIGN FOR SIDE ROADS"
+    "desc": {
+      "en": "BUS LANE ADVANCE DIRECTION SIGN FOR SIDE ROADS",
+      "zh": "巴士"
+    }
   },
   "TS542": {
     "tier": 0,
     "group": "warning",
-    "desc": "BUS LANE ADVANCE DIRECTION SIGN FOR SIDE ROADS"
+    "desc": {
+      "en": "BUS LANE ADVANCE DIRECTION SIGN FOR SIDE ROADS",
+      "zh": "巴士"
+    }
   },
   "TS546": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE WARNING OF LANE RESTRICTION 5.5 TONNES"
+    "desc": {
+      "en": "ADVANCE WARNING OF END OF LANE RESTRICTION"
+    }
   },
   "TS548": {
     "tier": 2,
@@ -2797,341 +4094,539 @@
   "TS550": {
     "tier": 0,
     "group": "warning",
-    "desc": "WARNING OF MERGE TO LEFT AHEAD"
+    "desc": {
+      "en": "WARNING CHANGING TO LEFT AHEAD"
+    }
   },
   "TS551": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS BUS"
+    "desc": {
+      "en": "ADVANCE DIRECTION SIGN FOR SIDE ROADS",
+      "zh": "巴士"
+    }
   },
   "TS556": {
     "tier": 2,
     "group": "warning",
-    "desc": "LOOK LEFT"
+    "desc": {
+      "en": "LOOK LEFT",
+      "zh": "望左"
+    }
   },
   "TS558": {
     "tier": 0,
     "group": "warning",
-    "desc": "TRAFFIC BLACK SPOT"
+    "desc": {
+      "en": "CYCLISTS KEEP TO THE RIGHT"
+    }
   },
   "TS565": {
     "tier": 0,
     "group": "warning",
-    "desc": "ADVANCE DIRECTION SIGN FOR SIDE ROADS"
+    "desc": {
+      "en": "ADVANCE DIRECTION SIGN FOR SIDE ROADS",
+      "zh": "巴士"
+    }
   },
   "TS567": {
     "tier": 2,
     "group": "warning",
-    "desc": "LANTAU TAXIS"
+    "desc": {
+      "en": "URBAN TAXIS",
+      "zh": "市區的士"
+    }
   },
   "TS568": {
     "tier": 2,
     "group": "warning",
-    "desc": "URBAN TAXIS"
+    "desc": {
+      "en": "EXCEPT LANTAU TAXIS",
+      "zh": "大嶼山的士例外"
+    }
   },
   "TS570": {
     "tier": 1,
     "group": "warning",
-    "desc": "LOWERING OF SPEED LIMIT AHEAD 50KM/H"
+    "desc": {
+      "en": "LOWERING OF SPEED LIMIT AHEAD",
+      "zh": "前速50km/h"
+    }
   },
   "TS572": {
     "tier": 1,
     "group": "warning",
-    "desc": "LOWERING OF SPEED LIMIT AHEAD 70KM/H"
+    "desc": {
+      "en": "LOWERING OF SPEED LIMIT AHEAD",
+      "zh": "前速70km/h"
+    }
   },
   "TS579": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP GRADIENT ON CYCLE TRACK FROM LEFT AHEAD"
+    "desc": {
+      "en": "STEEP GRADIENT ON CYCLE TRACK FROM LEFT AHEAD"
+    }
   },
   "TS580": {
     "tier": 0,
     "group": "warning",
-    "desc": "STEEP HILL DOWNWARDS 1:6"
+    "desc": {
+      "en": "STEEP HILL DOWNWARDS"
+    }
   },
   "TS581": {
     "tier": 0,
     "group": "warning",
-    "desc": "ENFORCEMENT CAMERA"
+    "desc": {
+      "en": "ENFORCEMENT CAMERA"
+    }
   },
   "TS582": {
     "tier": 1,
     "group": "warning",
-    "desc": "CONTROL ZONE"
+    "desc": {
+      "en": "RED LIGHT CAMERA CONTROL ZONE",
+      "zh": "控制區"
+    }
   },
   "TS585": {
     "tier": 0,
     "group": "warning",
-    "desc": "VISUALLY IMPAIRED PERSONS AHEAD"
+    "desc": {
+      "en": "VISUALLY IMPAIRED PERSONS AHEAD"
+    }
   },
   "TS586": {
     "tier": 0,
     "group": "warning",
-    "desc": "BEWARE OF REVERSING VEHICLE"
+    "desc": {
+      "en": "BEWARE OF REVERSING VEHICLE"
+    }
   },
   "TS701": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "OVER 3 TONNES"
+    "desc": {
+      "en": "OVER 3 TONNES",
+      "zh": "逾三公噸"
+    }
   },
   "TS702": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "OVER 5.5 TONNES"
+    "desc": {
+      "en": "OVER 5.5 TONNES",
+      "zh": "逾五公噸半"
+    }
   },
   "TS707": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "ONE WAY"
+    "desc": {
+      "en": "ONE WAY",
+      "zh": "單程路"
+    }
   },
   "TS710": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT TAXIS"
+    "desc": {
+      "en": "EXCEPT TAXIS",
+      "zh": "的士例外"
+    }
   },
   "TS711": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "EXCEPT FOR ACCESS"
+    "desc": {
+      "en": "EXCEPT FOR ACCESS",
+      "zh": "前往此業者不在此限"
+    }
   },
   "TS712": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "EXCEPT WITH PERMIT"
+    "desc": {
+      "en": "EXCEPT WITH PERMIT",
+      "zh": "有許可證者不在此限"
+    }
   },
   "TS716": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE",
+      "zh": "上午七時至下午九時"
+    }
   },
   "TS746": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "BLASTING"
+    "desc": {
+      "en": "BLASTING",
+      "zh": "爆炸"
+    }
   },
   "TS747": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "LAND SLIDE"
+    "desc": {
+      "en": "LAND SLIDE",
+      "zh": "山泥傾瀉"
+    }
   },
   "TS767": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "END"
+    "desc": {
+      "en": "END",
+      "zh": "終止"
+    }
   },
   "TS768": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "50 M"
+    "desc": {
+      "en": "50 M",
+      "zh": "五十米"
+    }
   },
   "TS769": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "100 M"
+    "desc": {
+      "en": "100 M",
+      "zh": "一百米"
+    }
   },
   "TS771": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "300 M"
+    "desc": {
+      "en": "300 M",
+      "zh": "三百米"
+    }
   },
   "TS773": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "500 M"
+    "desc": {
+      "en": "500 M",
+      "zh": "五百米"
+    }
   },
   "TS776": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "800 M"
+    "desc": {
+      "en": "800 M",
+      "zh": "八百米"
+    }
   },
   "TS777": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "900 M"
+    "desc": {
+      "en": "900 M",
+      "zh": "九百米"
+    }
   },
   "TS778": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "150 M"
+    "desc": {
+      "en": "150 M",
+      "zh": "一百五十米"
+    }
   },
   "TS779": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "250 M"
+    "desc": {
+      "en": "250 M",
+      "zh": "二百五十米"
+    }
   },
   "TS784": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "SAFE SPEED 50 KM/H"
+    "desc": {
+      "en": "SAFE SPEED 50 KM/H",
+      "zh": "安全時速五十公里"
+    }
   },
   "TS806": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "LOW GEAR NOW"
+    "desc": {
+      "en": "LOW GEAR NOW",
+      "zh": "低速行車"
+    }
   },
   "TS807": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "KEEP IN LOW GEAR"
+    "desc": {
+      "en": "KEEP IN LOW GEAR",
+      "zh": "繼續低速行車"
+    }
   },
   "TS810": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "SAFE HEIGHT 5M"
+    "desc": {
+      "en": "SAFE HEIGHT 5M",
+      "zh": "安全高度五米"
+    }
   },
   "TS815": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "PUBLIC LIGHT BUSES"
+    "desc": {
+      "en": "PUBLIC LIGHT BUSES",
+      "zh": "公共小巴"
+    }
   },
   "TS816": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "PRIVATE CARS"
+    "desc": {
+      "en": "PRIVATE CARS",
+      "zh": "私家車"
+    }
   },
   "TS817": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "AMBULANCES"
+    "desc": {
+      "en": "AMBULANCES",
+      "zh": "救護車"
+    }
   },
   "TS818": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "NT TAXIS"
+    "desc": {
+      "en": "NT TAXIS",
+      "zh": "新界的士"
+    }
   },
   "TS819": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "TAXIS"
+    "desc": {
+      "en": "TAXIS",
+      "zh": "的士"
+    }
   },
   "TS820": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "CATEGORIES 1,2,5"
+    "desc": {
+      "en": "CATEGORIES 1,2,5",
+      "zh": "第一二五類"
+    }
   },
   "TS821": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "MON - SAT 7AM - 9PM"
+    "desc": {
+      "en": "MON-SAT 7AM-9PM",
+      "zh": "星期一至星期六上午七時至下午九時"
+    }
   },
   "TS824": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "MON - SAT 8AM - 6PM"
+    "desc": {
+      "en": "MON-SAT 8AM-6PM",
+      "zh": "星期一至星期六上午八時至下午六時"
+    }
   },
   "TS825": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "MON - SAT 8AM - 7PM"
+    "desc": {
+      "en": "MON-SAT 8AM-7PM",
+      "zh": "星期一至星期六上午八時至下午七時"
+    }
   },
   "TS828": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "USE DIPPED HEADLIGHTS"
+    "desc": {
+      "en": "MON-SAT 9AM-7PM",
+      "zh": "星期一至星期六上午九時至下午七時"
+    }
   },
   "TS831": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "LENGTH OVER 7M"
+    "desc": {
+      "en": "LENGTH OVER 7M",
+      "zh": "車長逾七米"
+    }
   },
   "TS832": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "LENGTH OVER 8M"
+    "desc": {
+      "en": "LENGTH OVER 8M",
+      "zh": "車長逾八米"
+    }
   },
   "TS834": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "LENGTH OVER 10M"
+    "desc": {
+      "en": "LENGTH OVER 10M",
+      "zh": "車長逾十米"
+    }
   },
   "TS835": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "LENGTH OVER 11M"
+    "desc": {
+      "en": "LENGTH OVER 11M",
+      "zh": "車長逾十一米"
+    }
   },
   "TS836": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "SLOW"
+    "desc": {
+      "en": "SLOW",
+      "zh": "慢駛"
+    }
   },
   "TS838": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT GENERAL HOLIDAYS"
+    "desc": {
+      "en": "EXCEPT GENERAL HOLIDAYS",
+      "zh": "公眾假期例外"
+    }
   },
   "TS840": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7:30AM - 7:30PM"
+    "desc": {
+      "en": "7:30AM-7:30PM",
+      "zh": "上午七時半至下午七時半"
+    }
   },
   "TS841": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7PM - 7AM"
+    "desc": {
+      "en": "7PM-7AM",
+      "zh": "下午七時至上午七時"
+    }
   },
   "TS850": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "EXCEPT PRIVATE CARS"
+    "desc": {
+      "en": "EXCEPT BUSES: LIGHT BUSES-TAXIS, PRIVATE CARS AND MOTOR CYCLES",
+      "zh": "巴士小型巴士的士私家車及電單車例外"
+    }
   },
   "TS851": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT POLICE VEHICLES"
+    "desc": {
+      "en": "EXCEPT POLICE VEHICLES",
+      "zh": "警車例外"
+    }
   },
   "TS852": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "EXCEPT PUBLIC LIGHT BUSES (SCHEDULED SERVICES)"
+    "desc": {
+      "en": "EXCEPT PUBLIC LIGHT BUSES (SCHEDULED SERVICES)",
+      "zh": "專線小巴例外"
+    }
   },
   "TS853": {
     "tier": 1,
-    "group": "supplementary"
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT BUSES",
+      "zh": "巴士例外"
+    }
   },
   "TS855": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "EXCEPT BUSES"
+    "desc": {
+      "en": "EXCEPT BUSES AND GOODS VEHICLES",
+      "zh": "巴士及貨車例外"
+    }
   },
   "TS862": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7:30AM - 7:30PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": {
+      "en": "6AM-7:30AM",
+      "zh": "上午六時至上午七時半"
+    }
   },
   "TS871": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "MON - FRI 5PM - 7PM"
+    "desc": {
+      "en": "MON-FRI 5PM-7PM",
+      "zh": "星期一至星期五下午五時至下午七時"
+    }
   },
   "TS872": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "EXCEPT GOODS VEHICLES"
+    "desc": {
+      "en": "EXCEPT GOODS VEHICLES",
+      "zh": "貨車例外"
+    }
   },
   "TS875": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "7AM - 10AM 4PM - 7PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": {
+      "en": "7AM-10AM 4PM-7PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "上午七時至十時下午四時至七時星期日及公眾假期例外"
+    }
   },
   "TS877": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "CROSS-HARBOUR TRIPS ONLY SINGLE TOLL CHARGE"
+    "desc": {
+      "en": "CROSS-HARBOUR TRIPS ONLY SINGLE TOLL CHARGE",
+      "zh": "祇限單程過海通道行費"
+    }
   },
   "TS883": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
+    "desc": {
+      "en": "EXCEPT SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "星期日及公眾假期例外"
+    }
   },
   "TS885": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "MON - FRI 5PM - 8PM"
+    "desc": {
+      "en": "MON-FRI 5PM-8PM",
+      "zh": "星期一至星期五下午五時至下午八時"
+    }
   },
   "TS888": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "8AM - MON - SAT 4PM - 7PM"
+    "desc": {
+      "en": "8AM-MON-SAT EXCEPT SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "星期一至星期六上午八時至下午八時星期日及公眾假期例外"
+    }
   },
   "TS889": {
     "tier": 2,
@@ -3141,625 +4636,996 @@
   "TS2141": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "PLS NO STOPPING ZONE"
+    "desc": {
+      "en": "PLS NO STOPPING ZONE"
+    }
   },
   "TS2165": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "BUS NO STOPPING ZONE"
+    }
   },
   "TS2603": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO HOSPITAL"
+    "desc": {
+      "en": "DIRECTION TO HOSPITAL"
+    }
   },
   "TS2606": {
     "tier": 2,
     "group": "informatory",
-    "desc": "EXPRESSWAY STARTS 500 M AHEAD"
+    "desc": {
+      "en": "EXPRESSWAY STARTS 500M AHEAD",
+      "zh": "快速公路在前面五百米開始"
+    }
   },
   "TS2607": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO EXPRESSWAY"
+    "desc": {
+      "en": "DIRECTION TO EXPRESSWAY",
+      "zh": "快速公路"
+    }
   },
   "TS2612": {
     "tier": 2,
     "group": "informatory",
-    "desc": "EXPRESSWAY BOUNDARY"
+    "desc": {
+      "en": "EXPRESSWAY BOUNDARY",
+      "zh": "快速公路範圍"
+    }
   },
   "TS2620": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PARKING PLACE FOR BUSES ONLY"
+    "desc": {
+      "en": "PARKING PLACE FOR BUSES ONLY"
+    }
   },
   "TS2621": {
     "tier": 1,
     "group": "informatory",
-    "desc": "CONTRA-FLOW LIGHT RAIL VEHICLE LANE"
+    "desc": {
+      "en": "CONTRA-FLOW LIGHT RAIL VEHICLE LANE"
+    }
   },
   "TS2632": {
     "tier": 0,
     "group": "informatory",
-    "desc": "TEST BRAKE HERE"
+    "desc": {
+      "en": "TEST BRAKE HERE",
+      "zh": "測試制車系統"
+    }
   },
   "TS2633": {
     "tier": 2,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS3601": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN (EXPRESSWAYS)"
+    }
   },
   "TS3602": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN (EXPRESSWAYS)"
+    }
   },
   "TS3608": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN & SHADOW ISLAND (TC 305)"
+    }
   },
   "TS3609": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - DIRECT OR SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE - DIRECT OR SHADOW ISLAND (TC 306)",
+      "zh": "行車線"
+    }
   },
   "TS3610": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD - DIRECT OR SHADOW ISLAND (EXPRESSWAYS)"
+    }
   },
   "TS3611": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN (EXPRESSWAYS)"
+    }
   },
   "TS3612": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD (EXPRESSWAYS)"
+    }
   },
   "TS3613": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE (EXPRESSWAYS)"
+    }
   },
   "TS3622": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    "desc": {
+      "en": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    }
   },
   "TS3623": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    "desc": {
+      "en": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    }
   },
   "TS3624": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE - 300M"
+    "desc": {
+      "en": "DISTANCE INDICATOR NEARSIDE LANE - 300M (TC 305)"
+    }
   },
   "TS3625": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE - 200M"
+    "desc": {
+      "en": "DISTANCE INDICATOR NEARSIDE LANE - 200M (TC 305)"
+    }
   },
   "TS3626": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE - 100M"
+    "desc": {
+      "en": "DISTANCE INDICATOR NEARSIDE LANE - 100M (TC 305)"
+    }
   },
   "TS3627": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR OFFSIDE LANE - 300M"
+    "desc": {
+      "en": "DISTANCE INDICATOR OFFSIDE LANE (TC 305)"
+    }
   },
   "TS3628": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR OFFSIDE LANE - 200M"
+    "desc": {
+      "en": "DISTANCE INDICATOR OFFSIDE LANE - 200M (TC 305)"
+    }
   },
   "TS3629": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DISTANCE INDICATOR NEARSIDE LANE - 100M"
+    "desc": {
+      "en": "DISTANCE INDICATOR NEARSIDE LANE - 100M (TC 305)"
+    }
   },
   "TS3630": {
     "tier": 0,
     "group": "informatory",
-    "desc": "GET IN LANE"
+    "desc": {
+      "en": "GET IN LANE (TC 306)",
+      "zh": "行車線"
+    }
   },
   "TS3631": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN & SHADOW ISLAND (EXPRESSWAYS)"
+    }
   },
   "TS3632": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN & SHADOW ISLAND (EXPRESSWAYS)"
+    }
   },
   "TS3633": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CARRIAGEWAY NARROWS ON RIGHT AT JUNCTIONS"
+    "desc": {
+      "en": "CARRIAGEWAY NARROWS ON RIGHT AT JUNCTIONS"
+    }
   },
   "TS3634": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CARRIAGEWAY NARROWS ON RIGHT AT JUNCTIONS"
+    "desc": {
+      "en": "CARRIAGEWAY NARROWS ON RIGHT AT JUNCTIONS"
+    }
   },
   "TS3635": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    "desc": {
+      "en": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    }
   },
   "TS3636": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN (EXPRESSWAYS)"
+    }
   },
   "TS3637": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD - LANE GAIN (EXPRESSWAYS)"
+    }
   },
   "TS3638": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - DIRECT OR SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE - DIRECT OR SHADOW ISLAND (EXPRESSWAYS)"
+    }
   },
   "TS3640": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    "desc": {
+      "en": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    }
   },
   "TS3641": {
     "tier": 0,
     "group": "informatory",
-    "desc": "TAXI PICK UP AND DROP OFF FOR 1 CLASS OF TAXI"
+    "desc": {
+      "en": "CONTINUATION OF EXPRESSWAY AND ROUTE CONFIRMATION"
+    }
   },
   "TS616": {
     "tier": 1,
     "group": "informatory",
-    "desc": "NO THROUGH ROAD ON SIDE ROAD TO LEFT"
+    "desc": {
+      "en": "NO THROUGH ROAD ON THE LEFT"
+    }
   },
   "TS626": {
     "tier": 2,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS629": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO PARKING PLACE"
+    "desc": {
+      "en": "DIRECTION TO PARKING PLACE"
+    }
   },
   "TS630": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO PARKING PLACE"
+    "desc": {
+      "en": "DIRECTION TO PARKING PLACE"
+    }
   },
   "TS631": {
     "tier": 1,
     "group": "informatory",
-    "desc": "LANE DIRECTIONS"
+    "desc": {
+      "en": "LANE DIRECTIONS"
+    }
   },
   "TS636": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO FOOTBRIDGE"
+    "desc": {
+      "en": "DIRECTION TO FOOTBRIDGE"
+    }
   },
   "TS638": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO FOOTBRIDGE"
+    }
   },
   "TS639": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO MASS TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
+    }
   },
   "TS691": {
     "tier": 0,
     "group": "informatory",
-    "desc": "DIRECTION TO FERRY"
+    "desc": {
+      "en": "DIRECTION TO FERRY",
+      "zh": "渡輪"
+    }
   },
   "TS692": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO FERRY"
+    "desc": {
+      "en": "DIRECTION TO FERRY",
+      "zh": "渡輪"
+    }
   },
   "TS694": {
     "tier": 1,
     "group": "informatory",
-    "desc": "PEDESTRIANS DIRECTION SIGN INDICATING ACCESSIBLE ROUTE"
+    "desc": {
+      "en": "PEDESTRIANS DIRECTION SIGN INDICATING ACCESSIBLE ROUTE"
+    }
   },
   "TS172": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SPEED LIMIT 30"
+    "desc": {
+      "en": "HEIGHT LIMIT"
+    }
   },
   "TS216": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "HARD SHOULDER FOR EMERGENCY ONLY"
+    "desc": {
+      "en": "HARD SHOULDER FOR EMERGENCY ONLY",
+      "zh": "緊急情況使用路肩限制"
+    }
   },
   "TS217": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "TRAFFIC CONE"
+    "desc": {
+      "en": "TRAFFIC CONE"
+    }
   },
   "TS218": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "TRAFFIC CONE"
+    "desc": {
+      "en": "TRAFFIC CONE"
+    }
   },
   "TS219": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "STOPPING PLACE INDICATOR WHEN RED LIGHT SHOWS WAIT HERE"
+    "desc": {
+      "en": "STOPPING PLACE INDICATOR WHEN RED LIGHT SHOWS WAIT HERE",
+      "zh": "紅燈亮時在此等候"
+    }
   },
   "TS221": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "ENTRY POINT"
+    "desc": {
+      "en": "ENTRY POINT",
+      "zh": "入"
+    }
   },
   "TS228": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "END OF CYCLING RESTRICTION"
+    "desc": {
+      "en": "END OF CYCLING RESTRICTION"
+    }
   },
   "TS232": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "FOOTWAY AND CYCLEWAY FOR MULTICYCLES"
+    "desc": {
+      "en": "FOOTWAY AND CYCLEWAY FOR MULTICYCLES"
+    }
   },
   "TS255": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "MID-MAG RED LIGHT SIGNAL"
+    "desc": {
+      "en": "MID-MAD RED LIGHT SIGNAL"
+    }
   },
   "TS256": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "TOLL AREA"
+    "desc": {
+      "en": "TOLL AREA",
+      "zh": "收費區"
+    }
   },
   "TS313": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "POST OFFICE VEHICLES ONLY"
+    "desc": {
+      "en": "POST OFFICE VEHICLES ONLY",
+      "zh": "核准郵車使用"
+    }
   },
   "TS314": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "POST OFFICE VEHICLES ONLY"
+    "desc": {
+      "en": "POST OFFICE VEHICLES ONLY",
+      "zh": "核准郵車使用"
+    }
   },
   "TS315": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "DRIVING TEST VEHICLES ONLY"
+    "desc": {
+      "en": "DRIVING TEST VEHICLES ONLY",
+      "zh": "駕駛考試車輛使用"
+    }
   },
   "TS316": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "DRIVING TEST VEHICLES ONLY"
+    "desc": {
+      "en": "DRIVING TEST VEHICLES ONLY",
+      "zh": "駕駛考試車輛使用"
+    }
   },
   "TS317": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "POLICE VEHICLES ONLY"
+    "desc": {
+      "en": "POLICE VEHICLES ONLY",
+      "zh": "核准警車使用"
+    }
   },
   "TS319": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "SYMBOL NOT AVAILABLE"
+    "desc": {
+      "en": "SYMBOL NOT AVAILABLE"
+    }
   },
   "TS320": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "SCHEDULED SERVICE STOPPING PLACE"
+    "desc": {
+      "en": "SCHEDULED SERVICE BUS STOPPING PLACE"
+    }
   },
   "TS321": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUS STOPPING PLACE"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS STOPPING PLACE"
+    }
   },
   "TS322": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "SCHEDULED SERVICE STAND"
+    "desc": {
+      "en": "SCHEDULED SERVICE STAND"
+    }
   },
   "TS323": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PUBLIC LIGHT BUS STAND"
+    "desc": {
+      "en": "PUBLIC LIGHT BUS STAND"
+    }
   },
   "TS324": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "TAXI STAND"
+    "desc": {
+      "en": "TAXI STAND",
+      "zh": "的士站"
+    }
   },
   "TS325": {
     "tier": 0,
     "group": "regulatory",
-    "desc": "PARKING TIME PLATE FOR PUBLIC LIGHT BUS"
+    "desc": {
+      "en": "PARKING TIME PLATE FOR PUBLIC LIGHT BUS",
+      "zh": "禁止一至五停泊九至十九座位公共小型巴士或其他車輛"
+    }
   },
   "TS327": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "AUTHORISED VEHICLES ONLY"
+    "desc": {
+      "en": "AUTHORISED VEHICLES ONLY",
+      "zh": "認可車輛使用"
+    }
   },
   "TS333": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "VEHICLES OF THE NORTH-WEST RAILWAY AND TRAMS ONLY"
+    "desc": {
+      "en": "VEHICLES OF THE NORTH-WEST KOWLOON TRAMS ONLY",
+      "zh": "核准電車使用"
+    }
   },
   "TS360": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PROHIBITION OF ALL VEHICLES OF CERTAIN LENGTH"
+    "desc": {
+      "en": "PROHIBITION OF ALL VEHICLES OR VEHICLES OF CERTAIN LENGTH"
+    }
   },
   "TS369": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "HONG KONG SOCIETY FOR THE BLIND VEHICLES ONLY"
+    "desc": {
+      "en": "HONG KONG SOCIETY FOR THE BLIND VEHICLES ONLY",
+      "zh": "香港盲人輔導會車輛專用"
+    }
   },
   "TS370": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "HONG KONG SOCIETY FOR THE BLIND VEHICLES ONLY"
+    "desc": {
+      "en": "HONG KONG SOCIETY FOR THE BLIND VEHICLES ONLY",
+      "zh": "香港盲人輔導會車輛專用"
+    }
   },
   "TS371": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "PRIVATE ROAD"
+    "desc": {
+      "en": "PRIVATE ROAD",
+      "zh": "私家路"
+    }
   },
   "TS381": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR BUSES"
+    "desc": {
+      "en": "NEARSIDE LANE FOR BUSES",
+      "zh": "巴士"
+    }
   },
   "TS382": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NEARSIDE LANE FOR BUSES"
+    "desc": {
+      "en": "NEARSIDE LANE FOR BUSES",
+      "zh": "巴士"
+    }
   },
   "TS543": {
     "tier": 1,
-    "group": "warning"
+    "group": "warning",
+    "desc": {
+      "en": "LANE RESTRICTION"
+    }
   },
   "TS569": {
     "tier": 0,
     "group": "warning",
-    "desc": "END OF PERMITTED SPEED FOR LANTAU TAXIS"
+    "desc": {
+      "en": "END OF PERMITTED SPEED FOR LANTAU TAXIS"
+    }
   },
   "TS772": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "400 M"
+    "desc": {
+      "en": "400 M",
+      "zh": "四百米"
+    }
   },
   "TS774": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "600 M"
+    "desc": {
+      "en": "600 M",
+      "zh": "六百米"
+    }
   },
   "TS787": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 4 KM"
+    "desc": {
+      "en": "FOR 4 KM",
+      "zh": "此段四公里"
+    }
   },
   "TS790": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 100 M"
+    "desc": {
+      "en": "FOR 100 M",
+      "zh": "此段一百米"
+    }
   },
   "TS792": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "FOR 200 M"
+    "desc": {
+      "en": "FOR 200 M",
+      "zh": "此段二百米"
+    }
   },
   "TS797": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "GIVE WAY 50 M"
+    "desc": {
+      "en": "STOP 100 M",
+      "zh": "一百米前停車"
+    }
   },
   "TS798": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "GIVE WAY 100 M"
+    "desc": {
+      "en": "GIVE WAY 50 M",
+      "zh": "五十米前讓路"
+    }
   },
   "TS854": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "HOUSE PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS860": {
     "tier": 2,
     "group": "supplementary",
-    "desc": "EXCEPT TAXI PICK UP OR DROP OFF"
+    "desc": {
+      "en": "2:30PM-3:30PM EXCEPT SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "下午二時半至三時半星期日及公眾假期例外"
+    }
   },
   "TS928": {
     "tier": 0,
     "group": "temporary",
-    "desc": "POLICE SPEED CHECK"
+    "desc": {
+      "en": "POLICE SPEED CHECK",
+      "zh": "警察速度偵查"
+    }
   },
   "TS929": {
     "tier": 0,
     "group": "temporary",
-    "desc": "SLOW"
+    "desc": {
+      "en": "SLOW",
+      "zh": "慢駛"
+    }
   },
   "TS2210": {
     "tier": 1,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE",
+      "zh": "禁止停車區"
+    }
   },
   "TS2211": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE",
+      "zh": "禁止停車區"
+    }
   },
   "TS2231": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "NO STOPPING ZONE"
+    "desc": {
+      "en": "NO STOPPING ZONE",
+      "zh": "禁止停車區"
+    }
   },
   "TS2232": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS"
+    "desc": {
+      "en": "2-HOUR METERS",
+      "zh": "二小時停車錶"
+    }
   },
   "TS2233": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS"
+    "desc": {
+      "en": "2-HOUR METERS",
+      "zh": "二小時停車錶"
+    }
   },
   "TS2234": {
     "tier": 2,
     "group": "regulatory",
-    "desc": "2-HOUR METERS"
+    "desc": {
+      "en": "2-HOUR METERS",
+      "zh": "二小時停車錶"
+    }
   },
   "TS2643": {
     "tier": 2,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD SIGN ON MAIN LINE"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2646": {
     "tier": 1,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2648": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD ROADS OTHER THAN EXPRESSWAYS"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SIDE ROAD"
+    }
   },
   "TS2652": {
     "tier": 2,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD"
+    }
   },
   "TS2656": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON MAIN LINE SIGN ON SLIP ROAD"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2657": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD ON SLIP ROAD ON MAIN LINE"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE SIGN ON SLIP ROAD"
+    }
   },
   "TS2664": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO HIGH-TRANSIT RAILWAY"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
+    }
   },
   "TS2689": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO LIGHT RAIL STOP"
+    "desc": {
+      "en": "DIRECTION TO LIGHT RAIL STOP"
+    }
   },
   "TS2692": {
     "tier": 0,
     "group": "informatory",
-    "desc": "PARKING PLACE FOR MOTOR CYCLES ONLY"
+    "desc": {
+      "en": "PARKING PLACE FOR MOTOR CYCLES ONLY"
+    }
   },
   "TS2693": {
     "tier": 1,
     "group": "informatory",
-    "desc": "PARKING PLACE FOR MOTOR CYCLES ONLY"
+    "desc": {
+      "en": "PARKING PLACE FOR MOTOR CYCLES ONLY"
+    }
   },
   "TS2702": {
     "tier": 0,
     "group": "informatory",
-    "desc": "VEHICLE WAITING AREA"
+    "desc": {
+      "en": "QUEUING ORDER FOR LANTAU TAXI",
+      "zh": "第一輛"
+    }
   },
   "TS2703": {
     "tier": 1,
     "group": "informatory",
-    "desc": "BAY FOR REGISTRATION OF MOTOR CYCLE"
+    "desc": {
+      "en": "RAIL FOR SECURING MOTOR CYCLE"
+    }
   },
   "TS2705": {
     "tier": 2,
     "group": "informatory",
-    "desc": "TRANSPORT COMPLAINTS TELEPHONE NO."
+    "desc": {
+      "en": "TRANSPORT COMPLAINTS TELEPHONE NO."
+    }
   },
   "TS2707": {
     "tier": 2,
     "group": "informatory",
-    "desc": "DIRECTION TO A&E"
+    "desc": {
+      "en": "DIRECTION TO A&E",
+      "zh": "急症室"
+    }
   },
   "TS2710": {
     "tier": 1,
     "group": "informatory",
-    "desc": "DIRECTION TO A&E"
+    "desc": {
+      "en": "DIRECTION TO A&E",
+      "zh": "急症室"
+    }
   },
   "TS2711": {
     "tier": 0,
     "group": "informatory",
-    "desc": "SLOW BUS STOP AHEAD"
+    "desc": {
+      "en": "SLOW BUS STOP AHEAD",
+      "zh": "慢線巴士站在前"
+    }
   },
   "TS2712": {
     "tier": 1,
     "group": "informatory",
-    "desc": "GIVE WAY TO BUS"
+    "desc": {
+      "en": "GIVE WAY TO BUS"
+    }
   },
   "TS3607": {
     "tier": 0,
     "group": "informatory",
-    "desc": "MERGING AHEAD SIGN ON MAIN LINE - LANE GAIN SHADOW ISLAND"
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON MAIN LINE & SHADOW ISLAND (EXPRESSWAYS)"
+    }
   },
   "TS3706": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3707": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3708": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3709": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "URBAN TAXIS"
+    "desc": {
+      "en": "URBAN TAXIS",
+      "zh": "市區的士"
+    }
   },
   "TS3711": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3712": {
     "tier": 0,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3713": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3714": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3720": {
     "tier": 1,
     "group": "supplementary",
-    "desc": "TIME PLATE"
+    "desc": {
+      "en": "TIME PLATE"
+    }
   },
   "TS3836": {
     "tier": 0,
     "group": "informatory",
-    "desc": "CHAINAGE MARKER PER 1KM INTERVAL ALONG ROUTE 8"
+    "desc": {
+      "en": "CHAINAGE MARKER PER 1KM INTERVAL ALONG WB OF ROUTE 8"
+    }
+  },
+  "TS231": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "FOOTWAY AND CYCLEWAY FOR MULTICYCLES"
+    }
+  },
+  "TS372": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "PARKING TIME PLATE FOR FRANCHISED BUSES"
+    }
+  },
+  "TS477A": {
+    "tier": 0,
+    "group": "warning",
+    "desc": {
+      "en": "ADVANCE WARNING OF BUS LANE",
+      "zh": "巴士"
+    }
+  },
+  "TS651": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "DIRECTION TO TOILETS"
+    }
+  },
+  "TS660": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": {
+      "en": "DIRECTION FOR PEDESTRIANS"
+    }
+  },
+  "TS696": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": {
+      "en": "DIRECTION TO HOSPITAL"
+    }
+  },
+  "TS801": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": {
+      "en": "LOW GEAR FOR 1.5 KM",
+      "zh": "一公里半內低波行車"
+    }
+  },
+  "TS2661": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD SIGN ON MAIN LINE"
+    }
+  },
+  "TS3715": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": {
+      "en": "TIME PLATE"
+    }
+  },
+  "TS3722": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT TAXIS AND PRIVATE CARS",
+      "zh": "的士及私家車例外"
+    }
   }
 }

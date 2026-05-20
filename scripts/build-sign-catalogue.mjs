@@ -199,12 +199,13 @@ async function readSheetVLM(jpgBuf) {
 
 For each row that has a sign code (skip blank / "SYMBOL NOT AVAILABLE" / placeholder rows entirely — do NOT emit them), return an object:
 
-  { "code": "641", "desc": "DIRECTION TO FOOTBRIDGE", "y": 0.27 }
+  { "code": "641", "en": "DIRECTION TO FOOTBRIDGE", "zh": "通往人行天橋", "y": 0.27 }
 
 where:
   - "code" = exact digits in the No. column, preserving any letter suffix (e.g. "636L", "639T").
-  - "desc" = the ENGLISH text in the row's Description column, UPPERCASE, with Chinese characters and "(DOUBLE SIDES)" sub-notes omitted. Empty string if the desc column has nothing.
-  - "y" = approximate VERTICAL POSITION of the row's centre, as a fraction of the IMAGE HEIGHT (0.0 at the very top of the page, 1.0 at the very bottom). Be reasonably precise (two decimal places is fine).
+  - "en"   = the ENGLISH text in the row's Description column, UPPERCASE, with Chinese characters and "(DOUBLE SIDES)" sub-notes omitted. Empty string if the column has no English.
+  - "zh"   = the TRADITIONAL CHINESE (Hong Kong, 繁體中文) text in the SAME Description column. Omit any English/digits/parentheses/whitespace separators. Empty string if the column has no Chinese.
+  - "y"    = approximate VERTICAL POSITION of the row's centre, as a fraction of the IMAGE HEIGHT (0.0 at the very top of the page, 1.0 at the very bottom). Be reasonably precise (two decimal places is fine).
 
 Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. Inner arrays = the rows of that group with codes. Skip blank rows entirely (no NONE entries needed — y disambiguates position). No markdown fences, no prose.`
   const body = {
@@ -278,7 +279,9 @@ async function extractSheetVLM(sheet, catalogue) {
   console.log(`[${sheet.pdf}] vlm: ${parsed.length} groups, usage in=${usage?.input_tokens} out=${usage?.output_tokens}`)
 
   // Parse each VLM row into a uniform shape, including the y hint that lets
-  // us map by spatial position instead of ordinal index.
+  // us map by spatial position instead of ordinal index. `desc` is the
+  // {en?, zh?} bilingual shape that matches signDescriptions.json — empty
+  // strings are dropped so we only ever store a populated field.
   function parseCell(item) {
     if (item == null || item === 'NONE' || typeof item !== 'object') return null
     const raw = String(item.code ?? '').toUpperCase().replace(/\s+/g, '')
@@ -287,12 +290,22 @@ async function extractSheetVLM(sheet, catalogue) {
     if (!m) return null
     const n = +m[1]
     if (n < sheet.range[0] || n > sheet.range[1]) return null
+    const en = String(item.en ?? '').trim().toUpperCase().replace(/\s+/g, ' ')
+    const zh = String(item.zh ?? '').trim().replace(/\s+/g, '')
+    const desc = {}
+    if (en) desc.en = en
+    if (zh) desc.zh = zh
     return {
       code: `${sheet.prefix}${m[1]}${m[2]}`,
       base: `${sheet.prefix}${m[1]}`,
-      desc: String(item.desc ?? '').trim().toUpperCase().replace(/\s+/g, ' '),
+      desc,
       y: typeof item.y === 'number' ? item.y : null
     }
+  }
+  // Compare two desc objects shallowly — used to skip no-op writes.
+  function descEqual(a, b) {
+    if (!a || !b) return a === b
+    return a.en === b.en && a.zh === b.zh
   }
 
   // Kept rowBands in centre-y order, for nearest-band lookup.
@@ -305,14 +318,25 @@ async function extractSheetVLM(sheet, catalogue) {
 
   // PASS 1 — description fixes for codes already in the catalogue. No
   // positional logic needed; we just match the code string. Runs over EVERY
-  // VLM row across every group, regardless of alignment.
-  let descAdded = 0, descUpdated = 0
+  // VLM row across every group, regardless of alignment. Existing string
+  // descs (legacy single-language form) are normalised to {en} on first
+  // contact so the rest of the script always sees the {en, zh} object shape.
+  let descAdded = 0, descUpdated = 0, descNormalised = 0
   for (const group of parsed) {
     for (const item of (group ?? [])) {
       const cell = parseCell(item)
-      if (!cell || !catalogue[cell.code] || !cell.desc) continue
-      const prev = catalogue[cell.code].desc
-      if (prev === cell.desc) continue
+      if (!cell || !catalogue[cell.code]) continue
+      if (!cell.desc.en && !cell.desc.zh) continue
+      let prev = catalogue[cell.code].desc
+      // Legacy single-language desc was a bare string; lift it to the
+      // bilingual object form on first contact so the catalogue ends up
+      // uniformly typed even when there's no language content to update.
+      if (typeof prev === 'string') {
+        prev = { en: prev }
+        catalogue[cell.code].desc = prev
+        descNormalised++
+      }
+      if (descEqual(prev, cell.desc)) continue
       if (prev == null) descAdded++
       else descUpdated++
       catalogue[cell.code].desc = cell.desc
@@ -380,13 +404,13 @@ async function extractSheetVLM(sheet, catalogue) {
       }
       normalizeSign(symRaw, join(SIGNS_DIR, `${cell.code}.png`))
       catalogue[cell.code] = { tier: classifyTier(sw, sh), group: sheet.group }
-      if (cell.desc) catalogue[cell.code].desc = cell.desc
+      if (cell.desc.en || cell.desc.zh) catalogue[cell.code].desc = cell.desc
       taken.add(bestIdx)
       lastCenter = gap.center
       added++
     }
   }
-  console.log(`[${sheet.pdf}] added=${added}  desc-added=${descAdded}  desc-updated=${descUpdated}  hallucination-dropped=${droppedHallucination}  align-dropped=${droppedAlign}  no-y=${droppedNoY}  dup=${droppedDup}`)
+  console.log(`[${sheet.pdf}] added=${added}  desc-added=${descAdded}  desc-updated=${descUpdated}  desc-normalised=${descNormalised}  hallucination-dropped=${droppedHallucination}  align-dropped=${droppedAlign}  no-y=${droppedNoY}  dup=${droppedDup}`)
   return added
 }
 
