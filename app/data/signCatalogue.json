@@ -2225,5 +2225,45 @@
     "tier": 1,
     "group": "informatory",
     "desc": "CYCLE PARKING PLACE- PARKING ADVICE"
+  },
+  "TS610": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS615": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS649": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS650": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS652": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS661": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS662": {
+    "tier": 0,
+    "group": "informatory"
+  },
+  "TS671": {
+    "tier": 0,
+    "group": "informatory"
+  },
+  "TS672": {
+    "tier": 0,
+    "group": "informatory"
+  },
+  "TS674": {
+    "tier": 0,
+    "group": "informatory"
   }
 }
