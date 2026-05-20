@@ -262,12 +262,19 @@ async function extractSheetVLM(sheet, catalogue) {
   const rowProf = profile(png, W, H, 'y')
   const gridLines = ruleCentres(rowProf, 120, 3)
   const pitch = modalGap(gridLines)
-  // Build the full per-gap list, marking which were kept as rowBands.
+  // Build the full per-gap list, marking which are candidate rowBands. A
+  // gap is kept as long as it's big enough to plausibly hold a sign cell —
+  // anything from ~pitch tall up to a "rowspan" multi-row cell (e.g. the
+  // 300+ px gaps on informatory sheets where one number labels two stacked
+  // pictograms). Smaller gaps (header rules, divider speck) are dropped.
+  // Below in pass 2 we match a code's y by CONTAINMENT — y falling inside
+  // a kept gap's [top, bot] range — rather than distance to the gap's
+  // centre, so a tall gap doesn't get an unfairly narrow acceptance window.
   const gaps = []
   for (let i = 1; i < gridLines.length; i++) {
     const top = gridLines[i - 1], bot = gridLines[i]
     const h = bot - top
-    gaps.push({ top, bot, h, kept: Math.abs(h - pitch) < pitch * 0.15 })
+    gaps.push({ top, bot, h, kept: h >= pitch * 0.6 })
   }
   console.log(`[${sheet.pdf}] geom: ${symBands.length} groups, ${gaps.length} grid gaps (${gaps.filter(g => g.kept).length} kept as rowBands)`)
 
@@ -308,13 +315,13 @@ async function extractSheetVLM(sheet, catalogue) {
     return a.en === b.en && a.zh === b.zh
   }
 
-  // Kept rowBands in centre-y order, for nearest-band lookup.
-  const keptGaps = gaps.filter(g => g.kept).map(g => ({ ...g, center: (g.top + g.bot) / 2 }))
-  // Match guard: a code's y-target must lie within `pitch * 0.5` of a kept
-  // rowBand centre — i.e. inside that row. Wider than that, the model is
-  // pointing somewhere we can't justify as "this row", so we skip and the
-  // sign stays a dot.
-  const Y_TOL = pitch * 0.5
+  // Kept rowBands in top-to-bottom order; pass 2 matches by CONTAINMENT (the
+  // gap whose [top, bot] range encloses the code's targetY) rather than by
+  // nearest-by-centre. Containment scales naturally to tall multi-row gaps:
+  // a 300-px-tall informatory rowspan accepts any y within its full range,
+  // not just a fixed tolerance around its centre — which is what caused the
+  // older centre-distance check to drop those cells.
+  const keptGaps = gaps.filter(g => g.kept)
 
   // PASS 1 — description fixes for codes already in the catalogue. No
   // positional logic needed; we just match the code string. Runs over EVERY
@@ -345,14 +352,12 @@ async function extractSheetVLM(sheet, catalogue) {
 
   // PASS 2 — add NEW pictogram + entry for codes not yet in catalogue. We
   // need to extract the symbol cell, which requires knowing which row the
-  // code lives in. Earlier versions matched by ordinal index, which broke
-  // whenever the VLM and our geometry disagreed about row count (blank
-  // rows, tall multi-row cells, header counted vs not). Instead, ask the
-  // VLM for a y-position hint per row and match to the NEAREST kept
-  // rowBand by y-coordinate. Robust to count drift, and a band already
-  // taken by a previous code in the same group blocks subsequent codes
-  // (codes increase down a group, so each kept band hosts at most one
-  // code — that property doubles as a sanity check).
+  // code lives in. Ordinal-index alignment broke whenever the VLM and our
+  // geometry disagreed about row count (blank rows, tall multi-row cells,
+  // header counted vs not). The VLM emits a y-position hint per row and we
+  // pick the kept rowBand whose [top, bot] CONTAINS y * imageHeight. A
+  // taken-set + monotone-top guard means each band hosts at most one code
+  // and codes can't claim a row above the previous one in the same group.
   let added = 0, droppedHallucination = 0, droppedAlign = 0, droppedDup = 0, droppedNoY = 0
   for (let g = 0; g < parsed.length; g++) {
     if (g >= symBands.length) {
@@ -361,7 +366,7 @@ async function extractSheetVLM(sheet, catalogue) {
     }
     const [bx0, bx1] = symBands[g]
     const taken = new Set() // rowBand indices already claimed in this group
-    let lastCenter = -Infinity // enforce monotone y-progression within a group
+    let lastTop = -Infinity // enforce monotone gap order within a group
     for (const item of (parsed[g] ?? [])) {
       const cell = parseCell(item)
       if (!cell) continue
@@ -378,21 +383,28 @@ async function extractSheetVLM(sheet, catalogue) {
         continue
       }
       const targetY = cell.y * H
-      let bestIdx = -1, bestDist = Infinity
+      // Allow a small (pitch * 0.1) slack at the top/bottom edges of each
+      // gap — Sonnet's y is approximate, and a code at the very top or
+      // bottom of a row often lands a handful of pixels outside the
+      // detected gridline due to anti-aliasing / line-clustering noise.
+      // Without it, the bottom-most row of every sheet was frequently
+      // align-dropped despite the code being clearly inside the cell.
+      const slack = pitch * 0.1
+      let pickIdx = -1
       for (let i = 0; i < keptGaps.length; i++) {
         if (taken.has(i)) continue
-        if (keptGaps[i].center <= lastCenter) continue
-        const d = Math.abs(keptGaps[i].center - targetY)
-        if (d < bestDist) {
-          bestDist = d
-          bestIdx = i
+        const k = keptGaps[i]
+        if (k.top <= lastTop) continue
+        if (targetY >= k.top - slack && targetY <= k.bot + slack) {
+          pickIdx = i
+          break
         }
       }
-      if (bestIdx < 0 || bestDist > Y_TOL) {
+      if (pickIdx < 0) {
         droppedAlign++
         continue
       }
-      const gap = keptGaps[bestIdx]
+      const gap = keptGaps[pickIdx]
       const rh = gap.bot - gap.top
       const symRaw = '/tmp/sym.png'
       magick([png, '-crop', `${bx1 - bx0 + 12}x${rh - 8}+${bx0 - 6}+${gap.top + 4}`,
@@ -405,8 +417,8 @@ async function extractSheetVLM(sheet, catalogue) {
       normalizeSign(symRaw, join(SIGNS_DIR, `${cell.code}.png`))
       catalogue[cell.code] = { tier: classifyTier(sw, sh), group: sheet.group }
       if (cell.desc.en || cell.desc.zh) catalogue[cell.code].desc = cell.desc
-      taken.add(bestIdx)
-      lastCenter = gap.center
+      taken.add(pickIdx)
+      lastTop = gap.top
       added++
     }
   }
