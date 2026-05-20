@@ -41,6 +41,17 @@ const categoryColor = [
 // runtime; this is the one documented place we widen through `unknown`.
 const expr = (e: unknown) => e as ExpressionSpecification
 
+// TD's ANGLE is the bearing (deg, clockwise from north) of the sign-face
+// normal. ~6% of features have no captured angle (null in GeoJSON) — fall
+// back to 0 so they render upright instead of breaking the expression.
+// Bundled with `map` alignment so the two can't drift apart at a call site:
+// rotate without map-alignment would glue icons to the viewport and defeat
+// the geo-orientation cue collision was disabled to preserve.
+const iconRotation = {
+  'icon-rotate': expr(['coalesce', ['get', 'ANGLE'], 0]),
+  'icon-rotation-alignment': 'map' as const
+}
+
 const tierLayerId = (t: number) => `sign-tier-${t}`
 // The SIGNID set per tier is static, so precompute that clause once and only
 // swap the (changing) category `base` in the watcher.
@@ -213,6 +224,7 @@ onMounted(async () => {
         'icon-size': expr([
           'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
         ]),
+        ...iconRotation,
         'icon-allow-overlap': true,
         'icon-ignore-placement': true
       }
@@ -261,6 +273,7 @@ onMounted(async () => {
             lod.minzoom, SIGN_FIRST_SIZE,
             MAX_ZOOM, lod.size
           ]),
+          ...iconRotation,
           // Collision disabled outright: orientation is conveyed by sign
           // rotation, so every sign must stay exactly where it is and
           // never be dropped or nudged by a neighbour.
