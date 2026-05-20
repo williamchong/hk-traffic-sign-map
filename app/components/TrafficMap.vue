@@ -55,7 +55,13 @@ const tierFilter = (t: number, base: ExpressionSpecification) =>
 // so a sign is never dropped once its tier is in range).
 const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 
-// Set on teardown so the async pictogram loader doesn't addLayer on a removed map.
+// Shared icon-id prefix: feature SIGNIDs map to `${PICTO_PREFIX}${SIGNID}`
+// for every layer that draws a pictogram (tier symbols + selection overlay),
+// and the lazy loader strips the prefix back off to fetch the PNG.
+const PICTO_PREFIX = 'sign-'
+const PICTO_CODES = new Set(codesByTier.flat())
+
+// Set on teardown so the async pictogram loader doesn't addImage on a removed map.
 let disposed = false
 
 onMounted(async () => {
@@ -197,7 +203,7 @@ onMounted(async () => {
       type: 'symbol',
       source: 'sel',
       layout: {
-        'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
+        'icon-image': expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']]),
         // Must stay ≥ the largest tier's zoom-ramped size at every zoom
         // (TIER_LOD max is 0.55 at MAX_ZOOM): the selected sign is also
         // drawn by its always-on sign-tier-N layer underneath, so a
@@ -212,66 +218,71 @@ onMounted(async () => {
       }
     })
 
-    // LOD: at each tier's minzoom the pictogram is drawn over the dot,
-    // later/larger the more complex the sign.
-    void (async () => {
-      try {
-        await Promise.all(codesByTier.flat().map(async (code) => {
-          const id = `sign-${code}`
-          if (m.hasImage(id)) return
-          const img = await m.loadImage(`/signs/${code}.png`)
-          if (!m.hasImage(id)) m.addImage(id, img.data)
-        }))
-        if (disposed || !m.getSource(TILE_SOURCE)) return
-
-        TIER_LOD.forEach((lod, t) => {
-          if (!codesByTier[t]?.length) return
-          m.addLayer({
-            'id': tierLayerId(t),
-            'type': 'symbol',
-            'source': TILE_SOURCE,
-            'source-layer': SOURCE_LAYER,
-            'minzoom': lod.minzoom,
-            'filter': tierFilter(t, expr(mapFilter.value)),
-            'layout': {
-              'icon-image': expr(['concat', 'sign-', ['get', 'SIGNID']]),
-              // Normalised first-display height (SIGN_FIRST_SIZE, shared by
-              // every tier) at the tier's reveal zoom, ramping up to the
-              // tier's "proper" size by max zoom. Safe to grow now that
-              // collision is off — it can't push already-shown signs away,
-              // and zooming in frees the space to render detail bigger.
-              'icon-size': expr([
-                'interpolate', ['linear'], ['zoom'],
-                lod.minzoom, SIGN_FIRST_SIZE,
-                MAX_ZOOM, lod.size
-              ]),
-              // Collision disabled outright: orientation is conveyed by sign
-              // rotation, so every sign must stay exactly where it is and
-              // never be dropped or nudged by a neighbour.
-              'icon-allow-overlap': true,
-              'icon-ignore-placement': true,
-              // Lower tier draws on top, so simple regulatory signs sit above
-              // decorative ones where pictograms overlap.
-              'symbol-sort-key': t
-            },
-            'paint': {
-              // Collision is off, so signs pile up when zoomed out — and can
-              // still overlap even at max zoom. Fade hard while crowded (0.55
-              // at z13) so the stack shows through, easing to a 0.9 ceiling
-              // (never fully opaque): MapLibre can't tell which signs overlap,
-              // so the slight residual transparency keeps any leftover
-              // overlap at high zoom legible-through without hurting reading.
-              'icon-opacity': expr([
-                'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
-              ])
-            }
-          })
+    // Pictograms load lazily: MapLibre fires `styleimagemissing` once per
+    // unknown icon-image a visible tile references, and we fetch that one
+    // PNG on demand. The always-on `sign-points` dot is the fallback while
+    // its pictogram is in flight, and uncatalogued SIGNIDs are dropped so
+    // selecting one doesn't 404 the same code on every render tick.
+    const inFlight = new Set<string>()
+    m.on('styleimagemissing', ({ id }) => {
+      if (!id.startsWith(PICTO_PREFIX) || inFlight.has(id) || m.hasImage(id)) return
+      const code = id.slice(PICTO_PREFIX.length)
+      if (!PICTO_CODES.has(code)) return
+      inFlight.add(id)
+      m.loadImage(`/signs/${code}.png`)
+        .then((img) => {
+          if (!disposed) m.addImage(id, img.data)
         })
-      } catch (err) {
-        // A missing pictogram or a teardown mid-load just leaves dots.
-        console.error('[signs]', err)
-      }
-    })()
+        .catch(err => console.error('[signs]', err))
+        .finally(() => inFlight.delete(id))
+    })
+
+    // LOD: at each tier's minzoom the pictogram is drawn over the dot,
+    // later/larger the more complex the sign. Layers are added before any
+    // pictogram exists; the lazy loader above fills them in as tiles arrive.
+    TIER_LOD.forEach((lod, t) => {
+      if (!codesByTier[t]?.length) return
+      m.addLayer({
+        'id': tierLayerId(t),
+        'type': 'symbol',
+        'source': TILE_SOURCE,
+        'source-layer': SOURCE_LAYER,
+        'minzoom': lod.minzoom,
+        'filter': tierFilter(t, expr(mapFilter.value)),
+        'layout': {
+          'icon-image': expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']]),
+          // Normalised first-display height (SIGN_FIRST_SIZE, shared by
+          // every tier) at the tier's reveal zoom, ramping up to the
+          // tier's "proper" size by max zoom. Safe to grow now that
+          // collision is off — it can't push already-shown signs away,
+          // and zooming in frees the space to render detail bigger.
+          'icon-size': expr([
+            'interpolate', ['linear'], ['zoom'],
+            lod.minzoom, SIGN_FIRST_SIZE,
+            MAX_ZOOM, lod.size
+          ]),
+          // Collision disabled outright: orientation is conveyed by sign
+          // rotation, so every sign must stay exactly where it is and
+          // never be dropped or nudged by a neighbour.
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+          // Lower tier draws on top, so simple regulatory signs sit above
+          // decorative ones where pictograms overlap.
+          'symbol-sort-key': t
+        },
+        'paint': {
+          // Collision is off, so signs pile up when zoomed out — and can
+          // still overlap even at max zoom. Fade hard while crowded (0.55
+          // at z13) so the stack shows through, easing to a 0.9 ceiling
+          // (never fully opaque): MapLibre can't tell which signs overlap,
+          // so the slight residual transparency keeps any leftover
+          // overlap at high zoom legible-through without hurting reading.
+          'icon-opacity': expr([
+            'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
+          ])
+        }
+      })
+    })
 
     // Category visibility is a GPU-side filter — toggling is instant even
     // across 316k features (no DOM, no data refetch). The pictogram tiers
