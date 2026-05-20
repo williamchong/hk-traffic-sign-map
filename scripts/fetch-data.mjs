@@ -9,7 +9,7 @@ import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { join } from 'node:path'
 
-import { SIGN_LAYERS, DATA_BASE_URL, RAW_DIR } from './sign-layers.mjs'
+import { SIGN_LAYERS, BUILD_TIME_DATA, DATA_BASE_URL, RAW_DIR } from './sign-layers.mjs'
 
 async function localSize(path) {
   try {
@@ -37,11 +37,11 @@ async function download(url, dest) {
 
 await mkdir(RAW_DIR, { recursive: true })
 
-for (const { file } of SIGN_LAYERS) {
+for (const { file } of [...SIGN_LAYERS, ...BUILD_TIME_DATA]) {
   for (const ext of ['gml', 'gfs']) {
     const name = `${file}.${ext}`
     await download(`${DATA_BASE_URL}/${name}`, join(RAW_DIR, name))
   }
 }
 
-console.log(`\nDone. ${SIGN_LAYERS.length} layers in ${RAW_DIR}/`)
+console.log(`\nDone. ${SIGN_LAYERS.length} tiled + ${BUILD_TIME_DATA.length} build-time inputs in ${RAW_DIR}/`)

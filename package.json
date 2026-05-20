@@ -11,9 +11,10 @@
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
     "data:fetch": "node scripts/fetch-data.mjs",
+    "data:bearings": "node scripts/compute-bearings.mjs",
     "data:tiles": "node scripts/build-tiles.mjs",
     "data:catalogue": "node scripts/build-sign-catalogue.mjs",
-    "data:build": "node scripts/fetch-data.mjs && node scripts/build-tiles.mjs"
+    "data:build": "node scripts/fetch-data.mjs && node scripts/compute-bearings.mjs && node scripts/build-tiles.mjs"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.106",

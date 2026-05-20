@@ -20,6 +20,16 @@ export const SIGN_LAYERS = [
   // Sign locations live in the pole/abbreviation point classes above.
 ]
 
+// Build-time-only inputs: downloaded by fetch-data, consumed by
+// compute-bearings, but never tiled into PMTiles. Road-marking lines are the
+// densest road-geometry layer in the TAD set (lane lines, kerb edges) and we
+// use them at build time to derive a face bearing per traffic-sign feature.
+// Why not tile them too: the source GML is ~155 MB, mostly short stroke
+// segments that don't render usefully at the zoom levels this viewer covers.
+export const BUILD_TIME_DATA = [
+  { file: 'DTAD_RD_MARK_LINE', label: 'Road marking line (for face-bearing derivation)' }
+]
+
 export const DATA_BASE_URL = 'https://static.data.gov.hk/td/traffic-aids-drawings-v2'
 
 // HK TD spatial data is published in HK1980 Grid (EPSG:2326). Web maps need

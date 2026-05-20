@@ -41,16 +41,26 @@ const categoryColor = [
 // runtime; this is the one documented place we widen through `unknown`.
 const expr = (e: unknown) => e as ExpressionSpecification
 
-// TD's ANGLE was previously fed to icon-rotate on the assumption it was the
-// compass bearing of the sign-face normal. It isn't: the dataspec describes
-// it as the MicroStation symbol-cell rotation ("same as Ustn angle"), and
-// empirically same-code signs <30m apart share the same ANGLE in 59% of
-// pairs and differ by 180° in only 0.5% — TD draws both carriageways with a
-// single road-aligned symbol rotation, so opposite-bound signs always render
-// identically. Without inferring face direction from road centrelines at
-// build time we can't deliver the orientation cue the rotation was meant to
-// provide, so signs stay upright. ANGLE remains exposed in SignPopup as raw
-// data.
+// FACE_BEARING is computed at build time by scripts/compute-bearings.mjs:
+// each abbreviation point is snapped to the nearest ≥3 m road-marking line,
+// its compass tangent is taken, and the sign's side of the line (cross-
+// product sign) flips one carriageway by 180° so opposite-bound signs end
+// up 180° apart in the data. TD's raw `ANGLE` looked like it should fill
+// this role but turned out to be the MicroStation symbol-cell rotation
+// (commit 42c343a), which gave both carriageways the same value.
+//
+// Coverage is ~76 % of the 178k signs; the rest (off-network ferry piers,
+// gantries set back from the carriageway, signs already inside junction
+// geometry) have no FACE_BEARING and fall through `coalesce` to 0 → upright,
+// matching the pre-rotation state for them.
+//
+// `icon-rotation-alignment: 'map'` keeps the bearing geo-aligned through
+// map rotation — without it the rotation would lock to the viewport and the
+// orientation cue would be meaningless.
+const iconRotation = {
+  'icon-rotate': expr(['coalesce', ['get', 'FACE_BEARING'], 0]),
+  'icon-rotation-alignment': 'map' as const
+}
 
 const tierLayerId = (t: number) => `sign-tier-${t}`
 // The SIGNID set per tier is static, so precompute that clause once and only
@@ -224,6 +234,7 @@ onMounted(async () => {
         'icon-size': expr([
           'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
         ]),
+        ...iconRotation,
         'icon-allow-overlap': true,
         'icon-ignore-placement': true
       }
@@ -272,6 +283,7 @@ onMounted(async () => {
             lod.minzoom, SIGN_FIRST_SIZE,
             MAX_ZOOM, lod.size
           ]),
+          ...iconRotation,
           // Collision disabled outright: every sign must stay exactly where
           // it is and never be dropped or nudged by a neighbour. Each point
           // is a real installed sign with a 1:1 ground meaning, so hiding it

@@ -3,8 +3,8 @@
 // PMTiles archive via tippecanoe. The browser never touches the ~430 MB of raw
 // GML — only the compact tiled output.
 
-import { mkdir, rm } from 'node:fs/promises'
-import { createWriteStream } from 'node:fs'
+import { mkdir, readFile, rm } from 'node:fs/promises'
+import { createWriteStream, existsSync } from 'node:fs'
 import { spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
 import { createInterface } from 'node:readline'
@@ -15,6 +15,17 @@ import {
 } from './sign-layers.mjs'
 
 const COMBINED = join(RAW_DIR, '_combined.geojsonl')
+const FACE_BEARINGS = join(RAW_DIR, '_face_bearings.json')
+
+// Map<FEATUREID-as-string, faceBearingDegrees>; populated only for the
+// traffic-sign-abbreviation layer. If the bearings file is missing (someone
+// runs build-tiles without compute-bearings) we silently fall through with
+// no FACE_BEARING property and the runtime will leave those signs upright —
+// a degraded view, not a broken build.
+const faceBearings = existsSync(FACE_BEARINGS)
+  ? JSON.parse(await readFile(FACE_BEARINGS, 'utf8'))
+  : null
+if (!faceBearings) console.warn(`No ${FACE_BEARINGS} — signs will render upright. Run \`node scripts/compute-bearings.mjs\` first.`)
 
 function requireTool(cmd, hint) {
   if (spawnSync(cmd, ['--version']).error) {
@@ -38,7 +49,9 @@ async function convertLayer({ file, category }, out) {
   ])
   ogr.stderr.on('data', d => process.stderr.write(`[ogr2ogr ${file}] ${d}`))
 
-  let count = 0
+  // Only ABV_PT features get a FACE_BEARING; checked once outside the loop.
+  const injectBearing = faceBearings && category === 'traffic-sign-abbreviation'
+  let count = 0, bearingsApplied = 0
   const rl = createInterface({ input: ogr.stdout, crlfDelay: Infinity })
   for await (const line of rl) {
     // GeoJSONSeq may prefix records with the RFC 8142 record separator
@@ -47,9 +60,20 @@ async function convertLayer({ file, category }, out) {
     if (!trimmed) continue
     const feature = JSON.parse(trimmed)
     feature.properties = { ...feature.properties, category }
+    if (injectBearing) {
+      // FEATUREID is keyed as a string in the bearings JSON; GeoJSON
+      // properties may surface it as number or string. Coerce once.
+      const fid = String(feature.properties.FEATUREID ?? '')
+      const bearing = faceBearings[fid]
+      if (bearing !== undefined) {
+        feature.properties.FACE_BEARING = bearing
+        bearingsApplied++
+      }
+    }
     if (!out.write(JSON.stringify(feature) + '\n')) await once(out, 'drain')
     count++
   }
+  if (injectBearing) console.log(`    + FACE_BEARING on ${bearingsApplied} / ${count} (${(bearingsApplied / count * 100).toFixed(1)}%)`)
 
   const [code] = await once(ogr, 'close')
   if (code !== 0) throw new Error(`ogr2ogr failed for ${file} (exit ${code})`)
