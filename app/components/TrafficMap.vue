@@ -59,7 +59,7 @@ const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 let disposed = false
 
 onMounted(async () => {
-  const [{ default: maplibregl }, { Protocol }] = await Promise.all([
+  const [{ default: maplibregl }, { Protocol, PMTiles }] = await Promise.all([
     import('maplibre-gl'),
     import('pmtiles')
   ])
@@ -68,8 +68,14 @@ onMounted(async () => {
   if (!container.value) return
 
   // pmtiles serves vector tiles out of one static file via HTTP range
-  // requests — registered once as a custom maplibre protocol.
-  maplibregl.addProtocol('pmtiles', new Protocol().tile)
+  // requests — registered once as a custom maplibre protocol. The custom
+  // Source falls back to a whole-file download (with a console.warn) if
+  // the host returns 200 instead of 206 for a Range request — see
+  // app/utils/pmtilesSource.ts.
+  const pmtilesUrl = `${window.location.origin}/data/traffic-signs.pmtiles`
+  const protocol = new Protocol()
+  protocol.add(new PMTiles(new RangeOrWholeSource(pmtilesUrl)))
+  maplibregl.addProtocol('pmtiles', protocol.tile)
   detachProtocol = () => maplibregl.removeProtocol('pmtiles')
 
   let m: MaplibreMap
@@ -133,7 +139,7 @@ onMounted(async () => {
   m.on('load', () => {
     m.addSource(TILE_SOURCE, {
       type: 'vector',
-      url: `pmtiles://${window.location.origin}/data/traffic-signs.pmtiles`,
+      url: `pmtiles://${pmtilesUrl}`,
       attribution: 'Traffic sign data © Transport Department, HKSAR'
     })
 
