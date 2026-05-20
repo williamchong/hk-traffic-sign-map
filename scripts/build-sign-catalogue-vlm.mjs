@@ -184,14 +184,18 @@ console.log(`GML ground-truth: ${onMap.size} distinct SIGNIDs`)
 // ---- VLM call ----
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 async function readSheetVLM(jpgBuf) {
-  const prompt = `This is one page from the Hong Kong Transport Department "Index Plan" — a reference of all traffic signs. The page is a table whose columns repeat the pattern [No. | Symbol | Description] for each column-group. Codes ("641", "642", …) appear in the small "No." column at the LEFT of each group. Codes go down each group, then continue at the top of the next group to the right. Blank rows (no symbol or just a placeholder like "SYMBOL NOT AVAILABLE") also exist.
+  const prompt = `This is one page from the Hong Kong Transport Department "Index Plan" — a reference of all traffic signs. The page is a table whose columns repeat the pattern [No. | Symbol | Description] for each column-group. Codes ("641", "642", …) appear in the small "No." column at the LEFT of each group. Codes go down each group, then continue at the top of the next group to the right.
 
-For each column-group on this page, list EVERY ROW in top-to-bottom visual order. Each row is either the string "NONE" (no code / deleted / placeholder cell), or an object {"code": "641", "desc": "DIRECTION TO FOOTBRIDGE"}.
+For each row that has a sign code (skip blank / "SYMBOL NOT AVAILABLE" / placeholder rows entirely — do NOT emit them), return an object:
 
-  - "code" is the exact digits visible in the No. column, possibly with a letter suffix (e.g. "636L", "639T") — preserve the suffix.
-  - "desc" is the ENGLISH text in the row's Description column, in UPPERCASE. Omit any Chinese characters and any "(DOUBLE SIDES)" sub-notes. If the desc column is empty, return desc: "".
+  { "code": "641", "desc": "DIRECTION TO FOOTBRIDGE", "y": 0.27 }
 
-Count rows starting from the first data row (skip the column header strip). Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. Inner arrays = rows top to bottom. No markdown fences, no prose.`
+where:
+  - "code" = exact digits in the No. column, preserving any letter suffix (e.g. "636L", "639T").
+  - "desc" = the ENGLISH text in the row's Description column, UPPERCASE, with Chinese characters and "(DOUBLE SIDES)" sub-notes omitted. Empty string if the desc column has nothing.
+  - "y" = approximate VERTICAL POSITION of the row's centre, as a fraction of the IMAGE HEIGHT (0.0 at the very top of the page, 1.0 at the very bottom). Be reasonably precise (two decimal places is fine).
+
+Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. Inner arrays = the rows of that group with codes. Skip blank rows entirely (no NONE entries needed — y disambiguates position). No markdown fences, no prose.`
   const body = {
     model: MODEL,
     max_tokens: 4096,
@@ -262,19 +266,12 @@ async function extractSheetVLM(sheet, catalogue) {
   const { parsed, usage } = await readSheetVLM(jpgBuf)
   console.log(`[${sheet.pdf}] vlm: ${parsed.length} groups, usage in=${usage?.input_tokens} out=${usage?.output_tokens}`)
 
-  // Parse each cell into a uniform shape — { code, desc, raw } — so the
-  // two later passes (description-update for known codes, new-code add for
-  // new codes) can iterate it without re-parsing.
+  // Parse each VLM row into a uniform shape, including the y hint that lets
+  // us map by spatial position instead of ordinal index.
   function parseCell(item) {
-    if (item == null || item === 'NONE') return null
-    let code = null, desc = ''
-    if (typeof item === 'string') code = item
-    else if (typeof item === 'object') {
-      code = item.code
-      desc = item.desc ?? ''
-    }
-    if (!code || code === 'NONE') return null
-    const raw = String(code).toUpperCase().replace(/\s+/g, '')
+    if (item == null || item === 'NONE' || typeof item !== 'object') return null
+    const raw = String(item.code ?? '').toUpperCase().replace(/\s+/g, '')
+    if (!raw || raw === 'NONE') return null
     const m = raw.match(/^(\d{2,4})([A-Z]?)$/)
     if (!m) return null
     const n = +m[1]
@@ -282,13 +279,22 @@ async function extractSheetVLM(sheet, catalogue) {
     return {
       code: `${sheet.prefix}${m[1]}${m[2]}`,
       base: `${sheet.prefix}${m[1]}`,
-      desc: String(desc).trim().toUpperCase().replace(/\s+/g, ' ')
+      desc: String(item.desc ?? '').trim().toUpperCase().replace(/\s+/g, ' '),
+      y: typeof item.y === 'number' ? item.y : null
     }
   }
 
-  // PASS 1 — description fixes for codes ALREADY in the catalogue. Works on
-  // every group regardless of alignment: we only need code-string match, no
-  // symbol-cell extraction, so even alignment-skipped groups contribute.
+  // Kept rowBands in centre-y order, for nearest-band lookup.
+  const keptGaps = gaps.filter(g => g.kept).map(g => ({ ...g, center: (g.top + g.bot) / 2 }))
+  // Match guard: a code's y-target must lie within `pitch * 0.5` of a kept
+  // rowBand centre — i.e. inside that row. Wider than that, the model is
+  // pointing somewhere we can't justify as "this row", so we skip and the
+  // sign stays a dot.
+  const Y_TOL = pitch * 0.5
+
+  // PASS 1 — description fixes for codes already in the catalogue. No
+  // positional logic needed; we just match the code string. Runs over EVERY
+  // VLM row across every group, regardless of alignment.
   let descAdded = 0, descUpdated = 0
   for (const group of parsed) {
     for (const item of (group ?? [])) {
@@ -302,42 +308,56 @@ async function extractSheetVLM(sheet, catalogue) {
     }
   }
 
-  // PASS 2 — add NEW pictogram + entry for codes not yet in catalogue. This
-  // path needs symbol-cell extraction, which requires the alignment guard:
-  // VLM row index → grid gap index. If the per-group count doesn't match
-  // (with offset 0 or 1 to allow for the column header), skip that group
-  // entirely; better a dot than a misaligned pictogram.
-  let added = 0, droppedHallucination = 0, droppedAlign = 0, droppedDup = 0
+  // PASS 2 — add NEW pictogram + entry for codes not yet in catalogue. We
+  // need to extract the symbol cell, which requires knowing which row the
+  // code lives in. Earlier versions matched by ordinal index, which broke
+  // whenever the VLM and our geometry disagreed about row count (blank
+  // rows, tall multi-row cells, header counted vs not). Instead, ask the
+  // VLM for a y-position hint per row and match to the NEAREST kept
+  // rowBand by y-coordinate. Robust to count drift, and a band already
+  // taken by a previous code in the same group blocks subsequent codes
+  // (codes increase down a group, so each kept band hosts at most one
+  // code — that property doubles as a sanity check).
+  let added = 0, droppedHallucination = 0, droppedAlign = 0, droppedDup = 0, droppedNoY = 0
   for (let g = 0; g < parsed.length; g++) {
     if (g >= symBands.length) {
       console.warn(`  group ${g + 1} from VLM has no matching detected symBand — skipping new-code add`)
       continue
     }
-    const items = parsed[g] ?? []
-    let offset
-    if (items.length === gaps.length) offset = 0
-    else if (items.length === gaps.length - 1) offset = 1
-    else {
-      console.warn(`  group ${g + 1}: VLM count ${items.length} vs geom gaps ${gaps.length} — alignment ambiguous, skipping new-code add`)
-      continue
-    }
     const [bx0, bx1] = symBands[g]
-    for (let p = 0; p < items.length; p++) {
-      const cell = parseCell(items[p])
+    const taken = new Set() // rowBand indices already claimed in this group
+    let lastCenter = -Infinity // enforce monotone y-progression within a group
+    for (const item of (parsed[g] ?? [])) {
+      const cell = parseCell(item)
       if (!cell) continue
       if (catalogue[cell.code]) {
         droppedDup++
         continue
       }
-      // GML filter — only ship codes that exist on real road signs. Suffix
-      // variants (TS636L/R/T) share a base pictogram with TS636, so accept
-      // if EITHER the exact code or its base is present in GML.
       if (!onMap.has(cell.code) && !onMap.has(cell.base)) {
         droppedHallucination++
         continue
       }
-      const gap = gaps[p + offset]
-      if (!gap || !gap.kept) continue // header / tall multi-row — extraction unreliable
+      if (cell.y == null) {
+        droppedNoY++
+        continue
+      }
+      const targetY = cell.y * H
+      let bestIdx = -1, bestDist = Infinity
+      for (let i = 0; i < keptGaps.length; i++) {
+        if (taken.has(i)) continue
+        if (keptGaps[i].center <= lastCenter) continue
+        const d = Math.abs(keptGaps[i].center - targetY)
+        if (d < bestDist) {
+          bestDist = d
+          bestIdx = i
+        }
+      }
+      if (bestIdx < 0 || bestDist > Y_TOL) {
+        droppedAlign++
+        continue
+      }
+      const gap = keptGaps[bestIdx]
       const rh = gap.bot - gap.top
       const symRaw = '/tmp/sym.png'
       magick([png, '-crop', `${bx1 - bx0 + 12}x${rh - 8}+${bx0 - 6}+${gap.top + 4}`,
@@ -350,10 +370,12 @@ async function extractSheetVLM(sheet, catalogue) {
       normalizeSign(symRaw, join(SIGNS_DIR, `${cell.code}.png`))
       catalogue[cell.code] = { tier: classifyTier(sw, sh), group: sheet.group }
       if (cell.desc) catalogue[cell.code].desc = cell.desc
+      taken.add(bestIdx)
+      lastCenter = gap.center
       added++
     }
   }
-  console.log(`[${sheet.pdf}] added=${added}  desc-added=${descAdded}  desc-updated=${descUpdated}  hallucination-dropped=${droppedHallucination}  align-dropped=${droppedAlign}  dup=${droppedDup}`)
+  console.log(`[${sheet.pdf}] added=${added}  desc-added=${descAdded}  desc-updated=${descUpdated}  hallucination-dropped=${droppedHallucination}  align-dropped=${droppedAlign}  no-y=${droppedNoY}  dup=${droppedDup}`)
   return added
 }
 
