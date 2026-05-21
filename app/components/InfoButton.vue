@@ -4,12 +4,19 @@
 // explanation without leaving the map. The SEO/crawlable path is the
 // separate prerendered links + pages, not this modal.
 const { t } = useI18n()
+const { track } = useAnalytics()
 const open = ref(false)
 
 const tabs = computed(() => [
   { label: t('tabs.about'), slot: 'about' as const, icon: 'i-lucide-info' },
   { label: t('tabs.faq'), slot: 'faq' as const, icon: 'i-lucide-circle-help' }
 ])
+
+// Only the open transition is interesting (the close is implicit on outside-
+// click or the X button); tracking both would double-count every view.
+watch(open, (isOpen) => {
+  if (isOpen) track('info_open')
+})
 </script>
 
 <template>

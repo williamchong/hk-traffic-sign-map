@@ -4,10 +4,16 @@
 // hreflang alternate, so it doubles as an SEO discovery path.
 const { locale, locales } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
+const { track } = useAnalytics()
 
 const other = computed(() =>
   locales.value.find(l => l.code !== locale.value)
 )
+
+function onSwitch() {
+  if (!other.value) return
+  track('locale_switch', { from: locale.value, to: other.value.code })
+}
 </script>
 
 <template>
@@ -20,5 +26,6 @@ const other = computed(() =>
     variant="ghost"
     color="neutral"
     :aria-label="$t('localeSwitch.aria')"
+    @click="onSwitch"
   />
 </template>

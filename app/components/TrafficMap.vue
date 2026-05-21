@@ -2,7 +2,7 @@
 import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { categoryColorStops } from '~/composables/useSignCategories'
-import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr } from '~/composables/useSignCatalogue'
+import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf } from '~/composables/useSignCatalogue'
 
 // maplibre-gl touches `window` at import time and is large; it's
 // dynamically imported inside onMounted so it never enters the SSR pass
@@ -11,6 +11,7 @@ let detachProtocol: (() => void) | undefined
 
 const { mapFilter, selectedSign, mapUnavailable } = useTrafficLayers()
 const colorMode = useColorMode()
+const { track } = useAnalytics()
 
 const TILE_SOURCE = 'signs'
 const SOURCE_LAYER = 'signs' // tippecanoe layer name (see scripts/sign-layers.mjs)
@@ -151,6 +152,7 @@ onMounted(async () => {
     // fire for this — surface a message instead of a blank container.
     console.error('[maplibre] WebGL unavailable', err)
     mapUnavailable.value = true
+    track('map_init_failed')
     detachProtocol?.()
     detachProtocol = undefined
     return
@@ -386,6 +388,17 @@ onMounted(async () => {
       index: cycleIdx + 1,
       total: hits.length
     }
+    // `sign_id` is the catalogued SIGNID where present (the most informative
+    // dimension — "which signs do people click?"); uncatalogued features
+    // (poles, tourist signs) fall back to category so the event still groups
+    // usefully. `cluster_size` >1 means the click landed on overlapping signs.
+    const signId = typeof f.properties.SIGNID === 'string' ? f.properties.SIGNID : null
+    track('sign_select', {
+      sign_id: signId,
+      category: categoryKeyOf(f.properties),
+      cluster_size: hits.length,
+      zoom: Math.round(m.getZoom() * 10) / 10
+    })
   })
 
   // Layer-scoped enter/leave only fire on transitions — far cheaper than

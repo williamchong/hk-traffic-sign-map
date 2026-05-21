@@ -4,6 +4,7 @@
 // resolved light/dark), and @nuxtjs/color-mode keeps that reactive — incl.
 // to OS theme changes while preference is 'system' — so it follows for free.
 const colorMode = useColorMode()
+const { track } = useAnalytics()
 
 const MODES = ['light', 'dark', 'system'] as const
 type Mode = typeof MODES[number]
@@ -22,8 +23,9 @@ const current = computed<Mode>(() =>
 )
 
 function cycle() {
-  const next = MODES[(MODES.indexOf(current.value) + 1) % MODES.length]
-  colorMode.preference = next ?? 'system'
+  const next = MODES[(MODES.indexOf(current.value) + 1) % MODES.length] ?? 'system'
+  colorMode.preference = next
+  track('theme_change', { mode: next })
 }
 </script>
 

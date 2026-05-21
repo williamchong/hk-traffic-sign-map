@@ -1,12 +1,24 @@
 <script setup lang="ts">
 const { categories, enabled, toggleAll, mapUnavailable } = useTrafficLayers()
 const localePath = useLocalePath()
+const { track } = useAnalytics()
 
 const allOn = computed(() => categories.every(c => enabled[c.key]))
 
 // View-only: folds the list to shrink the panel. Not in useTrafficLayers
 // because it doesn't touch the map filter; checkbox state lives there.
 const expanded = ref(true)
+
+function onCategoryToggle(key: string, value: boolean) {
+  enabled[key] = value
+  track('filter_category_toggle', { category: key, enabled: value })
+}
+
+function onToggleAll() {
+  const next = !allOn.value
+  toggleAll(next)
+  track('filter_toggle_all', { enabled: next })
+}
 </script>
 
 <template>
@@ -59,7 +71,7 @@ const expanded = ref(true)
           size="xs"
           variant="link"
           :label="allOn ? $t('panel.hideAll') : $t('panel.showAll')"
-          @click="toggleAll(!allOn)"
+          @click="onToggleAll"
         />
       </div>
 
@@ -73,7 +85,10 @@ const expanded = ref(true)
           :key="c.key"
           class="flex cursor-pointer items-center gap-2 text-sm"
         >
-          <UCheckbox v-model="enabled[c.key]" />
+          <UCheckbox
+            :model-value="enabled[c.key]"
+            @update:model-value="v => onCategoryToggle(c.key, !!v)"
+          />
           <span
             class="size-3 shrink-0 rounded-full"
             :style="{ backgroundColor: c.color }"
