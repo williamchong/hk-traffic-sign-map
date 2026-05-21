@@ -110,11 +110,21 @@ const tip = spawn('tippecanoe', [
   '-o', OUTPUT_PMTILES,
   '-l', TILE_LAYER,
   '-n', 'HK Traffic Signs',
-  '-zg', // pick max zoom automatically from feature density
-  '--drop-densest-as-needed', // thin dense areas at low zoom, keep them fast
-  '--extend-zooms-if-still-dropping',
+  // Build only from the map's minZoom up. Below z9 the viewport is locked
+  // out, so those tiles would never be requested. Auto-picks the max from
+  // feature density (-zg).
+  '-Z', '9',
+  '-zg',
+  // Retain every point at every zoom. Default `-r 2.5` drops ~326k
+  // features at z11 (visible in the archive's `strategies` metadata),
+  // which broke the sign-id filter's distribution-at-a-glance view —
+  // unfiltered tiles "looked" complete because survivors were spatially
+  // representative, but filtered tiles only contained whichever IDs
+  // happened to win the drop lottery.
+  '-r1',
+  '--no-feature-limit',
   '--no-tile-size-limit',
-  '--quiet', // suppress per-tile progress spam
+  '--quiet',
   '--force',
   COMBINED
 ], { stdio: 'inherit' })
