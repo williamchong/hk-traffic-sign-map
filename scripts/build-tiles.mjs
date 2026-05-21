@@ -3,10 +3,11 @@
 // PMTiles archive via tippecanoe. The browser never touches the ~430 MB of raw
 // GML — only the compact tiled output.
 
-import { mkdir, readFile, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { createWriteStream, existsSync } from 'node:fs'
 import { spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
+import { createHash } from 'node:crypto'
 import { createInterface } from 'node:readline'
 import { dirname, join } from 'node:path'
 
@@ -132,4 +133,15 @@ const tip = spawn('tippecanoe', [
 const [tipCode] = await once(tip, 'close')
 if (tipCode !== 0) process.exit(tipCode)
 await rm(COMBINED, { force: true })
-console.log(`\nDone → ${OUTPUT_PMTILES}`)
+
+// Hash the archive and write a tiny version file the app imports. The
+// runtime appends `?v=<hash>` to the PMTiles URL so a rebuild invalidates
+// the byte-range cache on returning visitors — otherwise the browser
+// would stitch cached chunks of the old archive together with newly
+// fetched chunks of the new one.
+const archiveBytes = await readFile(OUTPUT_PMTILES)
+const version = createHash('sha256').update(archiveBytes).digest('hex').slice(0, 12)
+const VERSION_FILE = join('app', 'data', 'tilesVersion.json')
+await writeFile(VERSION_FILE, JSON.stringify({ version }, null, 2) + '\n')
+
+console.log(`\nDone → ${OUTPUT_PMTILES} (v${version})`)

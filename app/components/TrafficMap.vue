@@ -3,6 +3,7 @@ import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature, Ge
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSignCategories'
 import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf } from '~/composables/useSignCatalogue'
+import tilesVersion from '~/data/tilesVersion.json'
 
 // maplibre-gl touches `window` at import time and is large; it's
 // dynamically imported inside onMounted so it never enters the SSR pass
@@ -99,8 +100,11 @@ onMounted(async () => {
   // requests — registered once as a custom maplibre protocol. The custom
   // Source falls back to a whole-file download (with a console.warn) if
   // the host returns 200 instead of 206 for a Range request — see
-  // app/utils/pmtilesSource.ts.
-  const pmtilesUrl = `${window.location.origin}/data/traffic-signs.pmtiles`
+  // app/utils/pmtilesSource.ts. `?v=<hash>` is the cache-buster: each
+  // tile rebuild writes a fresh hash to tilesVersion.json so returning
+  // visitors don't stitch cached chunks of the old archive together
+  // with newly-fetched chunks of the new one.
+  const pmtilesUrl = `${window.location.origin}/data/traffic-signs.pmtiles?v=${tilesVersion.version}`
   const protocol = new Protocol()
   protocol.add(new PMTiles(new RangeOrWholeSource(pmtilesUrl)))
   maplibregl.addProtocol('pmtiles', protocol.tile)
