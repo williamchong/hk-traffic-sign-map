@@ -9,7 +9,21 @@
     "subtitle": "Transport Department open data",
     "categories": "Categories",
     "showAll": "Show all",
-    "hideAll": "Hide all"
+    "hideAll": "Hide all",
+    "tabs": {
+      "category": "By category",
+      "signId": "By sign ID"
+    },
+    "signSearch": {
+      "placeholder": "Search {total} signs by ID or meaning",
+      "matchCount": "{n} matches",
+      "selectedCount": "{n} selected",
+      "selectMatches": "Select all matches",
+      "deselectMatches": "Deselect all matches",
+      "clearAll": "Clear",
+      "noMatches": "No signs match.",
+      "removeChip": "Remove {id}"
+    }
   },
   "categories": {
     "regulatory": "Regulatory",

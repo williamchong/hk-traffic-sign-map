@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { signIconUrl, signDescription, categoryKeyOf } from '~/composables/useSignCatalogue'
+import { CATEGORY_FALLBACK_COLOR } from '~/composables/useSignCategories'
 
 const { selectedSign, categories } = useTrafficLayers()
 const { t, locale } = useI18n()
@@ -89,7 +90,7 @@ const signLabel = computed(() => description.value ?? title.value)
         <span
           v-else
           class="mt-1 size-3 shrink-0 rounded-full"
-          :style="{ backgroundColor: category?.color ?? '#94a3b8' }"
+          :style="{ backgroundColor: category?.color ?? CATEGORY_FALLBACK_COLOR }"
         />
         <div class="min-w-0">
           <h2 class="truncate font-semibold">

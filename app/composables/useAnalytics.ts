@@ -1,4 +1,5 @@
 import type { CategoryKey } from '~/composables/useSignCatalogue'
+import type { FilterMode } from '~/composables/useTrafficLayers'
 
 // The @nuxt/scripts proxy queues calls placed before gtag.js loads and
 // replays them on hydration, so call sites don't need to gate on readiness.
@@ -10,8 +11,12 @@ type ThemeMode = 'light' | 'dark' | 'system'
 // same pattern the rest of the app uses for sign groups and category keys.
 interface AnalyticsEvents {
   sign_select: { sign_id: string | null, category: CategoryKey, cluster_size: number, zoom: number }
-  filter_category_toggle: { category: string, enabled: boolean }
+  filter_category_toggle: { category: CategoryKey, enabled: boolean }
   filter_toggle_all: { enabled: boolean }
+  filter_mode_switch: { mode: FilterMode }
+  filter_signid_toggle: { sign_id: string, enabled: boolean }
+  filter_signid_bulk: { count: number, enabled: boolean }
+  filter_signid_clear: undefined
   locale_switch: { from: string, to: string }
   theme_change: { mode: ThemeMode }
   info_open: undefined

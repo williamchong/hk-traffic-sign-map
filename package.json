@@ -23,6 +23,8 @@
     "@nuxt/ui": "^4.7.1",
     "@nuxtjs/i18n": "^10.3.0",
     "@nuxtjs/seo": "^5.1.3",
+    "@vueuse/core": "^14.3.0",
+    "@vueuse/nuxt": "^14.3.0",
     "maplibre-gl": "^5.24.0",
     "nuxt": "^4.4.6",
     "pmtiles": "^4.4.1",

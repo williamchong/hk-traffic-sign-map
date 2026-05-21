@@ -68,24 +68,34 @@ export function signIconUrl(signId: unknown): string | null {
     : null
 }
 
+// Both languages a sign has, regardless of UI locale. Curated overrides
+// still win per-language so a hand-edited zh wording never gets clobbered
+// by a VLM-extracted one; the catalogue's bilingual `desc` fills gaps the
+// curated file hasn't reached. Useful when both languages are needed at
+// once — e.g. building a search index that should match either.
+export function bilingualDescription(
+  signId: unknown
+): { en?: string, zh?: string } {
+  if (typeof signId !== 'string') return {}
+  const o = descOverrides[signId] ?? {}
+  // Legacy entries had `desc: string` (English only). Newer entries are
+  // `{ en?, zh? }`. Normalise once so the merge below is symmetric.
+  const c = catalogue[signId]?.desc
+  const cat = typeof c === 'string' ? { en: c } : (c ?? {})
+  return { en: o.en ?? cat.en, zh: o.zh ?? cat.zh }
+}
+
 // A sign's human meaning for the given UI locale. Resolution order:
 //   curated zh (if zh UI) → catalogue zh (if zh UI) → curated en →
-//   catalogue en → null.
-// Curated overrides still win per-language so a hand-edited zh wording
-// never gets clobbered by a VLM-extracted one; the catalogue's bilingual
-// `desc` fills gaps the curated file hasn't reached. English shows verbatim
-// in the zh UI when neither source has zh — source beats an empty field.
+//   catalogue en → null. English shows verbatim in the zh UI when neither
+// source has zh — source beats an empty field.
 export function signDescription(
   signId: unknown,
   locale: 'en' | 'zh-HK'
 ): string | null {
-  if (typeof signId !== 'string') return null
-  const o = descOverrides[signId]
-  const c = catalogue[signId]?.desc
-  const catEn = typeof c === 'string' ? c : c?.en
-  const catZh = typeof c === 'string' ? undefined : c?.zh
-  if (locale === 'zh-HK') return o?.zh || catZh || o?.en || catEn || null
-  return o?.en || catEn || null
+  const { en, zh } = bilingualDescription(signId)
+  if (locale === 'zh-HK') return zh || en || null
+  return en || null
 }
 
 export const SIGN_GROUPS: readonly SignGroup[]

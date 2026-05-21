@@ -9,7 +9,21 @@
     "subtitle": "運輸署開放數據",
     "categories": "標誌類別",
     "showAll": "全部顯示",
-    "hideAll": "全部隱藏"
+    "hideAll": "全部隱藏",
+    "tabs": {
+      "category": "按類別",
+      "signId": "按標誌編號"
+    },
+    "signSearch": {
+      "placeholder": "搜尋 {total} 個標誌（編號或意思）",
+      "matchCount": "符合 {n} 個",
+      "selectedCount": "已選 {n} 個",
+      "selectMatches": "全選結果",
+      "deselectMatches": "取消選取結果",
+      "clearAll": "清除",
+      "noMatches": "沒有符合的標誌。",
+      "removeChip": "移除 {id}"
+    }
   },
   "categories": {
     "regulatory": "管制性標誌",

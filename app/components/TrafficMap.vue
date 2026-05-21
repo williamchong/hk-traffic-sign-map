@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { categoryColorStops } from '~/composables/useSignCategories'
+import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSignCategories'
 import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf } from '~/composables/useSignCatalogue'
 
 // maplibre-gl touches `window` at import time and is large; it's
@@ -35,7 +35,7 @@ const map = shallowRef<MaplibreMap>()
 const categoryColor = [
   'match', categoryKeyExpr,
   ...categoryColorStops,
-  '#94a3b8'
+  CATEGORY_FALLBACK_COLOR
 ] as unknown as ExpressionSpecification
 
 // maplibre's tuple typing rejects spread/dynamic expressions that are valid at
