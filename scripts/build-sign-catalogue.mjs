@@ -161,6 +161,69 @@ function modalGap(centres) {
   }
   return best
 }
+function median(xs) {
+  if (!xs.length) return 0
+  const s = [...xs].sort((a, b) => a - b)
+  const m = s.length >> 1
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
+}
+// Symbol-column lattice. Every Index Plan sheet is the same CT174/51 grid
+// rendered at DPI=400, so the symbol cells sit on a fixed horizontal lattice:
+// a constant ~606 px pitch, with the first column at one of two template
+// origins (~472 on the wider informatory sheets, ~776 on the rest). Both
+// constants are empirical — they're identical across all 16 sheets, as stable
+// as DPI itself.
+//
+// runs(colProf,…) only finds a symbol band where the cell carries enough ink,
+// so faint columns are missed: light-fill plates (the yellow "no stopping"
+// rows on TS 2206-2310), or groups left half-empty beside the bottom-right
+// title block (TS 206-310). The old code mapped VLM group g → symBands[g] by
+// position, so a missed LEFT column shifted every later band's index — it both
+// SKIPPED trailing groups *and* mis-cropped the survivors (e.g. on TS 2206-2310
+// the only bands found were groups 2 & 3, yet group 0's codes were cropped from
+// group 2's column).
+//
+// We instead reconstruct the lattice and emit exactly `groupCount` columns —
+// groupCount being the VLM's group count, which reads the page reliably. Where
+// a detected band already lands on a lattice point we reuse its exact ink
+// extent, so sheets that already detect every group are byte-for-byte
+// unchanged; only the missing / mis-indexed columns differ.
+const SYM_PITCH = 606 // px between adjacent symbol columns at DPI=400
+const SYM_ORIGINS = [472, 776] // the two template first-column centres
+function symbolColumns(symBands, groupCount, W) {
+  // No early-out on empty symBands: with zero detected bands we still
+  // synthesise all groupCount columns from the default origin — recovering
+  // them is the whole point — rather than silently skipping every group.
+  if (groupCount <= 0) return symBands
+  const centres = symBands.map(([a, b]) => (a + b) / 2)
+  const bw = median(symBands.map(([a, b]) => b - a)) || 260
+  // Pick the template origin whose lattice (origin + k·pitch) best fits the
+  // detected band centres. Robust even with just a couple of bands, or
+  // slightly off-lattice ones, because the two origins are ~300 px apart —
+  // far more than any per-band jitter.
+  let O = SYM_ORIGINS[0], best = Infinity
+  for (const o of SYM_ORIGINS) {
+    let err = 0
+    for (const c of centres) {
+      const k = Math.max(0, Math.round((c - o) / SYM_PITCH))
+      err += Math.abs(c - (o + k * SYM_PITCH))
+    }
+    if (err < best) {
+      best = err
+      O = o
+    }
+  }
+  const cols = []
+  for (let k = 0; k < groupCount; k++) {
+    const x = O + k * SYM_PITCH
+    // Reuse a real detected band when one sits on this lattice point (keeps
+    // existing crops identical); otherwise synthesise a centred window. The
+    // ±0.4·pitch window is < half a pitch, so each band claims one column.
+    const hit = symBands.find(([a, b]) => Math.abs((a + b) / 2 - x) <= SYM_PITCH * 0.4)
+    cols.push(hit ?? [Math.max(0, Math.round(x - bw / 2)), Math.min(W, Math.round(x + bw / 2))])
+  }
+  return cols
+}
 function classifyTier(w, h) {
   const aspect = w / h
   if (aspect > 1.7 || aspect < 0.58) return 2
@@ -210,7 +273,9 @@ where:
 Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. Inner arrays = the rows of that group with codes. Skip blank rows entirely (no NONE entries needed — y disambiguates position). No markdown fences, no prose.`
   const body = {
     model: MODEL,
-    max_tokens: 4096,
+    // 4096 tokens truncates the chainage-dense TS 3601-3705 mid-token; the
+    // richest sheets that fit use ~3.4k output tokens, so 8192 is comfortable.
+    max_tokens: 8192,
     messages: [{
       role: 'user',
       content: [
@@ -232,6 +297,14 @@ Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. 
     })
     if (res.ok) {
       const j = await res.json()
+      // A `max_tokens` stop would truncate the JSON — sometimes at a valid
+      // boundary, silently dropping the trailing codes. Fail loud instead so a
+      // bumped limit (or a split sheet) is an explicit decision, never a
+      // quietly-short extraction.
+      if (j.stop_reason === 'max_tokens') {
+        console.error(`API truncated at max_tokens (${body.max_tokens}) — raise the cap; refusing a partial read.`)
+        process.exit(1)
+      }
       const raw = (j.content?.[0]?.text ?? '').replace(/^```(?:json)?\s*|\s*```$/g, '').trim()
       return { parsed: JSON.parse(raw), usage: j.usage }
     }
@@ -284,6 +357,11 @@ async function extractSheetVLM(sheet, catalogue) {
   const jpgBuf = readFileSync(jpg)
   const { parsed, usage } = await readSheetVLM(jpgBuf)
   console.log(`[${sheet.pdf}] vlm: ${parsed.length} groups, usage in=${usage?.input_tokens} out=${usage?.output_tokens}`)
+
+  // Resolve the symbol-column x-range for each VLM group from the fixed grid
+  // lattice, recovering columns runs(colProf,…) missed (see symbolColumns).
+  const symCols = symbolColumns(symBands, parsed.length, W)
+  console.log(`[${sheet.pdf}] symbol cols: ${symBands.length} band(s) detected -> ${symCols.length} lattice column(s) at [${symCols.map(c => Math.round((c[0] + c[1]) / 2)).join(', ')}]`)
 
   // Parse each VLM row into a uniform shape, including the y hint that lets
   // us map by spatial position instead of ordinal index. `desc` is the
@@ -360,11 +438,8 @@ async function extractSheetVLM(sheet, catalogue) {
   // and codes can't claim a row above the previous one in the same group.
   let added = 0, droppedHallucination = 0, droppedAlign = 0, droppedDup = 0, droppedNoY = 0
   for (let g = 0; g < parsed.length; g++) {
-    if (g >= symBands.length) {
-      console.warn(`  group ${g + 1} from VLM has no matching detected symBand — skipping new-code add`)
-      continue
-    }
-    const [bx0, bx1] = symBands[g]
+    if (!symCols[g]) continue
+    const [bx0, bx1] = symCols[g]
     const taken = new Set() // rowBand indices already claimed in this group
     let lastTop = -Infinity // enforce monotone gap order within a group
     for (const item of (parsed[g] ?? [])) {
