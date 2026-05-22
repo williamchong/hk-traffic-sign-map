@@ -9,6 +9,12 @@ const { t } = useI18n()
 
 const allOn = computed(() => categories.every(c => enabled[c.key]))
 
+// View-only: folds the whole filter body (tabs + active tab) away so the
+// panel shrinks to just its header + nav — essential on mobile, where the
+// sign-id tab's tall result list otherwise covers most of the viewport.
+// Not in useTrafficLayers because it doesn't touch the map filter.
+const expanded = ref(true)
+
 // Tabs are label-only — icons added visual noise in a 288px-wide panel
 // without aiding recognition; the labels are short and self-explanatory.
 const tabItems = computed(() => [
@@ -46,9 +52,29 @@ function onTabChange(value: string | number) {
          The previous single-row layout squeezed the title into ~140px and
          forced both lines to wrap. -->
     <div class="space-y-1">
-      <h1 class="text-base font-semibold">
-        {{ $t('panel.title') }}
-      </h1>
+      <div class="flex items-start justify-between gap-2">
+        <h1 class="text-base font-semibold">
+          {{ $t('panel.title') }}
+        </h1>
+        <!-- Fold toggle, top-right corner. Only meaningful when there's a
+             filter body to fold, so it's hidden alongside it when WebGL is
+             unavailable. -->
+        <button
+          v-if="!mapUnavailable"
+          type="button"
+          class="-m-1 shrink-0 cursor-pointer p-1 text-muted hover:text-default"
+          :aria-expanded="expanded"
+          aria-controls="filter-body"
+          :aria-label="expanded ? $t('panel.collapse') : $t('panel.expand')"
+          :title="expanded ? $t('panel.collapse') : $t('panel.expand')"
+          @click="expanded = !expanded"
+        >
+          <UIcon
+            :name="expanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+            class="size-4"
+          />
+        </button>
+      </div>
       <div class="flex items-center justify-between gap-2">
         <p class="truncate text-xs text-muted">
           {{ $t('panel.subtitle') }}
@@ -71,54 +97,62 @@ function onTabChange(value: string | number) {
          unavailable — but the header above and the About/FAQ nav below
          stay (both work without WebGL, and the nav is the SEO/crawl path). -->
     <template v-if="!mapUnavailable">
-      <UTabs
-        :items="tabItems"
-        :model-value="filterMode"
-        size="xs"
-        variant="link"
-        :ui="{ list: 'border-default' }"
-        @update:model-value="onTabChange"
-      />
-
-      <!-- Category tab: the tabs themselves label the section, so the old
-           "Categories ⌄ Hide all" header row is redundant. We keep just the
-           hide/show-all link as a small right-aligned action above the list. -->
+      <!-- v-show (not v-if) so the tab/search state is preserved across a
+           fold; id is referenced by the header toggle's aria-controls. -->
       <div
-        v-if="filterMode === 'category'"
+        v-show="expanded"
+        id="filter-body"
         class="space-y-2"
       >
-        <div class="flex justify-end">
-          <UButton
-            size="xs"
-            variant="link"
-            :padded="false"
-            :label="allOn ? $t('panel.hideAll') : $t('panel.showAll')"
-            @click="onToggleAll"
-          />
-        </div>
-        <label
-          v-for="c in categories"
-          :key="c.key"
-          class="flex cursor-pointer items-center gap-2 text-sm"
-        >
-          <UCheckbox
-            :model-value="enabled[c.key]"
-            @update:model-value="v => onCategoryToggle(c.key, !!v)"
-          />
-          <span
-            class="size-3 shrink-0 rounded-full"
-            :style="{ backgroundColor: c.color }"
-          />
-          <span class="truncate">{{ $t(`categories.${c.key}`) }}</span>
-        </label>
-      </div>
+        <UTabs
+          :items="tabItems"
+          :model-value="filterMode"
+          size="xs"
+          variant="link"
+          :ui="{ list: 'border-default' }"
+          @update:model-value="onTabChange"
+        />
 
-      <!-- ClientOnly: useVirtualList touches `window` at setup time and the
-           index pulls in JSON that's only useful interactively. Keeps the
-           prerendered HTML free of search UI it can't use. -->
-      <ClientOnly v-if="filterMode === 'sign-id'">
-        <LazySignIdFilterPanel />
-      </ClientOnly>
+        <!-- Category tab: the tabs themselves label the section, so the old
+             "Categories ⌄ Hide all" header row is redundant. We keep just the
+             hide/show-all link as a small right-aligned action above the list. -->
+        <div
+          v-if="filterMode === 'category'"
+          class="space-y-2"
+        >
+          <div class="flex justify-end">
+            <UButton
+              size="xs"
+              variant="link"
+              :padded="false"
+              :label="allOn ? $t('panel.hideAll') : $t('panel.showAll')"
+              @click="onToggleAll"
+            />
+          </div>
+          <label
+            v-for="c in categories"
+            :key="c.key"
+            class="flex cursor-pointer items-center gap-2 text-sm"
+          >
+            <UCheckbox
+              :model-value="enabled[c.key]"
+              @update:model-value="v => onCategoryToggle(c.key, !!v)"
+            />
+            <span
+              class="size-3 shrink-0 rounded-full"
+              :style="{ backgroundColor: c.color }"
+            />
+            <span class="truncate">{{ $t(`categories.${c.key}`) }}</span>
+          </label>
+        </div>
+
+        <!-- ClientOnly: useVirtualList touches `window` at setup time and the
+             index pulls in JSON that's only useful interactively. Keeps the
+             prerendered HTML free of search UI it can't use. -->
+        <ClientOnly v-if="filterMode === 'sign-id'">
+          <LazySignIdFilterPanel />
+        </ClientOnly>
+      </div>
     </template>
 
     <!-- Always rendered (not folded) so these stay real <a> tags in the

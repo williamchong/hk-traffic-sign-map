@@ -10,6 +10,8 @@
     "categories": "Categories",
     "showAll": "Show all",
     "hideAll": "Hide all",
+    "collapse": "Collapse panel",
+    "expand": "Expand panel",
     "tabs": {
       "category": "By category",
       "signId": "By sign ID"

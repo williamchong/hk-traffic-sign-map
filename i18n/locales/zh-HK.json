@@ -10,6 +10,8 @@
     "categories": "標誌類別",
     "showAll": "全部顯示",
     "hideAll": "全部隱藏",
+    "collapse": "收合面板",
+    "expand": "展開面板",
     "tabs": {
       "category": "按類別",
       "signId": "按標誌編號"
