@@ -2,6 +2,10 @@
 // a co-located assembly, so the group draws as one rigid signpost.
 // Output: data/raw/_sign_stacks.json — keyed by FEATUREID →
 //   [ stackIndex, stackSize, picWidth, anchorLng, anchorLat, bearing ]
+// Also writes app/data/signGroups.json — { SIGNID: [GG_NAME, …] } over the
+// same stacked assemblies, so the runtime sign-ID filter can pull in a matched
+// sign's post-mates and show the complete signpost (see useTrafficLayers
+// mapFilter). Built here because this is where assembly membership is known.
 //
 // The grouping key is the GML `GG_NAME` ("sign-group name", e.g. W02R22D_392):
 // signs sharing it were gazetted/installed as one unit and carry combined
@@ -33,6 +37,7 @@ const FACE_BEARINGS = join(RAW_DIR, '_face_bearings.json')
 const CATALOGUE = join('app', 'data', 'signCatalogue.json')
 const SIGNS_DIR = join('public', 'signs')
 const OUT = join(RAW_DIR, '_sign_stacks.json')
+const GROUPS_OUT = join('app', 'data', 'signGroups.json')
 
 // Top-of-post → bottom-of-post ordering. Supplementary plates always sit
 // under the main signs (the cardinal rule); the rest follow the Index-Plan
@@ -96,8 +101,9 @@ console.log(`  ${parsed} ABV_PT features, ${groups.size} GG_NAME groups with cat
 const records = [] // { fid, i, size, picW, anchorIdx, bearing }
 const anchors = [] // [[x, y], …] EPSG:2326, unique per assembly
 const anchorIndex = new Map() // "x y" → index into `anchors`
+const groupIndex = new Map() // SIGNID → Set(GG_NAME), stacked assemblies only
 let stacked = 0, skippedSpan = 0, maxSize = 0
-for (const members of groups.values()) {
+for (const [gg, members] of groups) {
   if (members.length < 2) continue
   const span = Math.max(
     Math.max(...members.map(m => m.x)) - Math.min(...members.map(m => m.x)),
@@ -122,6 +128,14 @@ for (const members of groups.values()) {
   members.forEach((m, i) => {
     records.push({ fid: m.fid, i, size, picW: picWidth(m.signid), anchorIdx: ai, bearing })
   })
+  // Index each distinct SIGNID on this post → its GG_NAME, so the runtime can
+  // expand a sign-ID filter to the whole assembly (dedup signids repeated on
+  // one post — two identical plates shouldn't list the group twice).
+  for (const sid of new Set(members.map(m => m.signid))) {
+    let set = groupIndex.get(sid)
+    if (!set) groupIndex.set(sid, set = new Set())
+    set.add(gg)
+  }
   stacked++
 }
 console.log(`  ${stacked} assemblies stacked (${records.length} signs), ${skippedSpan} skipped over ${SPAN_CAP}m span; tallest stack ${maxSize}`)
@@ -151,3 +165,8 @@ for (const r of records) {
 
 await writeFile(OUT, JSON.stringify(out))
 console.log(`\nWrote ${OUT}`)
+
+const groupObj = {}
+for (const [sid, set] of groupIndex) groupObj[sid] = [...set]
+await writeFile(GROUPS_OUT, JSON.stringify(groupObj))
+console.log(`Wrote ${GROUPS_OUT} (${groupIndex.size} sign IDs → companion groups)`)

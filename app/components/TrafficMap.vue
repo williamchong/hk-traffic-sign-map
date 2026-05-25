@@ -11,7 +11,7 @@ import tilesVersion from '~/data/tilesVersion.json'
 // and is code-split out of the initial bundle.
 let detachProtocol: (() => void) | undefined
 
-const { mapFilter, selectedSign, selectedGroup, mapUnavailable, filterMode } = useTrafficLayers()
+const { mapFilter, selectedSign, selectedGroup, mapUnavailable, filterMode, loadGroupIndex } = useTrafficLayers()
 const colorMode = useColorMode()
 const { track } = useAnalytics()
 
@@ -425,6 +425,10 @@ onMounted(async () => {
       for (const id of signLayerIds) if (m.getLayer(id)) m.removeLayer(id)
     }
     addSignLayers(sourceForMode(filterMode.value))
+    // In sign-ID mode, fetch the companion-group index so the filter can grow
+    // each matched sign into its whole signpost; `mapFilter` re-widens (and the
+    // watch below re-applies it) once it resolves.
+    if (filterMode.value === 'sign-id') loadGroupIndex()
 
     // Re-apply the per-tier filter — category visibility (a GPU-side filter,
     // instant across 316k features, no DOM/refetch) plus the hidden group, if
@@ -445,6 +449,7 @@ onMounted(async () => {
     // fires on a tab click. `addSignLayers` re-inserts beneath `sel-halo`, so
     // selection stays on top, and the lazy loader refills icons on demand.
     watch(filterMode, (mode) => {
+      if (mode === 'sign-id') loadGroupIndex()
       removeSignLayers()
       addSignLayers(sourceForMode(mode))
     })
