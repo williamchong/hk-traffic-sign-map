@@ -18,6 +18,7 @@ import {
 
 const COMBINED = join(RAW_DIR, '_combined.geojsonl')
 const FACE_BEARINGS = join(RAW_DIR, '_face_bearings.json')
+const SIGN_STACKS = join(RAW_DIR, '_sign_stacks.json')
 
 // Map<FEATUREID-as-string, faceBearingDegrees>; populated only for the
 // traffic-sign-abbreviation layer. If the bearings file is missing (someone
@@ -28,6 +29,15 @@ const faceBearings = existsSync(FACE_BEARINGS)
   ? JSON.parse(await readFile(FACE_BEARINGS, 'utf8'))
   : null
 if (!faceBearings) console.warn(`No ${FACE_BEARINGS} — signs will render upright. Run \`node scripts/compute-bearings.mjs\` first.`)
+
+// Map<FEATUREID-as-string, [stackIndex, stackSize]> for signs that belong to a
+// co-located GG_NAME assembly (see compute-stacks.mjs). Same fall-through
+// contract as bearings: missing file → signs just don't stack (render at their
+// own point), never a broken build.
+const signStacks = existsSync(SIGN_STACKS)
+  ? JSON.parse(await readFile(SIGN_STACKS, 'utf8'))
+  : null
+if (!signStacks) console.warn(`No ${SIGN_STACKS} — signs won't stack into signposts. Run \`node scripts/compute-stacks.mjs\` first.`)
 
 function requireTool(cmd, hint) {
   if (spawnSync(cmd, ['--version']).error) {
@@ -51,9 +61,11 @@ async function convertLayer({ file, category }, out) {
   ])
   ogr.stderr.on('data', d => process.stderr.write(`[ogr2ogr ${file}] ${d}`))
 
-  // Only ABV_PT features get a FACE_BEARING; checked once outside the loop.
-  const injectBearing = faceBearings && category === 'traffic-sign-abbreviation'
-  let count = 0, bearingsApplied = 0
+  // Only ABV_PT features carry FACE_BEARING / stack order; checked once here.
+  const isAbv = category === 'traffic-sign-abbreviation'
+  const injectBearing = faceBearings && isAbv
+  const injectStack = signStacks && isAbv
+  let count = 0, bearingsApplied = 0, stacksApplied = 0
   const rl = createInterface({ input: ogr.stdout, crlfDelay: Infinity })
   for await (const line of rl) {
     // GeoJSONSeq may prefix records with the RFC 8142 record separator
@@ -62,20 +74,31 @@ async function convertLayer({ file, category }, out) {
     if (!trimmed) continue
     const feature = JSON.parse(trimmed)
     feature.properties = { ...feature.properties, category }
+    // FEATUREID is keyed as a string in both lookup JSONs; GeoJSON properties
+    // may surface it as number or string. Coerce once and reuse.
+    const fid = (injectBearing || injectStack) ? String(feature.properties.FEATUREID ?? '') : ''
     if (injectBearing) {
-      // FEATUREID is keyed as a string in the bearings JSON; GeoJSON
-      // properties may surface it as number or string. Coerce once.
-      const fid = String(feature.properties.FEATUREID ?? '')
       const bearing = faceBearings[fid]
       if (bearing !== undefined) {
         feature.properties.FACE_BEARING = bearing
         bearingsApplied++
       }
     }
+    if (injectStack) {
+      const stack = signStacks[fid]
+      if (stack !== undefined) {
+        // Only the stack index is shipped — that's all the runtime icon-offset
+        // needs, and MVT can't store the [index, size] array anyway. `size`
+        // stays in the JSON for the build log; no tile property carries it.
+        feature.properties.STACK_INDEX = stack[0]
+        stacksApplied++
+      }
+    }
     if (!out.write(JSON.stringify(feature) + '\n')) await once(out, 'drain')
     count++
   }
   if (injectBearing) console.log(`    + FACE_BEARING on ${bearingsApplied} / ${count} (${(bearingsApplied / count * 100).toFixed(1)}%)`)
+  if (injectStack) console.log(`    + STACK order on ${stacksApplied} / ${count} (${(stacksApplied / count * 100).toFixed(1)}%)`)
 
   const [code] = await once(ogr, 'close')
   if (code !== 0) throw new Error(`ogr2ogr failed for ${file} (exit ${code})`)

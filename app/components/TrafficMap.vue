@@ -73,6 +73,26 @@ const iconRotation = {
   'icon-rotation-alignment': 'map' as const
 }
 
+// Signs sharing a GG_NAME assembly are stacked into a vertical signpost: each
+// member carries a build-time STACK_INDEX (0 = top, supplementary last; see
+// scripts/compute-stacks.mjs). `icon-offset` hangs each pictogram one
+// icon-height below the previous. The offset is in the icon's source-pixel
+// space (icons are 120 px tall), so it scales with `icon-size` — the column
+// stays proportional at every zoom — and, since the tier layers also set
+// `icon-rotate`, it rotates with FACE_BEARING so the post leans the way the
+// signs face. MVT can't store arrays, so STACK_INDEX is a scalar and `match`
+// enumerates the offsets; non-stacked signs have no STACK_INDEX → [0, 0].
+// MAX_STACK has headroom over the tallest assembly the data produces
+// (compute-stacks logs it — currently 6); a taller stack's overflow members
+// fall to the [0, 0] default and pile onto the top sign rather than erroring.
+const STACK_GAP = 130
+const MAX_STACK = 8
+const stackOffset = expr([
+  'match', ['get', 'STACK_INDEX'],
+  ...Array.from({ length: MAX_STACK }, (_, i) => [i, ['literal', [0, i * STACK_GAP]]]).flat(),
+  ['literal', [0, 0]]
+])
+
 const tierLayerId = (t: number) => `sign-tier-${t}`
 // The SIGNID set per tier is static, so precompute that clause once and only
 // swap the (changing) category `base` in the watcher.
@@ -245,6 +265,11 @@ onMounted(async () => {
           'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
         ]),
         ...iconRotation,
+        // Track the stack so the emphasis lands on the picked pictogram, not
+        // the bottom of the post. (The offset scales with this layer's larger
+        // icon-size, so it isn't pixel-identical to the tier pictogram's —
+        // close enough to read as one emphasised sign.)
+        'icon-offset': stackOffset,
         'icon-allow-overlap': true,
         'icon-ignore-placement': true
       }
@@ -312,6 +337,11 @@ onMounted(async () => {
               MAX_ZOOM, lod.size
             ]),
             ...iconRotation,
+            // Co-located GG_NAME assemblies hang as a vertical signpost: each
+            // member is offset one icon-height below the previous (main signs
+            // on top, supplementary at the bottom). Non-stacked signs get a
+            // [0, 0] offset and render exactly where they always did.
+            'icon-offset': stackOffset,
             // Collision disabled outright: every sign must stay exactly where
             // it is and never be dropped or nudged by a neighbour. Each point
             // is a real installed sign with a 1:1 ground meaning, so hiding it
