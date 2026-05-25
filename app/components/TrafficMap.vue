@@ -482,8 +482,10 @@ onMounted(async () => {
       })
       // Gather every member of the assembly from the active *source* — not the
       // tier layers, since we hide the selected group's tiers just below (and a
-      // source query also survives re-clicking the same post). Dedup by
-      // STACK_INDEX (one sign per stack position; tile-boundary copies collapse).
+      // source query also survives re-clicking the same post). build-tiles
+      // already collapsed each member onto the primary's coordinate + bearing
+      // (see compute-stacks.mjs), so these are already a rigid post; just dedup
+      // the tile-boundary copies by STACK_INDEX (one sign per stack position).
       let members: GeoJSON.Feature[] = []
       if (grouped) {
         const seen = new Set<unknown>()

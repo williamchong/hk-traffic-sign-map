@@ -101,10 +101,16 @@ async function convertLayer({ file, category }, out, outLod) {
     if (injectStack) {
       const stack = signStacks[fid]
       if (stack !== undefined) {
-        // Only the stack index is shipped — that's all the runtime icon-offset
-        // needs, and MVT can't store the [index, size] array anyway. `size`
-        // stays in the JSON for the build log; no tile property carries it.
-        feature.properties.STACK_INDEX = stack[0]
+        // Collapse the member onto its assembly's primary coordinate and adopt
+        // the primary's bearing, so the whole group renders as one rigid
+        // signpost (see compute-stacks.mjs). STACK_INDEX drives the runtime
+        // stack offset. (`size`/`picW` stay in the JSON only for the build log
+        // / a future sizing pass; no tile property carries them.)
+        const [index, , , anchorLng, anchorLat, bearing] = stack
+        feature.geometry.coordinates = [anchorLng, anchorLat]
+        feature.properties.STACK_INDEX = index
+        if (bearing === null) delete feature.properties.FACE_BEARING
+        else feature.properties.FACE_BEARING = bearing
         stacksApplied++
       }
     }
