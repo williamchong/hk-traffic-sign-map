@@ -151,6 +151,19 @@ function profile(png, w, h, axis) {
     '-resize', `${size}!`, '-depth', '8', 'gray:-'], { binary: true })
   return Uint8Array.from(buf)
 }
+// Like `profile` but counts ANY non-white pixel as content, not just dark ink.
+// Bright symbols (the green chainage/route markers on TS 3601-3705) read above
+// the 55% gray threshold and vanish from the ink profile, so their columns go
+// undetected. `+opaque white` paints every non-near-white pixel black, so a
+// colour band registers like an ink band. Used only as a fallback when the ink
+// profile under-reads (see symbol-band detection), so dark-ink sheets are
+// unaffected.
+function contentProfile(png, w, h, axis) {
+  const size = axis === 'x' ? `${w}x1` : `1x${h}`
+  const buf = magick([png, '-fuzz', '25%', '-fill', 'black', '+opaque', 'white',
+    '-colorspace', 'Gray', '-negate', '-resize', `${size}!`, '-depth', '8', 'gray:-'], { binary: true })
+  return Uint8Array.from(buf)
+}
 function runs(arr, thresh, min) {
   const out = []
   let s = -1
@@ -502,8 +515,21 @@ async function extractSheetVLM(sheet, catalogue) {
 
   // Resolve the symbol-column x-range for each VLM group from the fixed grid
   // lattice, recovering columns runs(colProf,…) missed (see symbolColumns).
-  const symCols = symbolColumns(symBands, parsed.length, W)
-  console.log(`[${sheet.pdf}] symbol cols: ${symBands.length} band(s) detected -> ${symCols.length} lattice column(s) at [${symCols.map(c => Math.round((c[0] + c[1]) / 2)).join(', ')}]`)
+  // When the dark-ink profile finds fewer than HALF the page's groups, the
+  // symbols are likely bright/coloured (green route markers on TS 3601-3705)
+  // and read above the gray threshold — re-detect counting any non-white
+  // content so the lattice fits real anchors instead of guessing. The <half
+  // gate keeps every sheet the ink profile reads adequately byte-stable.
+  let bands = symBands
+  if (symBands.length < parsed.length / 2) {
+    const cb = runs(contentProfile(png, W, H, 'x'), 25, 70)
+    if (cb.length > symBands.length) {
+      console.log(`[${sheet.pdf}] ink found ${symBands.length} band(s) for ${parsed.length} groups — color-aware detection found ${cb.length}`)
+      bands = cb
+    }
+  }
+  const symCols = symbolColumns(bands, parsed.length, W)
+  console.log(`[${sheet.pdf}] symbol cols: ${bands.length} band(s) detected -> ${symCols.length} lattice column(s) at [${symCols.map(c => Math.round((c[0] + c[1]) / 2)).join(', ')}]`)
   // The No. cell sits left of each symbol cell — this is the row anchor.
   const noCols = noColumns(symCols, vRules, W)
 
