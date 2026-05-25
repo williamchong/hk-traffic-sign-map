@@ -5669,5 +5669,479 @@
       "en": "CLASSES 1,2,3,3A",
       "zh": "第１２３３Ａ類"
     }
+  },
+  "TS269": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "KEEP IN LANE",
+      "zh": "不准換線"
+    }
+  },
+  "TS290": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "KEEP IN LANE"
+    }
+  },
+  "TS270": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "DANGEROUS CYCLING PROHIBITED"
+    }
+  },
+  "TS229": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "CYCLEWAY AND CYCLE AROUND ONLY FOR MOTORCYCLES"
+    }
+  },
+  "TS271": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "TUNNEL AREA TUNNEL REGULATIONS APPLY",
+      "zh": "隧道管制區域"
+    }
+  },
+  "TS293": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "START OF TUNNEL AREA SIGN"
+    }
+  },
+  "TS294": {
+    "tier": 1,
+    "group": "regulatory"
+  },
+  "TS275": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "STOP PAY TOLL",
+      "zh": "停車繳費"
+    }
+  },
+  "TS278": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "EXACT PAYMENT",
+      "zh": "不設找續"
+    }
+  },
+  "TS279": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "EXACT PAYMENT",
+      "zh": "不設找續"
+    }
+  },
+  "TS280": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "PARKING PLACE FOR CARS LIGHT GOODS VEHICLES AND PRIVATE LIGHT BUSES"
+    }
+  },
+  "TS281": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "PARKING PLACE FOR GOODS VEHICLES"
+    }
+  },
+  "TS282": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "PARKING PLACE FOR BUSES"
+    }
+  },
+  "TS283": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "PARKING PLACE FOR MOTOR CYCLES"
+    }
+  },
+  "TS284": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "PARKING PLACE FOR PEDAL CYCLES"
+    }
+  },
+  "TS286": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "NO PARKING"
+    }
+  },
+  "TS289": {
+    "tier": 1,
+    "group": "regulatory"
+  },
+  "TS2248": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "零小時停車區"
+    }
+  },
+  "TS2249": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "零小時停車區"
+    }
+  },
+  "TS2250": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "零小時停車區"
+    }
+  },
+  "TS2251": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "NO STOPPING ZONE",
+      "zh": "禁止停車區"
+    }
+  },
+  "TS2254": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "零小時停車區"
+    }
+  },
+  "TS2255": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "零小時停車區"
+    }
+  },
+  "TS2256": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "二小時停車區"
+    }
+  },
+  "TS2257": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "二小時停車區"
+    }
+  },
+  "TS2237": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "二小時停車區"
+    }
+  },
+  "TS2238": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "一小時停車區"
+    }
+  },
+  "TS2239": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "一小時停車區"
+    }
+  },
+  "TS2241": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "一小時停車區"
+    }
+  },
+  "TS2242": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "一小時停車區"
+    }
+  },
+  "TS2243": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "一小時停車區"
+    }
+  },
+  "TS2246": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "一小時停車區"
+    }
+  },
+  "TS2247": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "zh": "一小時停車區"
+    }
+  },
+  "TS383": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "NEARSIDE LANE FOR FRANCHISED BUSES"
+    }
+  },
+  "TS329": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "END OF PERMITTED AREA FOR NT TAXIS"
+    }
+  },
+  "TS373": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "CONTRA-FLOW BUS LANE"
+    }
+  },
+  "TS3853": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": {
+      "en": "TYPE A FFTS SIGN",
+      "zh": "最通行"
+    }
+  },
+  "TS3854": {
+    "tier": 0,
+    "group": "informatory",
+    "desc": {
+      "en": "TYPE B FFTS SIGN"
+    }
+  },
+  "TS590": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND REDUCE SPEED NOW"
+    }
+  },
+  "TS591": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND REDUCE SPEED NOW"
+    }
+  },
+  "TS592": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND REDUCE SPEED NOW"
+    }
+  },
+  "TS593": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND REDUCE SPEED NOW"
+    }
+  },
+  "TS594": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND DISTANCE PLATE"
+    }
+  },
+  "TS595": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND DISTANCE PLATE"
+    }
+  },
+  "TS596": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND DISTANCE PLATE"
+    }
+  },
+  "TS597": {
+    "tier": 1,
+    "group": "warning",
+    "desc": {
+      "en": "BEND SIGN AND DISTANCE PLATE"
+    }
+  },
+  "TS722": {
+    "tier": 2,
+    "group": "supplementary"
+  },
+  "TS730": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": {
+      "en": "TIME PLATE"
+    }
+  },
+  "TS731": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT CYCLES",
+      "zh": "單車例外"
+    }
+  },
+  "TS732": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT BUSES AND PUBLIC LIGHT BUSES",
+      "zh": "巴士及公共小巴例外"
+    }
+  },
+  "TS733": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "ARROW (RIGHT)"
+    }
+  },
+  "TS734": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "ARROW (LEFT)"
+    }
+  },
+  "TS736": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "DUAL CARRIAGEWAY",
+      "zh": "分隔車路"
+    }
+  },
+  "TS739": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "SINGLE TRACK ROAD"
+    }
+  },
+  "TS802": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": {
+      "en": "LOW GEAR FOR 2KM",
+      "zh": "兩公里內低波行車"
+    }
+  },
+  "TS740": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": {
+      "en": "SCHOOL",
+      "zh": "學校"
+    }
+  },
+  "TS741": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "PLAYGROUND",
+      "zh": "遊樂場"
+    }
+  },
+  "TS742": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT TAXIS PRIVATE CARS AND MOTOR CYCLES",
+      "zh": "的士私家車及電單車例外"
+    }
+  },
+  "TS891": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT LIGHT BUSES",
+      "zh": "小型巴士例外"
+    }
+  },
+  "TS892": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": {
+      "en": "SLOW TRAFFIC AHEAD",
+      "zh": "小心前面慢駛"
+    }
+  },
+  "TS893": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "PEDESTRIAN ACCIDENTS"
+    }
+  },
+  "TS895": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "PRIVATE CARS ONLY",
+      "zh": "祇准私家車"
+    }
+  },
+  "TS896": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "LIGHT GOODS VEHICLES ONLY",
+      "zh": "祇准輕型貨車"
+    }
+  },
+  "TS897": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT SUNDAYS AND PUBLIC HOLIDAYS",
+      "zh": "星期日及公眾假期例外"
+    }
+  },
+  "TS898": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "EXCEPT TAXI DROP OFF",
+      "zh": "的士落客除外"
+    }
+  },
+  "TS900": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "8AM - 8PM",
+      "zh": "上午八時至下午八時"
+    }
   }
 }

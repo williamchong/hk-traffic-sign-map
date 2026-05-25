@@ -1,44 +1,49 @@
-// Build the sign catalogue from TD's Index Plan PDFs by sending each page to
-// Sonnet 4.6 and asking for an ordered list of {code, desc, y} records per
-// column-group. We then use the page's detected grid geometry to crop the
-// symbol cell for each code, normalize to a PNG, and write the catalogue.
+// Build the sign catalogue from TD's Index Plan PDFs with Sonnet 4.6 vision.
+// Each page is a table of [No. | Symbol | Description] column-groups. We bind
+// every code to its exact row by reading the printed "No." column per cell,
+// then crop the symbol from that same row by pure geometry, normalize to a
+// PNG, and write the catalogue.
 //
-// Replaces an earlier tesseract + 3-layer-LIS pipeline (git history). The
-// reason for the swap: with the CAD font and noise-contaminated No.-column
-// crops, tesseract needed extensive scaffolding to avoid mislabelling
-// (primary-LIS, fallback-LIS, per-gap LIS, vRule snapping, right-cut). The
-// VLM reads the whole table as ONE artifact, using row/column ordering as
-// its own self-consistency check — so most of that scaffolding becomes
-// unnecessary. Two safety nets remain, because they're cheaper than trust:
+// Replaces an earlier tesseract + 3-layer-LIS pipeline (git history): with the
+// CAD font and noise-contaminated No.-column crops, tesseract needed extensive
+// scaffolding (primary/fallback/per-gap LIS, vRule snapping, right-cut) to
+// avoid mislabelling. The VLM reads a clean isolated-cell montage instead.
+// Three safety nets remain, because they're cheaper than trust:
 //
-//   1. GML SIGNID FILTER. Vision models occasionally hallucinate plausible
+//   1. NO.-COLUMN GRID BIND. The row a code occupies comes from reading the
+//      No. cell of THAT row — not a holistic y-hint, which drifted across the
+//      blank / "SYMBOL NOT AVAILABLE" rows and mis-cropped (the bug that got
+//      an earlier recovery reverted). We crop every No. cell into a fixed R×C
+//      montage in reading order and read it in one call; a blank row reads ""
+//      in its own slot and can't shift the codes below it. The symbol is then
+//      cropped from the SAME rowBand, so code and pictogram cannot desync.
+//
+//   2. GML SIGNID FILTER. Vision models occasionally hallucinate plausible
 //      sequential numbers (e.g. "635" between 634 and 636 when 635 doesn't
 //      exist on any real road). We only KEEP a code if it appears at least
 //      once in data/raw/DTAD_TS_ABV_PT.gml — the authoritative set of codes
 //      actually on signs in HK. Codes not in this set wouldn't be referenced
 //      by any map feature anyway, so the filter is loss-less for the app.
 //
-//   2. POSITIONAL Y ALIGNMENT. The model emits a `y` hint (row-centre as a
-//      fraction of image height) per code. We map each code to the kept
-//      rowBand whose centre is nearest by y, gated by `pitch * 0.5` (so the
-//      target must land inside that row, not adjacent). A taken-set + a
-//      monotone-y-within-group check means each band hosts at most one
-//      code and codes can't jump backwards. If y is missing or outside
-//      tolerance, the cell silently degrades to a dot — the documented
-//      "missed sign is fine, MISLABELLED sign must never ship" invariant.
+//   3. HUMAN GATE (--propose / --commit). Recovery stages crops + a review
+//      montage and writes NOTHING to the repo; a human verifies every
+//      code↔crop before --commit promotes them. Upholds the documented
+//      "a missed sign degrades to a dot — a MISLABELLED sign must never ship".
 //
 // Usage:
 //   ANTHROPIC_API_KEY=sk-ant-...  node scripts/build-sign-catalogue.mjs
-//                                                          # full rebuild,
-//                                                          # merge mode
-//   ... node scripts/build-sign-catalogue.mjs --wipe       # full rebuild,
-//                                                          # wipe first
-//   ... node scripts/build-sign-catalogue.mjs --sheet "601 - 700"
-//                                                          # one sheet only
+//                                                # full rebuild, merge mode
+//   ... build-sign-catalogue.mjs --wipe          # full rebuild, wipe first
+//   ... build-sign-catalogue.mjs --sheet "601 - 700"   # one sheet only
+//   ... build-sign-catalogue.mjs --propose       # stage candidates, write
+//                                                # nothing (human review)
+//   ... build-sign-catalogue.mjs --commit [--reject TS208,TS209]
+//                                                # promote approved staged crops
 //
-// Cost: roughly $0.15 to rebuild all 16 sheets (one Sonnet call per page).
+// Cost: ~$0.30 to rebuild all 16 sheets (two Sonnet calls per page — the
+// full-page description read + the No.-column grid bind).
 
-import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { existsSync, readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
@@ -48,7 +53,6 @@ const SIGNS_DIR = 'public/signs'
 const CATALOGUE_JSON = 'app/data/signCatalogue.json'
 const GML = 'data/raw/DTAD_TS_ABV_PT.gml'
 const DPI = 400
-const DESC_HD = 2
 const MODEL = 'claude-sonnet-4-6'
 
 const SHEETS = [
@@ -82,6 +86,19 @@ function requireTool(cmd, hint) {
 }
 requireTool('pdftoppm', 'brew install poppler')
 requireTool('magick', 'brew install imagemagick')
+// ImageMagick registers no fonts in this environment (`magick -list font` is
+// empty), so `montage` — used for the No.-column grid read and the review
+// sheet — can't render even an empty label without an explicit -font. Resolve
+// one system TTF up front and fail loud if none exists.
+const FONT = [
+  '/System/Library/Fonts/Supplemental/Arial.ttf',
+  '/Library/Fonts/Arial.ttf',
+  '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+].find(f => existsSync(f))
+if (!FONT) {
+  console.error('No usable TTF found for `magick montage` — set FONT in build-sign-catalogue.mjs')
+  process.exit(1)
+}
 
 // `--sheet <pattern>` filters which Index Plan sheets to process by substring
 // match against the PDF filename. Omitted → all 16 sheets (the canonical
@@ -94,6 +111,26 @@ const sheetFilter = (() => {
 // for a clean full rebuild from source. Without it the script merges into
 // what's already there, which lets `--sheet` runs do surgical updates.
 const wipe = process.argv.includes('--wipe')
+
+// Human-gated recovery (see PASS 2). `--propose` extracts candidate pictograms
+// but writes NOTHING to the repo: it stages crops + a review montage + a
+// manifest under STAGING so a human can eyeball every code↔crop before it
+// ships. `--commit` then promotes the approved staged crops into public/signs/
+// + the catalogue; `--reject TS208,TS209` drops specific codes on commit.
+// Neither flag → the original write-through behaviour (the documented
+// `data:catalogue` build), now with grid-anchored crops and additive descs.
+const propose = process.argv.includes('--propose')
+const doCommit = process.argv.includes('--commit')
+const rejectList = (() => {
+  const i = process.argv.indexOf('--reject')
+  return new Set(i >= 0 ? (process.argv[i + 1] ?? '').split(',').map(s => s.trim()).filter(Boolean) : [])
+})()
+// PASS 1 is additive-only by default — it fills a MISSING desc but never
+// clobbers an existing one (re-running a sheet used to silently corrupt good
+// descriptions when the VLM mis-paired a code with a neighbour's text).
+// `--update-desc` opts back into overwriting, for a deliberate desc refresh.
+const updateDesc = process.argv.includes('--update-desc')
+const STAGING = '/tmp/sign-recovery'
 
 // ---- geometry helpers — column-band and grid-line detection on the rendered
 // page, used to locate the symbol-cell crop for each VLM-emitted code. The
@@ -224,6 +261,31 @@ function symbolColumns(symBands, groupCount, W) {
   }
   return cols
 }
+// No.-column lattice. Every group is [No. | Symbol | Description]; the printed
+// code number sits in the narrow "No." cell immediately LEFT of the symbol
+// cell. Reading that cell per row is the authoritative bind that the VLM's
+// y-hint failed to give (it drifted across blank rows). We locate the No. cell
+// from the page's vertical rules: the two rules bracketing the symbol cell's
+// left edge bound it. Where rules are faint, fall back to a fixed offset left
+// of the symbol-cell centre — stable across both CT174/51 templates.
+const NO_COL_DX = 233 // px from symbol-cell centre to No.-cell centre (fallback)
+const NO_COL_W = 150 // px No.-cell width (fallback)
+function noColumns(symCols, vRules, W) {
+  return symCols.map(([a, b]) => {
+    // Anchor on the symbol cell's LEFT EDGE (a), not its centre. Dense sign
+    // graphics throw spurious full-height rules INSIDE the symbol cell, and a
+    // centre-based search grabs those — on TS 206-310 it put group 4's "No."
+    // window on top of the pictogram. The two rules immediately left of the
+    // left edge bracket the No. cell: [1] = its left border, [0] = the
+    // No|Symbol divider. Works for synthesized columns too (their lattice left
+    // edge sits at the same offset from the divider as a detected band's).
+    const left = vRules.filter(r => r < a - 8).sort((p, q) => q - p)
+    const w = left.length >= 2 ? left[0] - left[1] : 0
+    if (w > 40 && w < 320) return [left[1], left[0]]
+    const cx = (a + b) / 2
+    return [Math.max(0, Math.round(cx - NO_COL_DX - NO_COL_W / 2)), Math.min(W, Math.round(cx - NO_COL_DX + NO_COL_W / 2))]
+  })
+}
 function classifyTier(w, h) {
   const aspect = w / h
   if (aspect > 1.7 || aspect < 0.58) return 2
@@ -257,20 +319,26 @@ console.log(`GML ground-truth: ${onMap.size} distinct SIGNIDs`)
 
 // ---- VLM call ----
 const sleep = ms => new Promise(r => setTimeout(r, ms))
-async function readSheetVLM(jpgBuf) {
-  const prompt = `This is one page from the Hong Kong Transport Department "Index Plan" — a reference of all traffic signs. The page is a table whose columns repeat the pattern [No. | Symbol | Description] for each column-group. Codes ("641", "642", …) appear in the small "No." column at the LEFT of each group. Codes go down each group, then continue at the top of the next group to the right.
-
-For each row that has a sign code (skip blank / "SYMBOL NOT AVAILABLE" / placeholder rows entirely — do NOT emit them), return an object:
-
-  { "code": "641", "en": "DIRECTION TO FOOTBRIDGE", "zh": "通往人行天橋", "y": 0.27 }
-
-where:
-  - "code" = exact digits in the No. column, preserving any letter suffix (e.g. "636L", "639T").
-  - "en"   = the ENGLISH text in the row's Description column, UPPERCASE, with Chinese characters and "(DOUBLE SIDES)" sub-notes omitted. Empty string if the column has no English.
-  - "zh"   = the TRADITIONAL CHINESE (Hong Kong, 繁體中文) text in the SAME Description column. Omit any English/digits/parentheses/whitespace separators. Empty string if the column has no Chinese.
-  - "y"    = approximate VERTICAL POSITION of the row's centre, as a fraction of the IMAGE HEIGHT (0.0 at the very top of the page, 1.0 at the very bottom). Be reasonably precise (two decimal places is fine).
-
-Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. Inner arrays = the rows of that group with codes. Skip blank rows entirely (no NONE entries needed — y disambiguates position). No markdown fences, no prose.`
+// The model usually returns bare JSON, but occasionally prepends prose ("I'll
+// read each column…") despite the instruction. Salvage by extracting the
+// outermost array; return null only if even that won't parse (caller re-asks).
+function parseJsonLoose(raw) {
+  try {
+    return JSON.parse(raw)
+  } catch {
+    const i = raw.indexOf('['), j = raw.lastIndexOf(']')
+    if (i < 0 || j <= i) return null
+    try {
+      return JSON.parse(raw.slice(i, j + 1))
+    } catch {
+      return null
+    }
+  }
+}
+// One JPEG + one text prompt → the model's raw text reply (markdown fences
+// stripped). Shared by the full-page read and the No.-column grid read so both
+// inherit the same retry/backoff and fail-loud-on-truncation behaviour.
+async function callVLM(jpgBuf, prompt) {
   const body = {
     model: MODEL,
     // 4096 tokens truncates the chainage-dense TS 3601-3705 mid-token; the
@@ -286,15 +354,31 @@ Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. 
   }
   const backoffs = [15_000, 30_000, 60_000, 120_000]
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    })
+    let res
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+    } catch (err) {
+      // A network-level failure (EPIPE / ECONNRESET / DNS / timeout) makes
+      // fetch REJECT rather than return a status — so it bypasses the HTTP
+      // retry below and would otherwise crash the whole multi-call run. Retry
+      // it on the same backoff schedule; give up only once that's exhausted.
+      const reason = err?.cause?.code ?? err?.cause?.message ?? err?.message
+      if (attempt >= backoffs.length) {
+        console.error(`network error after ${attempt + 1} attempts: ${reason}`)
+        process.exit(1)
+      }
+      console.error(`  network error (${reason}) on attempt ${attempt + 1} — backing off ${backoffs[attempt] / 1000}s`)
+      await sleep(backoffs[attempt])
+      continue
+    }
     if (res.ok) {
       const j = await res.json()
       // A `max_tokens` stop would truncate the JSON — sometimes at a valid
@@ -306,7 +390,7 @@ Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. 
         process.exit(1)
       }
       const raw = (j.content?.[0]?.text ?? '').replace(/^```(?:json)?\s*|\s*```$/g, '').trim()
-      return { parsed: JSON.parse(raw), usage: j.usage }
+      return { raw, usage: j.usage }
     }
     const txt = await res.text()
     const retriable = res.status === 429 || res.status === 529 || res.status >= 500
@@ -318,13 +402,62 @@ Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. 
     await sleep(backoffs[attempt])
   }
 }
+// Full-page read — column-groups of {code, en, zh}. Used for descriptions
+// (PASS 1) and to count the column-groups; the page's row binding now comes
+// from the No.-column grid read below, not from these rows' y-hints.
+async function readSheetVLM(jpgBuf) {
+  const prompt = `This is one page from the Hong Kong Transport Department "Index Plan" — a reference of all traffic signs. The page is a table whose columns repeat the pattern [No. | Symbol | Description] for each column-group. Codes ("641", "642", …) appear in the small "No." column at the LEFT of each group. Codes go down each group, then continue at the top of the next group to the right.
+
+For each row that has a sign code (skip blank / "SYMBOL NOT AVAILABLE" / placeholder rows entirely — do NOT emit them), return an object:
+
+  { "code": "641", "en": "DIRECTION TO FOOTBRIDGE", "zh": "通往人行天橋" }
+
+where:
+  - "code" = exact digits in the No. column, preserving any letter suffix (e.g. "636L", "639T").
+  - "en"   = the ENGLISH text in the row's Description column, UPPERCASE, with Chinese characters and "(DOUBLE SIDES)" sub-notes omitted. Empty string if the column has no English.
+  - "zh"   = the TRADITIONAL CHINESE (Hong Kong, 繁體中文) text in the SAME Description column. Omit any English/digits/parentheses/whitespace separators. Empty string if the column has no Chinese.
+
+Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. Inner arrays = the rows of that group with codes. Skip blank rows entirely. No markdown fences, no prose.`
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { raw, usage } = await callVLM(jpgBuf, prompt)
+    const parsed = parseJsonLoose(raw)
+    if (Array.isArray(parsed)) return { parsed, usage }
+    console.error(`  full-page read non-JSON (starts "${raw.slice(0, 40).replace(/\s+/g, ' ')}…") — re-asking (attempt ${attempt + 1}/3)`)
+  }
+  return null
+}
+// No.-column grid read — the authoritative code↔row bind. The montage is a
+// clean R×C grid of isolated No.-cell crops in reading order, so the model
+// reads pure numbers cell-by-cell with no row-skipping ambiguity. The reply
+// MUST be exactly R×C — a misshapen one means the bind would be misaligned, so
+// it is never accepted. But the model is stochastic, so we re-ask a few times
+// before giving up; on persistent failure we return null and the caller SKIPS
+// the sheet (re-runnable with --sheet) rather than crashing the whole run.
+async function readNoGridVLM(jpgBuf, R, C) {
+  const prompt = `This image is a GRID of cells cropped from the "No." column of a Hong Kong traffic-sign index table. It has exactly ${R} rows and ${C} columns, laid out in reading order: left-to-right within each row, then top-to-bottom. EVERY cell is a slot — including empty ones — so there are exactly ${R}×${C} = ${R * C} cells.
+
+Each cell shows EITHER a bold sign-code number (e.g. "208", "636L", "639T"), optionally above a smaller "(TC ...)" reference line, OR nothing.
+
+For each cell, return the bold code as a string — the digits plus any trailing letter, WITHOUT the "(TC ...)" part — or "" if the cell has no code. Do NOT skip empty cells; emit "" for them so every row has exactly ${C} entries.
+
+Return ONLY a JSON array of ${R} arrays, each containing exactly ${C} strings. No prose, no markdown fences.`
+  const shapeOf = g => Array.isArray(g) ? `${g.length}×[${g.map(r => Array.isArray(r) ? r.length : '?').join(',')}]` : 'non-array'
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { raw, usage } = await callVLM(jpgBuf, prompt)
+    const grid = parseJsonLoose(raw)
+    if (Array.isArray(grid) && grid.length === R && grid.every(row => Array.isArray(row) && row.length === C)) {
+      return { grid, usage }
+    }
+    console.error(`  no-grid read got ${shapeOf(grid)}, expected ${R}×${C} — re-asking (attempt ${attempt + 1}/3)`)
+  }
+  return null
+}
 
 // ---- per-sheet extraction ----
 async function extractSheetVLM(sheet, catalogue) {
   const pdf = join(INDEX_PLAN_DIR, sheet.pdf)
   const base = `/tmp/vlm-${sheet.prefix}`
   spawnSync('pdftoppm', ['-png', '-r', String(DPI), '-singlefile', pdf, base])
-  spawnSync('pdftoppm', ['-png', '-r', String(DPI * DESC_HD), '-singlefile', pdf, `${base}-hd`])
   const png = `${base}.png`
   const [W, H] = identify(png)
 
@@ -332,6 +465,11 @@ async function extractSheetVLM(sheet, catalogue) {
   // symbol/desc coords this script eventually writes.
   const colProf = profile(png, W, H, 'x')
   const symBands = runs(colProf, 25, 70)
+  // Vertical table rules run the full page height, so their columns saturate
+  // the ink profile (~255) while symbol/number ink stays well below — the same
+  // high-threshold peak-find we use for horizontal grid lines. These bound the
+  // No. cells (see noColumns).
+  const vRules = ruleCentres(colProf, 120, 5)
   const rowProf = profile(png, W, H, 'y')
   const gridLines = ruleCentres(rowProf, 120, 3)
   const pitch = modalGap(gridLines)
@@ -340,9 +478,8 @@ async function extractSheetVLM(sheet, catalogue) {
   // anything from ~pitch tall up to a "rowspan" multi-row cell (e.g. the
   // 300+ px gaps on informatory sheets where one number labels two stacked
   // pictograms). Smaller gaps (header rules, divider speck) are dropped.
-  // Below in pass 2 we match a code's y by CONTAINMENT — y falling inside
-  // a kept gap's [top, bot] range — rather than distance to the gap's
-  // centre, so a tall gap doesn't get an unfairly narrow acceptance window.
+  // These kept gaps become the rows of the No.-column grid bind below: each
+  // one is read once and its symbol cropped from the same [top, bot] range.
   const gaps = []
   for (let i = 1; i < gridLines.length; i++) {
     const top = gridLines[i - 1], bot = gridLines[i]
@@ -355,161 +492,248 @@ async function extractSheetVLM(sheet, catalogue) {
   const jpg = `${base}.jpg`
   magick([png, '-resize', '1600x', '-quality', '92', jpg])
   const jpgBuf = readFileSync(jpg)
-  const { parsed, usage } = await readSheetVLM(jpgBuf)
+  const pageRes = await readSheetVLM(jpgBuf)
+  if (!pageRes) {
+    console.error(`[${sheet.pdf}] full-page read never returned valid JSON after retries — SKIPPING (re-run: --propose --sheet "${sheet.range[0]} - ${sheet.range[1]}")`)
+    return 0
+  }
+  const { parsed, usage } = pageRes
   console.log(`[${sheet.pdf}] vlm: ${parsed.length} groups, usage in=${usage?.input_tokens} out=${usage?.output_tokens}`)
 
   // Resolve the symbol-column x-range for each VLM group from the fixed grid
   // lattice, recovering columns runs(colProf,…) missed (see symbolColumns).
   const symCols = symbolColumns(symBands, parsed.length, W)
   console.log(`[${sheet.pdf}] symbol cols: ${symBands.length} band(s) detected -> ${symCols.length} lattice column(s) at [${symCols.map(c => Math.round((c[0] + c[1]) / 2)).join(', ')}]`)
+  // The No. cell sits left of each symbol cell — this is the row anchor.
+  const noCols = noColumns(symCols, vRules, W)
 
-  // Parse each VLM row into a uniform shape, including the y hint that lets
-  // us map by spatial position instead of ordinal index. `desc` is the
-  // {en?, zh?} bilingual shape that matches signDescriptions.json — empty
-  // strings are dropped so we only ever store a populated field.
-  function parseCell(item) {
-    if (item == null || item === 'NONE' || typeof item !== 'object') return null
-    const raw = String(item.code ?? '').toUpperCase().replace(/\s+/g, '')
+  // Normalise a raw No.-column string to {code, base}, gated by this sheet's
+  // numeric range. Used for both the grid codes (PASS 2) and the full-page
+  // rows (PASS 1). Returns null for blanks / out-of-range / malformed reads.
+  function parseCode(raw0) {
+    const raw = String(raw0 ?? '').toUpperCase().replace(/\s+/g, '')
     if (!raw || raw === 'NONE') return null
     const m = raw.match(/^(\d{2,4})([A-Z]?)$/)
     if (!m) return null
     const n = +m[1]
     if (n < sheet.range[0] || n > sheet.range[1]) return null
+    return { code: `${sheet.prefix}${m[1]}${m[2]}`, base: `${sheet.prefix}${m[1]}` }
+  }
+  // Parse a full-page row into {code, base, desc}. `desc` is the {en?, zh?}
+  // bilingual shape that matches signDescriptions.json — empty strings are
+  // dropped so we only ever store a populated field.
+  function parseCell(item) {
+    if (item == null || typeof item !== 'object') return null
+    const c = parseCode(item.code)
+    if (!c) return null
     const en = String(item.en ?? '').trim().toUpperCase().replace(/\s+/g, ' ')
     const zh = String(item.zh ?? '').trim().replace(/\s+/g, '')
     const desc = {}
     if (en) desc.en = en
     if (zh) desc.zh = zh
-    return {
-      code: `${sheet.prefix}${m[1]}${m[2]}`,
-      base: `${sheet.prefix}${m[1]}`,
-      desc,
-      y: typeof item.y === 'number' ? item.y : null
-    }
+    return { ...c, desc }
   }
   // Compare two desc objects shallowly — used to skip no-op writes.
   function descEqual(a, b) {
     if (!a || !b) return a === b
     return a.en === b.en && a.zh === b.zh
   }
-
-  // Kept rowBands in top-to-bottom order; pass 2 matches by CONTAINMENT (the
-  // gap whose [top, bot] range encloses the code's targetY) rather than by
-  // nearest-by-centre. Containment scales naturally to tall multi-row gaps:
-  // a 300-px-tall informatory rowspan accepts any y within its full range,
-  // not just a fixed tolerance around its centre — which is what caused the
-  // older centre-distance check to drop those cells.
-  const keptGaps = gaps.filter(g => g.kept)
-
-  // PASS 1 — description fixes for codes already in the catalogue. No
-  // positional logic needed; we just match the code string. Runs over EVERY
-  // VLM row across every group, regardless of alignment. Existing string
-  // descs (legacy single-language form) are normalised to {en} on first
-  // contact so the rest of the script always sees the {en, zh} object shape.
-  let descAdded = 0, descUpdated = 0, descNormalised = 0
+  // Full-page descriptions keyed by code (last read wins). Drives PASS 1 and
+  // supplies the additive desc for brand-new codes added in PASS 2.
+  const descByCode = new Map()
   for (const group of parsed) {
     for (const item of (group ?? [])) {
       const cell = parseCell(item)
-      if (!cell || !catalogue[cell.code]) continue
-      if (!cell.desc.en && !cell.desc.zh) continue
-      let prev = catalogue[cell.code].desc
-      // Legacy single-language desc was a bare string; lift it to the
-      // bilingual object form on first contact so the catalogue ends up
-      // uniformly typed even when there's no language content to update.
-      if (typeof prev === 'string') {
-        prev = { en: prev }
-        catalogue[cell.code].desc = prev
-        descNormalised++
-      }
-      if (descEqual(prev, cell.desc)) continue
-      if (prev == null) descAdded++
-      else descUpdated++
-      catalogue[cell.code].desc = cell.desc
+      if (cell && (cell.desc.en || cell.desc.zh)) descByCode.set(cell.code, cell.desc)
     }
   }
 
-  // PASS 2 — add NEW pictogram + entry for codes not yet in catalogue. We
-  // need to extract the symbol cell, which requires knowing which row the
-  // code lives in. Ordinal-index alignment broke whenever the VLM and our
-  // geometry disagreed about row count (blank rows, tall multi-row cells,
-  // header counted vs not). The VLM emits a y-position hint per row and we
-  // pick the kept rowBand whose [top, bot] CONTAINS y * imageHeight. A
-  // taken-set + monotone-top guard means each band hosts at most one code
-  // and codes can't claim a row above the previous one in the same group.
-  let added = 0, droppedHallucination = 0, droppedAlign = 0, droppedDup = 0, droppedNoY = 0
-  for (let g = 0; g < parsed.length; g++) {
-    if (!symCols[g]) continue
-    const [bx0, bx1] = symCols[g]
-    const taken = new Set() // rowBand indices already claimed in this group
-    let lastTop = -Infinity // enforce monotone gap order within a group
-    for (const item of (parsed[g] ?? [])) {
-      const cell = parseCell(item)
-      if (!cell) continue
-      if (catalogue[cell.code]) {
+  const keptGaps = gaps.filter(g => g.kept)
+
+  // STAGE 1 — bind each code to its rowBand by reading the No. column. Crop
+  // every No.-cell (group g × rowBand i) into a clean R×C montage in reading
+  // order and read it in one call. Each cell is isolated and positionally
+  // fixed, so a blank / "SYMBOL NOT AVAILABLE" row reads "" in its slot — it
+  // can't shift the codes below it, which is exactly how the old y-hint bind
+  // drifted and mis-cropped. The grid read's shape is asserted R×C upstream.
+  const C = symCols.length
+  const R = keptGaps.length
+  const cellFiles = []
+  for (let i = 0; i < R; i++) {
+    for (let g = 0; g < C; g++) {
+      const [nx0, nx1] = noCols[g]
+      const gp = keptGaps[i]
+      const cf = `/tmp/nocell-${i}-${g}.png`
+      magick([png, '-crop', `${nx1 - nx0}x${Math.max(1, gp.bot - gp.top - 6)}+${nx0}+${gp.top + 3}`, '+repage', cf])
+      cellFiles.push(cf)
+    }
+  }
+  const gridJpg = `${base}-nogrid.jpg`
+  // -label '' suppresses montage's default per-tile filename caption so the
+  // model sees clean number cells; -font is required even for the empty label.
+  magick(['montage', ...cellFiles, '-tile', `${C}x${R}`, '-geometry', '220x96+3+3', '-background', '#dddddd', '-font', FONT, '-label', '', '-quality', '92', gridJpg])
+  const gridRes = await readNoGridVLM(readFileSync(gridJpg), R, C)
+  if (!gridRes) {
+    console.error(`[${sheet.pdf}] no-grid read never matched ${R}×${C} after retries — SKIPPING (re-run: --propose --sheet "${sheet.range[0]} - ${sheet.range[1]}")`)
+    return 0
+  }
+  const { grid, usage: gridUsage } = gridRes
+  console.log(`[${sheet.pdf}] no-grid: ${R}×${C} cells, usage in=${gridUsage?.input_tokens} out=${gridUsage?.output_tokens}`)
+
+  // `--propose` stages everything under /tmp; otherwise we write straight into
+  // public/signs/ (the documented build).
+  const sheetTag = `${sheet.prefix}${sheet.range[0]}-${sheet.range[1]}`
+  const outDir = propose ? join(STAGING, sheetTag) : SIGNS_DIR
+  if (propose) await mkdir(outDir, { recursive: true })
+
+  // PASS 1 — description fixes for codes already in the catalogue, matched by
+  // code string. Additive-only by default: fill a MISSING desc, never clobber
+  // an existing one (re-running a sheet used to corrupt good descriptions when
+  // the VLM mis-paired a code with a neighbour's text). `--update-desc` opts
+  // back into overwriting.
+  let descAdded = 0, descUpdated = 0
+  const descAdds = []
+  for (const [code, desc] of descByCode) {
+    if (!catalogue[code]) continue
+    const prevRaw = catalogue[code].desc
+    const prev = typeof prevRaw === 'string' ? { en: prevRaw } : prevRaw
+    const hasPrev = !!(prev && (prev.en || prev.zh))
+    if (hasPrev && !updateDesc) continue
+    if (descEqual(prev, desc)) continue
+    hasPrev ? descUpdated++ : descAdded++
+    if (propose) descAdds.push({ code, desc })
+    else catalogue[code].desc = desc
+  }
+
+  // PASS 2 — add a NEW pictogram + entry for each code the No.-column grid
+  // bound to a rowBand. The symbol crop is pure geometry: symbol column g ×
+  // rowBand i, taken from the SAME row whose No. cell yielded the code, so it
+  // cannot drift. GML filter and dup check are retained; a row whose symbol
+  // cell is empty (a "SYMBOL NOT AVAILABLE" code) trims to nothing and
+  // degrades to a dot rather than shipping a blank crop.
+  let added = 0, droppedHallucination = 0, droppedSmall = 0, droppedDup = 0
+  const adds = []
+  const seen = new Set()
+  for (let i = 0; i < R; i++) {
+    const gap = keptGaps[i]
+    const rh = gap.bot - gap.top
+    for (let g = 0; g < C; g++) {
+      const c = parseCode(grid[i][g])
+      if (!c) continue
+      if (catalogue[c.code] || seen.has(c.code)) {
         droppedDup++
         continue
       }
-      if (!onMap.has(cell.code) && !onMap.has(cell.base)) {
+      if (!onMap.has(c.code) && !onMap.has(c.base)) {
         droppedHallucination++
         continue
       }
-      if (cell.y == null) {
-        droppedNoY++
-        continue
-      }
-      const targetY = cell.y * H
-      // Allow a small (pitch * 0.1) slack at the top/bottom edges of each
-      // gap — Sonnet's y is approximate, and a code at the very top or
-      // bottom of a row often lands a handful of pixels outside the
-      // detected gridline due to anti-aliasing / line-clustering noise.
-      // Without it, the bottom-most row of every sheet was frequently
-      // align-dropped despite the code being clearly inside the cell.
-      const slack = pitch * 0.1
-      let pickIdx = -1
-      for (let i = 0; i < keptGaps.length; i++) {
-        if (taken.has(i)) continue
-        const k = keptGaps[i]
-        if (k.top <= lastTop) continue
-        if (targetY >= k.top - slack && targetY <= k.bot + slack) {
-          pickIdx = i
-          break
-        }
-      }
-      if (pickIdx < 0) {
-        droppedAlign++
-        continue
-      }
-      const gap = keptGaps[pickIdx]
-      const rh = gap.bot - gap.top
+      const [bx0, bx1] = symCols[g]
       const symRaw = '/tmp/sym.png'
       magick([png, '-crop', `${bx1 - bx0 + 12}x${rh - 8}+${bx0 - 6}+${gap.top + 4}`,
         '+repage', '-fuzz', '8%', '-trim', '+repage', symRaw])
       const [sw, sh] = identify(symRaw)
       if (!sw || sw < 24 || sh < 24) {
-        droppedAlign++
+        droppedSmall++
         continue
       }
-      normalizeSign(symRaw, join(SIGNS_DIR, `${cell.code}.png`))
-      catalogue[cell.code] = { tier: classifyTier(sw, sh), group: sheet.group }
-      if (cell.desc.en || cell.desc.zh) catalogue[cell.code].desc = cell.desc
-      taken.add(pickIdx)
-      lastTop = gap.top
+      normalizeSign(symRaw, join(outDir, `${c.code}.png`))
+      const entry = { tier: classifyTier(sw, sh), group: sheet.group }
+      const desc = descByCode.get(c.code)
+      if (desc && (desc.en || desc.zh)) entry.desc = desc
+      seen.add(c.code)
+      // src = the source row box from the No.-cell left edge through the symbol
+      // cell right edge, for a ground-truth [printed number | pictogram] crop at
+      // review time (the bind is only trustworthy if that pairing checks out).
+      if (propose) adds.push({ code: c.code, ...entry, src: { x: noCols[g][0], y: gap.top, w: bx1 - noCols[g][0], h: rh } })
+      else catalogue[c.code] = entry
       added++
     }
   }
-  console.log(`[${sheet.pdf}] added=${added}  desc-added=${descAdded}  desc-updated=${descUpdated}  desc-normalised=${descNormalised}  hallucination-dropped=${droppedHallucination}  align-dropped=${droppedAlign}  no-y=${droppedNoY}  dup=${droppedDup}`)
+  console.log(`[${sheet.pdf}] added=${added}  desc-added=${descAdded}  desc-updated=${descUpdated}  hallucination-dropped=${droppedHallucination}  empty-cell-dropped=${droppedSmall}  dup=${droppedDup}`)
+
+  // In propose mode write nothing to the repo — stage a manifest + a review
+  // montage (each candidate's code beside its crop) so a human can verify
+  // every code↔crop before --commit promotes them.
+  if (propose) {
+    await writeFile(join(outDir, 'manifest.json'), JSON.stringify({ sheet: sheet.pdf, group: sheet.group, adds, descAdds }, null, 2) + '\n')
+    if (adds.length) {
+      // review.png — the normalized asset that will actually ship, labelled.
+      const labelArgs = []
+      for (const a of adds) labelArgs.push('-label', a.code, join(outDir, `${a.code}.png`))
+      magick(['montage', '-font', FONT, ...labelArgs, '-tile', '6x', '-geometry', '200x160+8+8', '-background', 'white', '-fill', 'black', '-pointsize', '22', join(outDir, 'review.png')])
+      // verify.png — the GATE: each candidate's SOURCE row [printed No. |
+      // pictogram] cropped straight from the page, labelled with the bound
+      // code. Confirm the printed number matches the label before --commit;
+      // this is the only view that can catch a misread No.-column digit.
+      const vArgs = ['montage', '-font', FONT]
+      for (const a of adds) {
+        const { x, y, w, h } = a.src
+        const vf = `/tmp/vsrc-${a.code}.png`
+        magick([png, '-crop', `${w + 8}x${h - 4}+${Math.max(0, x - 4)}+${y + 2}`, '+repage', '-resize', '440x180', vf])
+        vArgs.push('-label', a.code, vf)
+      }
+      vArgs.push('-tile', '3x', '-geometry', '460x200+8+8', '-background', 'white', '-fill', 'black', '-pointsize', '26', join(outDir, 'verify.png'))
+      magick(vArgs)
+    }
+    console.log(`[${sheet.pdf}] staged ${adds.length} crop(s) + ${descAdds.length} desc-add(s) -> ${join(outDir, 'verify.png')}`)
+  }
   return added
+}
+
+// ---- commit: promote staged (--propose) crops into public/signs/ + catalogue ----
+if (doCommit) {
+  if (!existsSync(CATALOGUE_JSON)) {
+    console.error(`no catalogue at ${CATALOGUE_JSON} to commit into`)
+    process.exit(1)
+  }
+  await mkdir(SIGNS_DIR, { recursive: true })
+  const catalogue = JSON.parse(await readFile(CATALOGUE_JSON, 'utf8'))
+  let committed = 0, rejected = 0, descApplied = 0
+  for (const dir of (await readdir(STAGING).catch(() => []))) {
+    const mfPath = join(STAGING, dir, 'manifest.json')
+    if (!existsSync(mfPath)) continue
+    const mf = JSON.parse(await readFile(mfPath, 'utf8'))
+    if (sheetFilter && !mf.sheet.includes(sheetFilter)) continue
+    for (const a of (mf.adds ?? [])) {
+      if (rejectList.has(a.code)) {
+        rejected++
+        continue
+      }
+      await copyFile(join(STAGING, dir, `${a.code}.png`), join(SIGNS_DIR, `${a.code}.png`))
+      // Pick only catalogue fields — never the verification-only `src` box.
+      const entry = { tier: a.tier, group: a.group }
+      if (a.desc) entry.desc = a.desc
+      catalogue[a.code] = entry
+      committed++
+    }
+    // Desc-adds stay additive on commit too (only fill a missing desc) unless
+    // --update-desc, mirroring PASS 1.
+    for (const da of (mf.descAdds ?? [])) {
+      if (rejectList.has(da.code) || !catalogue[da.code]) continue
+      const prevRaw = catalogue[da.code].desc
+      const hasPrev = typeof prevRaw === 'string' ? !!prevRaw : !!(prevRaw && (prevRaw.en || prevRaw.zh))
+      if (hasPrev && !updateDesc) continue
+      catalogue[da.code].desc = da.desc
+      descApplied++
+    }
+  }
+  await writeFile(CATALOGUE_JSON, JSON.stringify(catalogue, null, 2) + '\n')
+  console.log(`committed ${committed} pictogram(s) + ${descApplied} desc(s); rejected ${rejected}`)
+  process.exit(0)
 }
 
 // ---- main ----
 await mkdir(SIGNS_DIR, { recursive: true })
-if (wipe) {
+// --propose never mutates the repo, so even with --wipe we keep the real
+// catalogue + public/signs/ intact (we only read them for dup/desc checks).
+if (wipe && !propose) {
   for (const f of await readdir(SIGNS_DIR).catch(() => [])) {
     if (f.endsWith('.png')) await rm(join(SIGNS_DIR, f))
   }
   console.log('--wipe: cleared public/signs/ and starting from an empty catalogue')
 }
-const catalogue = wipe || !existsSync(CATALOGUE_JSON)
+const catalogue = (wipe && !propose) || !existsSync(CATALOGUE_JSON)
   ? {}
   : JSON.parse(await readFile(CATALOGUE_JSON, 'utf8'))
 const before = Object.keys(catalogue).length
@@ -527,5 +751,9 @@ for (const sheet of sheetsToRun) {
   const n = await extractSheetVLM(sheet, catalogue)
   totalAdded += n
 }
-await writeFile(CATALOGUE_JSON, JSON.stringify(catalogue, null, 2) + '\n')
-console.log(`\nfinal catalogue: ${Object.keys(catalogue).length} codes (+${totalAdded})`)
+if (propose) {
+  console.log(`\nproposed ${totalAdded} new pictogram(s) across ${sheetsToRun.length} sheet(s). Review each <sheet>/review.png under ${STAGING}, then: node scripts/build-sign-catalogue.mjs --commit [--reject TS###,TS###]`)
+} else {
+  await writeFile(CATALOGUE_JSON, JSON.stringify(catalogue, null, 2) + '\n')
+  console.log(`\nfinal catalogue: ${Object.keys(catalogue).length} codes (+${totalAdded})`)
+}
