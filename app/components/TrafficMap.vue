@@ -105,18 +105,38 @@ const tierLayerId = (t: number) => `sign-tier-${t}`
 const tierClause = TIER_LOD.map(
   (_, t) => ['in', ['get', 'SIGNID'], ['literal', codesByTier[t] ?? []]]
 )
-// Tier filter, optionally excluding one GG_NAME assembly — used to hide a
-// selected group's base pictograms while the group-highlight overlay draws
-// them enlarged on top (so they don't show doubled at two sizes).
-const tierFilter = (t: number, base: ExpressionSpecification, hideGG: string | null = null) =>
-  expr(['all', base, tierClause[t], ...(hideGG ? [['!=', ['get', 'GG_NAME'], hideGG]] : [])])
-// Per-tier on-screen size ramp: the shared SIGN_FIRST_SIZE at the tier's
-// reveal zoom up to its `size` at MAX_ZOOM. Used by the `sign-tier-N`
-// pictograms (the group-highlight overlay instead enlarges, see EMPHASIS_SIZE).
+// Tier filter for LONE signs only — stacked post members are drawn by the one
+// `sign-stack` layer below (so the whole post shares a size), hence excluded
+// here. Split by tier so each lone tier keeps its own reveal zoom + size ramp.
+const tierFilter = (t: number, base: ExpressionSpecification) =>
+  expr(['all', base, tierClause[t], ['!', ['has', 'STACK_INDEX']]])
+// Per-tier on-screen size ramp for lone signs: the shared SIGN_FIRST_SIZE at
+// the tier's reveal zoom up to its `size` at MAX_ZOOM.
 const tierSizeRamp = (lod: typeof TIER_LOD[number]) => expr([
   'interpolate', ['linear'], ['zoom'],
   lod.minzoom, SIGN_FIRST_SIZE,
   MAX_ZOOM, lod.size
+])
+
+// A co-located signpost is ONE sizing unit: every member is drawn by this single
+// `sign-stack` layer at one icon-size, so the width-normalized plates keep their
+// real-life height ratio at every zoom (per-tier sizing scaled members
+// differently and skewed it). Members reveal together at the base stack zoom
+// (≥2 tiers in a post would otherwise pop in at different zooms). `hideGG` drops
+// one assembly so the group-highlight overlay can redraw it enlarged without
+// doubling.
+const STACK_MINZOOM = TIER_LOD[0].minzoom
+const stackFilter = (base: ExpressionSpecification, hideGG: string | null = null) =>
+  expr(['all', base, ['has', 'STACK_INDEX'], ...(hideGG ? [['!=', ['get', 'GG_NAME'], hideGG]] : [])])
+// Shared post size ramp, branching on the primary tier (baked STACK_TIER) so a
+// post matches the prominence of its main sign while every member scales alike.
+const stackSizeRamp = expr([
+  'interpolate', ['linear'], ['zoom'],
+  STACK_MINZOOM, SIGN_FIRST_SIZE,
+  MAX_ZOOM, ['match', ['get', 'STACK_TIER'],
+    ...TIER_LOD.flatMap((lod, t) => [t, lod.size]),
+    TIER_LOD[0].size
+  ]
 ])
 // Enlarged emphasis size for a *selected* sign/assembly — bigger than any
 // tier's ramp so it reads as picked. Shared by the single-sign `sel-icon` and
@@ -124,11 +144,17 @@ const tierSizeRamp = (lod: typeof TIER_LOD[number]) => expr([
 const EMPHASIS_SIZE = expr([
   'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
 ])
+// Zoom-faded opacity shared by the lone tier pictograms and the stacked-post
+// pictograms: 0.55 while crowded (z13) easing to a 0.9 ceiling (never fully
+// opaque, so residual high-zoom overlap stays legible-through; collision is off).
+const ICON_OPACITY = expr([
+  'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
+])
 // One dot under every sign at all zooms; the pictogram is drawn on top once
 // its tier's minzoom is reached. The icon covers the small centred dot, so
 // the dot only shows through below the tier's minzoom (collision is disabled,
 // so a sign is never dropped once its tier is in range).
-const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
+const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 
 // Pictogram icon-id prefixes. Lone signs draw from the height-normalized set
 // (`sign-` → /signs/); stacked post members (those carrying STACK_INDEX) draw
@@ -285,8 +311,8 @@ onMounted(async () => {
     // per-tier split is needed): the glow disc rings each member, then the
     // pictogram is re-drawn enlarged on top. Every member shares the same
     // size + `stackOffset`, so the whole post enlarges together as one unit.
-    // The selected group's base `sign-tier-N` pictograms are hidden (see the
-    // tier filter's hideGG) so they don't show doubled under the enlarged copy.
+    // The selected post's base pictograms (on the `sign-stack` layer) are hidden
+    // (see stackFilter's hideGG) so they don't show doubled under the enlarged copy.
     for (const [id, image] of [['sel-group-glow', 'sel-glow'], ['sel-group-top', null]] as const) {
       m.addLayer({
         id,
@@ -371,12 +397,13 @@ onMounted(async () => {
         .finally(() => inFlight.delete(id))
     })
 
-    // The GG_NAME whose base pictograms are currently hidden from the tier
-    // layers because a group is selected (the overlay draws them enlarged).
+    // The GG_NAME whose base pictograms are currently hidden from the sign-stack
+    // layer because a group is selected (the overlay draws them enlarged).
     let hiddenGG: string | null = null
 
-    // The sign layers — always-on dot + per-tier pictograms — all read
-    // whichever archive the active filter mode wants. They're inserted
+    // The sign layers — always-on dot, per-tier lone pictograms, and the
+    // single sign-stack layer for signposts — all read whichever archive the
+    // active filter mode wants. They're inserted
     // beneath the overlays (the `sel-group`/`sel` layers, anchored on
     // `sel-group-glow`) so selection stays on top, and removed/re-added to
     // swap source on a mode flip (MapLibre can't repoint a live layer).
@@ -405,7 +432,7 @@ onMounted(async () => {
           'source': source,
           'source-layer': SOURCE_LAYER,
           'minzoom': lod.minzoom,
-          'filter': tierFilter(t, expr(mapFilter.value), hiddenGG),
+          'filter': tierFilter(t, expr(mapFilter.value)),
           'layout': {
             'icon-image': PICTO_ICON,
             // Normalised first-display height (SIGN_FIRST_SIZE, shared by
@@ -415,35 +442,44 @@ onMounted(async () => {
             // and zooming in frees the space to render detail bigger.
             'icon-size': tierSizeRamp(lod),
             ...iconRotation,
-            // Co-located GG_NAME assemblies hang as a vertical signpost: each
-            // member sits at its baked STACK_OFF down the post (main signs on
-            // top, supplementary at the bottom), drawn from the width-normalized
-            // set so plate heights follow their true aspect. Non-stacked signs
-            // get a [0, 0] offset and render exactly where they always did.
-            'icon-offset': stackOffset,
-            // Collision disabled outright: every sign must stay exactly where
-            // it is and never be dropped or nudged by a neighbour. Each point
-            // is a real installed sign with a 1:1 ground meaning, so hiding it
-            // (even when icons overlap) breaks the map's contract.
+            // No icon-offset here: stacked post members (the only signs with an
+            // offset) are drawn by the sign-stack layer; lone signs sit at [0,0].
             'icon-allow-overlap': true,
             'icon-ignore-placement': true,
             // Lower tier draws on top, so simple regulatory signs sit above
             // decorative ones where pictograms overlap.
             'symbol-sort-key': t
           },
-          'paint': {
-            // Collision is off, so signs pile up when zoomed out — and can
-            // still overlap even at max zoom. Fade hard while crowded (0.55
-            // at z13) so the stack shows through, easing to a 0.9 ceiling
-            // (never fully opaque): MapLibre can't tell which signs overlap,
-            // so the slight residual transparency keeps any leftover
-            // overlap at high zoom legible-through without hurting reading.
-            'icon-opacity': expr([
-              'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
-            ])
-          }
+          'paint': { 'icon-opacity': ICON_OPACITY }
         }, 'sel-group-glow')
       })
+
+      // Every co-located signpost is drawn here as ONE unit (see stackFilter /
+      // stackSizeRamp): all members share one icon-size keyed by the post's
+      // primary tier, so the width-normalized plates keep their real-life height
+      // ratio at any zoom and the whole post reveals together at STACK_MINZOOM.
+      m.addLayer({
+        'id': 'sign-stack',
+        'type': 'symbol',
+        'source': source,
+        'source-layer': SOURCE_LAYER,
+        'minzoom': STACK_MINZOOM,
+        'filter': stackFilter(expr(mapFilter.value), hiddenGG),
+        'layout': {
+          'icon-image': PICTO_ICON,
+          'icon-size': stackSizeRamp,
+          ...iconRotation,
+          // Hang each member at its baked STACK_OFF down the post (main on top,
+          // supplementary at the bottom); the offset rides icon-rotate + scales
+          // with icon-size, so the whole post stays a rigid, proportional column.
+          'icon-offset': stackOffset,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+          // Main sign (lowest STACK_INDEX) draws on top where plates overlap.
+          'symbol-sort-key': expr(['get', 'STACK_INDEX'])
+        },
+        'paint': { 'icon-opacity': ICON_OPACITY }
+      }, 'sel-group-glow')
     }
     const removeSignLayers = () => {
       for (const id of signLayerIds) if (m.getLayer(id)) m.removeLayer(id)
@@ -454,17 +490,25 @@ onMounted(async () => {
     // watch below re-applies it) once it resolves.
     if (filterMode.value === 'sign-id') loadGroupIndex()
 
-    // Re-apply the per-tier filter — category visibility (a GPU-side filter,
-    // instant across 316k features, no DOM/refetch) plus the hidden group, if
-    // any. Called when the category filter changes and when the selected group
-    // changes (so the group's base pictograms hide/show on selection).
-    const refreshTierFilters = () => TIER_LOD.forEach((_, t) => {
-      const ico = tierLayerId(t)
-      if (m.getLayer(ico)) m.setFilter(ico, tierFilter(t, expr(mapFilter.value), hiddenGG))
-    })
+    // Re-apply just the sign-stack filter — the only sign layer that depends on
+    // `hiddenGG` (the selected post to hide while its enlarged overlay draws). The
+    // selection path calls this alone; the tier layers don't carry hiddenGG.
+    const refreshStackFilter = () => {
+      if (m.getLayer('sign-stack')) m.setFilter('sign-stack', stackFilter(expr(mapFilter.value), hiddenGG))
+    }
+    // Re-apply ALL sign-layer filters — for a category-visibility (`mapFilter`)
+    // change, a GPU-side filter instant across 316k features (no DOM/refetch),
+    // which affects the lone tier layers and the stack alike.
+    const refreshSignFilters = () => {
+      TIER_LOD.forEach((_, t) => {
+        const ico = tierLayerId(t)
+        if (m.getLayer(ico)) m.setFilter(ico, tierFilter(t, expr(mapFilter.value)))
+      })
+      refreshStackFilter()
+    }
     watch(mapFilter, (f) => {
       if (m.getLayer('sign-points')) m.setFilter('sign-points', f)
-      refreshTierFilters()
+      refreshSignFilters()
     }, { immediate: true })
 
     // Flipping between the category and sign-ID tabs swaps which archive the
@@ -536,15 +580,14 @@ onMounted(async () => {
         properties: f.properties as Record<string, unknown>,
         lngLat: new maplibregl.LngLat(...(f.geometry as GeoJSON.Point).coordinates as [number, number])
       }))
-      // Hide the selected group's base tier pictograms (the overlay draws them
-      // enlarged on top); restore all tiers when a lone sign / nothing is
-      // picked. Only re-filter when it actually changes — cycling within one
-      // post / through lone signs leaves it unchanged and shouldn't re-run
-      // setFilter on every tier.
+      // Hide the selected post's base pictograms on the sign-stack layer (the
+      // overlay draws them enlarged on top); restore when a lone sign / nothing
+      // is picked. Only re-filter when it actually changes — cycling within one
+      // post / through lone signs leaves it unchanged and shouldn't re-run setFilter.
       const nextHiddenGG = grouped ? gg : null
       if (nextHiddenGG !== hiddenGG) {
         hiddenGG = nextHiddenGG
-        refreshTierFilters()
+        refreshStackFilter()
       }
     })
   })

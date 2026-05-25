@@ -1,7 +1,7 @@
 // Derive how each traffic-sign-abbreviation feature renders when it belongs to
 // a co-located assembly, so the group draws as one rigid signpost.
 // Output: data/raw/_sign_stacks.json — keyed by FEATUREID →
-//   [ stackIndex, stackSize, picWidth, anchorLng, anchorLat, bearing, stackOff ]
+//   [ stackIndex, stackSize, picWidth, anchorLng, anchorLat, bearing, stackOff, primaryTier ]
 // Also writes app/data/signGroups.json — { SIGNID: [GG_NAME, …] } over the
 // same stacked assemblies, so the runtime sign-ID filter can pull in a matched
 // sign's post-mates and show the complete signpost (see useTrafficLayers
@@ -92,7 +92,7 @@ const fidRx = attrRx('FEATUREID', 'int')
 const ggRx = attrRx('GG_NAME', 'string')
 const signidRx = attrRx('SIGNID', 'string')
 
-const groups = new Map() // GG_NAME → [{ fid, signid, group, rank, x, y }]
+const groups = new Map() // GG_NAME → [{ fid, signid, group, rank, tier, x, y }]
 let parsed = 0
 for (const m of abvText.matchAll(memberRx)) {
   const body = m[1]
@@ -108,7 +108,7 @@ for (const m of abvText.matchAll(memberRx)) {
   if (!gg || !entry) continue
   let arr = groups.get(gg)
   if (!arr) groups.set(gg, arr = [])
-  arr.push({ fid, signid, group: entry.group, rank: RANK[entry.group] ?? 5, x: +pos[1], y: +pos[2] })
+  arr.push({ fid, signid, group: entry.group, rank: RANK[entry.group] ?? 5, tier: entry.tier ?? 0, x: +pos[1], y: +pos[2] })
 }
 console.log(`  ${parsed} ABV_PT features, ${groups.size} GG_NAME groups with catalogued members`)
 
@@ -116,7 +116,7 @@ console.log(`  ${parsed} ABV_PT features, ${groups.size} GG_NAME groups with cat
 // Every member of an assembly shares the primary's anchor, so records point at
 // a deduped `anchors` list (one entry per assembly) — we reproject each anchor
 // once, not once per member.
-const records = [] // { fid, i, size, picW, anchorIdx, bearing, off }
+const records = [] // { fid, i, size, picW, anchorIdx, bearing, off, tier }
 const anchors = [] // [[x, y], …] EPSG:2326, unique per assembly
 const anchorIndex = new Map() // "x y" → index into `anchors`
 const groupIndex = new Map() // SIGNID → Set(GG_NAME), stacked assemblies only
@@ -136,6 +136,10 @@ for (const [gg, members] of groups) {
   maxSize = Math.max(maxSize, size)
   const primary = members[0]
   const bearing = faceBearings[primary.fid] ?? null // whole post rotates by the primary's facing
+  // The whole post is sized as one unit by its primary's tier (so every member
+  // shares one icon-size at runtime → the width-normalized plates keep their
+  // real-life height ratio at any zoom; see TrafficMap's sign-stack layer).
+  const tier = primary.tier
   const key = `${primary.x} ${primary.y}`
   let ai = anchorIndex.get(key)
   if (ai === undefined) {
@@ -156,7 +160,7 @@ for (const [gg, members] of groups) {
     cursor = center + ph / 2
     const off = Math.round(center / OFFSET_STEP) * OFFSET_STEP
     maxOff = Math.max(maxOff, off)
-    records.push({ fid: m.fid, i, size, picW: w, anchorIdx: ai, bearing, off })
+    records.push({ fid: m.fid, i, size, picW: w, anchorIdx: ai, bearing, off, tier })
   })
   // Index each distinct SIGNID on this post → its GG_NAME, so the runtime can
   // expand a sign-ID filter to the whole assembly (dedup signids repeated on
@@ -190,7 +194,7 @@ const wgs = gtOut.trim().split('\n').map(l => l.trim().split(/\s+/).map(Number))
 const out = {}
 for (const r of records) {
   const [lng, lat] = wgs[r.anchorIdx]
-  out[r.fid] = [r.i, r.size, r.picW, +lng.toFixed(6), +lat.toFixed(6), r.bearing, r.off]
+  out[r.fid] = [r.i, r.size, r.picW, +lng.toFixed(6), +lat.toFixed(6), r.bearing, r.off, r.tier]
 }
 
 await writeFile(OUT, JSON.stringify(out))

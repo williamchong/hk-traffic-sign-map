@@ -43,7 +43,7 @@ const faceBearings = existsSync(FACE_BEARINGS)
 if (!faceBearings) console.warn(`No ${FACE_BEARINGS} — signs will render upright. Run \`node scripts/compute-bearings.mjs\` first.`)
 
 // Map<FEATUREID-as-string, [stackIndex, size, picW, anchorLng, anchorLat,
-// bearing, stackOff]> for signs that belong to a co-located GG_NAME assembly
+// bearing, stackOff, primaryTier]> for signs that belong to a co-located GG_NAME assembly
 // (see compute-stacks.mjs). Same fall-through contract as bearings: missing
 // file → signs just don't stack (render at their own point), never a broken build.
 const signStacks = existsSync(SIGN_STACKS)
@@ -105,12 +105,15 @@ async function convertLayer({ file, category }, out, outLod) {
         // the primary's bearing, so the whole group renders as one rigid
         // signpost (see compute-stacks.mjs). STACK_INDEX marks the member as
         // stacked (the runtime swaps in the width-normalized pictogram for it);
-        // STACK_OFF is its baked vertical offset down the post. (`size`/`picW`
-        // stay in the JSON only for the build log; no tile property carries them.)
-        const [index, , , anchorLng, anchorLat, bearing, stackOff] = stack
+        // STACK_OFF is its baked vertical offset down the post; STACK_TIER is the
+        // primary's tier, so the runtime sizes the whole post as one unit and the
+        // plates keep their real-life ratio. (`size`/`picW` stay in the JSON only
+        // for the build log; no tile property carries them.)
+        const [index, , , anchorLng, anchorLat, bearing, stackOff, tier] = stack
         feature.geometry.coordinates = [anchorLng, anchorLat]
         feature.properties.STACK_INDEX = index
         feature.properties.STACK_OFF = stackOff
+        feature.properties.STACK_TIER = tier
         if (bearing === null) delete feature.properties.FACE_BEARING
         else feature.properties.FACE_BEARING = bearing
         stacksApplied++
