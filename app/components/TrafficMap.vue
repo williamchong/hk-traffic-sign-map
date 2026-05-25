@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
+import type { Map as MaplibreMap, ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSignCategories'
 import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf } from '~/composables/useSignCatalogue'
@@ -99,8 +99,25 @@ const tierLayerId = (t: number) => `sign-tier-${t}`
 const tierClause = TIER_LOD.map(
   (_, t) => ['in', ['get', 'SIGNID'], ['literal', codesByTier[t] ?? []]]
 )
-const tierFilter = (t: number, base: ExpressionSpecification) =>
-  expr(['all', base, tierClause[t]])
+// Tier filter, optionally excluding one GG_NAME assembly — used to hide a
+// selected group's base pictograms while the group-highlight overlay draws
+// them enlarged on top (so they don't show doubled at two sizes).
+const tierFilter = (t: number, base: ExpressionSpecification, hideGG: string | null = null) =>
+  expr(['all', base, tierClause[t], ...(hideGG ? [['!=', ['get', 'GG_NAME'], hideGG]] : [])])
+// Per-tier on-screen size ramp: the shared SIGN_FIRST_SIZE at the tier's
+// reveal zoom up to its `size` at MAX_ZOOM. Used by the `sign-tier-N`
+// pictograms (the group-highlight overlay instead enlarges, see EMPHASIS_SIZE).
+const tierSizeRamp = (lod: typeof TIER_LOD[number]) => expr([
+  'interpolate', ['linear'], ['zoom'],
+  lod.minzoom, SIGN_FIRST_SIZE,
+  MAX_ZOOM, lod.size
+])
+// Enlarged emphasis size for a *selected* sign/assembly — bigger than any
+// tier's ramp so it reads as picked. Shared by the single-sign `sel-icon` and
+// the whole-group overlay, so a lone click and a group click enlarge alike.
+const EMPHASIS_SIZE = expr([
+  'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
+])
 // One dot under every sign at all zooms; the pictogram is drawn on top once
 // its tier's minzoom is reached. The icon covers the small centred dot, so
 // the dot only shows through below the tier's minzoom (collision is disabled,
@@ -112,6 +129,8 @@ const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 // and the lazy loader strips the prefix back off to fetch the PNG.
 const PICTO_PREFIX = 'sign-'
 const PICTO_CODES = new Set(codesByTier.flat())
+// `icon-image` for every pictogram layer: the feature's SIGNID prefixed.
+const PICTO_ICON = expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']])
 
 // Set on teardown so the async pictogram loader doesn't addImage on a removed map.
 let disposed = false
@@ -221,8 +240,52 @@ onMounted(async () => {
       'circle-opacity': 0.9
     }
 
+    // Group-highlight overlay (drawn beneath the single-sign `sel` overlay):
+    // clicking any sign in a GG_NAME assembly fills this with every member so
+    // the whole signpost lights up and enlarges together (see the layers
+    // below). A soft disc, drawn once here and reused, sits behind each
+    // pictogram as the highlight ring — a touch larger than the 120 px
+    // pictograms; rotating it is a no-op but its `icon-offset` must ride
+    // `icon-rotate` like the pictograms' to stay aligned with the stack.
+    const GLOW_PX = 150
+    const glow = document.createElement('canvas')
+    glow.width = glow.height = GLOW_PX * 2
+    const gctx = glow.getContext('2d')!
+    gctx.scale(2, 2)
+    gctx.beginPath()
+    gctx.arc(GLOW_PX / 2, GLOW_PX / 2, GLOW_PX / 2 - 4, 0, Math.PI * 2)
+    gctx.fillStyle = 'rgba(37,99,235,0.16)'
+    gctx.fill()
+    gctx.lineWidth = 5
+    gctx.strokeStyle = '#2563eb'
+    gctx.stroke()
+    m.addImage('sel-glow', gctx.getImageData(0, 0, GLOW_PX * 2, GLOW_PX * 2), { pixelRatio: 2 })
+
+    m.addSource('sel-group', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+    // Two layers (a uniform EMPHASIS_SIZE means one zoom-interpolate, so no
+    // per-tier split is needed): the glow disc rings each member, then the
+    // pictogram is re-drawn enlarged on top. Every member shares the same
+    // size + `stackOffset`, so the whole post enlarges together as one unit.
+    // The selected group's base `sign-tier-N` pictograms are hidden (see the
+    // tier filter's hideGG) so they don't show doubled under the enlarged copy.
+    for (const [id, image] of [['sel-group-glow', 'sel-glow'], ['sel-group-top', null]] as const) {
+      m.addLayer({
+        id,
+        type: 'symbol',
+        source: 'sel-group',
+        layout: {
+          'icon-image': image ?? PICTO_ICON,
+          'icon-size': EMPHASIS_SIZE,
+          ...iconRotation,
+          'icon-offset': stackOffset,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true
+        }
+      })
+    }
+
     // Highlight overlay for the sign shown in the detail panel. Added BEFORE
-    // the sign layers so they can be inserted beneath `sel-halo` (the
+    // the sign layers so they can be inserted beneath the overlays (the
     // beforeId below): the picked sign then always draws on top — even after
     // the sign layers are removed and re-added on a filter-mode switch —
     // which is why the cluster-cycle highlight stays visible above the soup.
@@ -254,22 +317,13 @@ onMounted(async () => {
       type: 'symbol',
       source: 'sel',
       layout: {
-        'icon-image': expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']]),
-        // Must stay ≥ the largest tier's zoom-ramped size at every zoom
-        // (TIER_LOD max is 0.55 at MAX_ZOOM): the selected sign is also
-        // drawn by its always-on sign-tier-N layer underneath, so a
-        // smaller overlay would let the bigger tier icon poke out as a
-        // double image. Slightly above the envelope → it fully covers
-        // and reads as one emphasised pictogram in the halo.
-        'icon-size': expr([
-          'interpolate', ['linear'], ['zoom'], 13, 0.35, MAX_ZOOM, 0.62
-        ]),
+        'icon-image': PICTO_ICON,
+        // EMPHASIS_SIZE stays ≥ the largest tier size so this enlarged overlay
+        // fully covers the sign's own tier pictogram underneath (no double
+        // image). Only lone signs reach `sel` — grouped signs are suppressed
+        // from it and handled by the group overlay — so no stack offset here.
+        'icon-size': EMPHASIS_SIZE,
         ...iconRotation,
-        // Track the stack so the emphasis lands on the picked pictogram, not
-        // the bottom of the post. (The offset scales with this layer's larger
-        // icon-size, so it isn't pixel-identical to the tier pictogram's —
-        // close enough to read as one emphasised sign.)
-        'icon-offset': stackOffset,
         'icon-allow-overlap': true,
         'icon-ignore-placement': true
       }
@@ -294,9 +348,14 @@ onMounted(async () => {
         .finally(() => inFlight.delete(id))
     })
 
+    // The GG_NAME whose base pictograms are currently hidden from the tier
+    // layers because a group is selected (the overlay draws them enlarged).
+    let hiddenGG: string | null = null
+
     // The sign layers — always-on dot + per-tier pictograms — all read
     // whichever archive the active filter mode wants. They're inserted
-    // beneath `sel-halo` so selection stays on top, and removed/re-added to
+    // beneath the overlays (the `sel-group`/`sel` layers, anchored on
+    // `sel-group-glow`) so selection stays on top, and removed/re-added to
     // swap source on a mode flip (MapLibre can't repoint a live layer).
     const addSignLayers = (source: SignSource) => {
       // One dot under every visible sign at all zooms — the baseline marker.
@@ -310,7 +369,7 @@ onMounted(async () => {
         'source-layer': SOURCE_LAYER,
         'filter': mapFilter.value,
         'paint': { ...circlePaint }
-      }, 'sel-halo')
+      }, 'sel-group-glow')
 
       // LOD: at each tier's minzoom the pictogram is drawn over the dot,
       // later/larger the more complex the sign. Layers are added before any
@@ -323,19 +382,15 @@ onMounted(async () => {
           'source': source,
           'source-layer': SOURCE_LAYER,
           'minzoom': lod.minzoom,
-          'filter': tierFilter(t, expr(mapFilter.value)),
+          'filter': tierFilter(t, expr(mapFilter.value), hiddenGG),
           'layout': {
-            'icon-image': expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']]),
+            'icon-image': PICTO_ICON,
             // Normalised first-display height (SIGN_FIRST_SIZE, shared by
             // every tier) at the tier's reveal zoom, ramping up to the
             // tier's "proper" size by max zoom. Safe to grow now that
             // collision is off — it can't push already-shown signs away,
             // and zooming in frees the space to render detail bigger.
-            'icon-size': expr([
-              'interpolate', ['linear'], ['zoom'],
-              lod.minzoom, SIGN_FIRST_SIZE,
-              MAX_ZOOM, lod.size
-            ]),
+            'icon-size': tierSizeRamp(lod),
             ...iconRotation,
             // Co-located GG_NAME assemblies hang as a vertical signpost: each
             // member is offset one icon-height below the previous (main signs
@@ -363,7 +418,7 @@ onMounted(async () => {
               'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
             ])
           }
-        }, 'sel-halo')
+        }, 'sel-group-glow')
       })
     }
     const removeSignLayers = () => {
@@ -371,15 +426,17 @@ onMounted(async () => {
     }
     addSignLayers(sourceForMode(filterMode.value))
 
-    // Category visibility is a GPU-side filter — toggling is instant even
-    // across 316k features (no DOM, no data refetch). The pictogram tiers
-    // ride the same filter, scoped to their own code set.
+    // Re-apply the per-tier filter — category visibility (a GPU-side filter,
+    // instant across 316k features, no DOM/refetch) plus the hidden group, if
+    // any. Called when the category filter changes and when the selected group
+    // changes (so the group's base pictograms hide/show on selection).
+    const refreshTierFilters = () => TIER_LOD.forEach((_, t) => {
+      const ico = tierLayerId(t)
+      if (m.getLayer(ico)) m.setFilter(ico, tierFilter(t, expr(mapFilter.value), hiddenGG))
+    })
     watch(mapFilter, (f) => {
       if (m.getLayer('sign-points')) m.setFilter('sign-points', f)
-      TIER_LOD.forEach((_, t) => {
-        const ico = tierLayerId(t)
-        if (m.getLayer(ico)) m.setFilter(ico, tierFilter(t, expr(f)))
-      })
+      refreshTierFilters()
     }, { immediate: true })
 
     // Flipping between the category and sign-ID tabs swaps which archive the
@@ -403,10 +460,19 @@ onMounted(async () => {
     // picked sign always draws on top — no explicit re-ordering needed, even
     // after the sign layers are swapped on a filter-mode flip.
     const sel = m.getSource('sel') as GeoJSONSource
+    const selGroup = m.getSource('sel-group') as GeoJSONSource
     watch(selectedSign, (s) => {
+      // A picked sign in a co-located GG_NAME assembly is shown via the *group*
+      // overlay (the whole post enlarges together), so the single-sign `sel`
+      // overlay is suppressed for it — otherwise only the clicked member would
+      // balloon and its halo would sit at the post anchor, not on the offset
+      // pictogram. Lone signs keep the single-sign overlay.
+      const ggRaw = s?.properties?.GG_NAME
+      const gg = typeof ggRaw === 'string' ? ggRaw : null
+      const grouped = !!s && s.properties?.STACK_INDEX !== undefined && gg !== null
       sel.setData({
         type: 'FeatureCollection',
-        features: s
+        features: s && !grouped
           ? [{
               type: 'Feature',
               geometry: { type: 'Point', coordinates: [s.lngLat.lng, s.lngLat.lat] },
@@ -414,6 +480,32 @@ onMounted(async () => {
             }]
           : []
       })
+      // Gather every member of the assembly from the active *source* — not the
+      // tier layers, since we hide the selected group's tiers just below (and a
+      // source query also survives re-clicking the same post). Dedup by
+      // STACK_INDEX (one sign per stack position; tile-boundary copies collapse).
+      let members: GeoJSON.Feature[] = []
+      if (grouped) {
+        const seen = new Set<unknown>()
+        members = m
+          .querySourceFeatures(sourceForMode(filterMode.value), {
+            sourceLayer: SOURCE_LAYER,
+            filter: ['==', ['get', 'GG_NAME'], gg] as FilterSpecification
+          })
+          .filter(f => f.properties.STACK_INDEX !== undefined && !seen.has(f.properties.STACK_INDEX) && seen.add(f.properties.STACK_INDEX))
+          .map(f => ({ type: 'Feature' as const, geometry: f.geometry, properties: f.properties }))
+      }
+      selGroup.setData({ type: 'FeatureCollection', features: members })
+      // Hide the selected group's base tier pictograms (the overlay draws them
+      // enlarged on top); restore all tiers when a lone sign / nothing is
+      // picked. Only re-filter when it actually changes — cycling within one
+      // post / through lone signs leaves it unchanged and shouldn't re-run
+      // setFilter on every tier.
+      const nextHiddenGG = grouped ? gg : null
+      if (nextHiddenGG !== hiddenGG) {
+        hiddenGG = nextHiddenGG
+        refreshTierFilters()
+      }
     })
   })
 

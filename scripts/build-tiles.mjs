@@ -17,8 +17,20 @@ import {
 } from './sign-layers.mjs'
 
 const COMBINED = join(RAW_DIR, '_combined.geojsonl')
+// A second combined stream for the overview archive. Stacked assemblies are
+// rewritten so each reads as one thinnable dot below STACK_LOD_MINZOOM and a
+// complete, pinned signpost above it (see the convertLayer write block). The
+// full archive is built from COMBINED (no zoom hints) to keep every point at
+// every zoom for the sign-ID filter.
+const COMBINED_LOD = join(RAW_DIR, '_combined_lod.geojsonl')
 const FACE_BEARINGS = join(RAW_DIR, '_face_bearings.json')
 const SIGN_STACKS = join(RAW_DIR, '_sign_stacks.json')
+
+// The zoom at which the stacked pictograms start to form the signpost
+// (= TIER_LOD[0].minzoom in app/composables/useSignCatalogue.ts; duplicated
+// per the two-runtime rule). Below it, the overview shows one thinnable dot
+// per assembly; from it up, every member is pinned so the post is complete.
+const STACK_LOD_MINZOOM = 13
 
 // Map<FEATUREID-as-string, faceBearingDegrees>; populated only for the
 // traffic-sign-abbreviation layer. If the bearings file is missing (someone
@@ -47,8 +59,10 @@ function requireTool(cmd, hint) {
 }
 
 // ogr2ogr streams the layer as newline-delimited GeoJSON to stdout; we inject
-// `category` per feature and append to the combined file that tippecanoe reads.
-async function convertLayer({ file, category }, out) {
+// `category` per feature and append to both combined files tippecanoe reads —
+// `out` (full archive) and `outLod` (overview, with the per-assembly LOD zoom
+// hints applied in the write block below).
+async function convertLayer({ file, category }, out, outLod) {
   const src = join(RAW_DIR, `${file}.gml`)
   const ogr = spawn('ogr2ogr', [
     '-f', 'GeoJSONSeq', '/vsistdout/', src,
@@ -94,7 +108,29 @@ async function convertLayer({ file, category }, out) {
         stacksApplied++
       }
     }
-    if (!out.write(JSON.stringify(feature) + '\n')) await once(out, 'drain')
+    const json = JSON.stringify(feature) + '\n'
+    if (!out.write(json)) await once(out, 'drain')
+    // Overview copy — make a co-located assembly read as ONE object when
+    // zoomed out and a COMPLETE signpost once zoomed in:
+    //   • z < STACK_LOD_MINZOOM: only the primary (index 0) is emitted, as a
+    //     plain thinnable dot (`maxzoom` STACK_LOD_MINZOOM-1, no minzoom) — it
+    //     stands in for the whole group and drop-densest thins it like any lone
+    //     sign, so the overview stays uncrowded (non-primaries aren't emitted
+    //     here at all).
+    //   • z ≥ STACK_LOD_MINZOOM: every member is emitted with an explicit
+    //     `minzoom`, which tippecanoe keeps through `--drop-densest-as-needed`
+    //     (un-pinned neighbours thin instead) — so no member, least of all the
+    //     primary, gets thinned out of the post mid-zoom.
+    if (injectStack && feature.properties.STACK_INDEX !== undefined) {
+      if (feature.properties.STACK_INDEX === 0) {
+        feature.tippecanoe = { maxzoom: STACK_LOD_MINZOOM - 1 }
+        if (!outLod.write(JSON.stringify(feature) + '\n')) await once(outLod, 'drain')
+      }
+      feature.tippecanoe = { minzoom: STACK_LOD_MINZOOM }
+      if (!outLod.write(JSON.stringify(feature) + '\n')) await once(outLod, 'drain')
+    } else if (!outLod.write(json)) {
+      await once(outLod, 'drain')
+    }
     count++
   }
   if (injectBearing) console.log(`    + FACE_BEARING on ${bearingsApplied} / ${count} (${(bearingsApplied / count * 100).toFixed(1)}%)`)
@@ -111,19 +147,22 @@ requireTool('tippecanoe', 'brew install tippecanoe')
 
 await mkdir(dirname(OUTPUT_PMTILES), { recursive: true })
 await rm(COMBINED, { force: true })
+await rm(COMBINED_LOD, { force: true })
 
 const out = createWriteStream(COMBINED)
+const outLod = createWriteStream(COMBINED_LOD)
 let total = 0
 for (const layer of SIGN_LAYERS) {
   console.log(`Reprojecting ${layer.file} …`)
   try {
-    total += await convertLayer(layer, out)
+    total += await convertLayer(layer, out, outLod)
   } catch (err) {
     console.warn(`  ⚠ skipping ${layer.file}: ${err.message}`)
   }
 }
 out.end()
-await once(out, 'finish')
+outLod.end()
+await Promise.all([once(out, 'finish'), once(outLod, 'finish')])
 
 if (total === 0) {
   console.error('No features converted — aborting before tippecanoe.')
@@ -157,13 +196,15 @@ const COMMON = [
 // 1) Overview (thinned LOD) — `--drop-densest-as-needed` trims the dense
 //    urban cores at low zoom into a readable, spatially representative
 //    scatter; dropped features return by ~z14, so zoomed-in category views
-//    stay complete. This is the default source for the unfiltered map.
+//    stay complete. This is the default source for the unfiltered map. Built
+//    from COMBINED_LOD so co-located assemblies collapse to their primary
+//    below STACK_LOD_MINZOOM (one object per signpost in the thinned view).
 await runTippecanoe('Building overview tiles (thinned LOD)', [
   '-o', OUTPUT_PMTILES,
   ...COMMON,
   '--drop-densest-as-needed',
   '--extend-zooms-if-still-dropping',
-  COMBINED
+  COMBINED_LOD
 ])
 
 // 2) Full (retain-all) — `-r1 --no-feature-limit` keeps every point at every
@@ -182,6 +223,7 @@ await runTippecanoe('Building full tiles (retain-all, abbreviation only)', [
 ])
 
 await rm(COMBINED, { force: true })
+await rm(COMBINED_LOD, { force: true })
 
 // Hash both archives together and write a tiny version file the app imports.
 // The runtime appends `?v=<hash>` to each PMTiles URL so a rebuild
