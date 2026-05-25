@@ -73,23 +73,29 @@ const iconRotation = {
   'icon-rotation-alignment': 'map' as const
 }
 
-// Signs sharing a GG_NAME assembly are stacked into a vertical signpost: each
-// member carries a build-time STACK_INDEX (0 = top, supplementary last; see
-// scripts/compute-stacks.mjs). `icon-offset` hangs each pictogram one
-// icon-height below the previous. The offset is in the icon's source-pixel
-// space (icons are 120 px tall), so it scales with `icon-size` — the column
-// stays proportional at every zoom — and, since the tier layers also set
-// `icon-rotate`, it rotates with FACE_BEARING so the post leans the way the
-// signs face. MVT can't store arrays, so STACK_INDEX is a scalar and `match`
-// enumerates the offsets; non-stacked signs have no STACK_INDEX → [0, 0].
-// MAX_STACK has headroom over the tallest assembly the data produces
-// (compute-stacks logs it — currently 6); a taller stack's overflow members
-// fall to the [0, 0] default and pile onto the top sign rather than erroring.
-const STACK_GAP = 130
-const MAX_STACK = 8
+// Signs sharing a GG_NAME assembly are stacked into a vertical signpost. Each
+// plate is re-rendered to a common WIDTH (see /signs-stacked + the icon-image
+// below), so heights vary by true aspect — a wide supplementary plate becomes
+// a short wide bar, a tall sign stays tall. compute-stacks.mjs bakes each
+// member's cumulative centre offset down the post into STACK_OFF (icon
+// source-px, quantized to OFFSET_STEP; top sign on the anchor, the rest below).
+// `icon-offset` can't construct [0, value] from a scalar, so we enumerate a
+// fixed grid of `match` arms (value → [0, value]); a member's baked STACK_OFF
+// always lands on one. The offset is in icon source-px, so it scales with
+// `icon-size` (the column stays proportional at every zoom — the icon-size
+// factor cancels out of the spacing) and rides `icon-rotate` so the post leans
+// the way the signs face. Non-stacked signs have no STACK_OFF → the [0, 0]
+// default. OFFSET_STEP must match scripts/compute-stacks.mjs (duplicated per
+// the two-runtime rule); OFFSET_MAX has headroom over the tallest post
+// (compute-stacks logs it) — a larger offset falls to [0, 0] rather than error.
+const OFFSET_STEP = 8
+const OFFSET_MAX = 2000
 const stackOffset = expr([
-  'match', ['get', 'STACK_INDEX'],
-  ...Array.from({ length: MAX_STACK }, (_, i) => [i, ['literal', [0, i * STACK_GAP]]]).flat(),
+  'match', ['get', 'STACK_OFF'],
+  ...Array.from(
+    { length: OFFSET_MAX / OFFSET_STEP + 1 },
+    (_, k) => [k * OFFSET_STEP, ['literal', [0, k * OFFSET_STEP]]]
+  ).flat(),
   ['literal', [0, 0]]
 ])
 
@@ -124,13 +130,26 @@ const EMPHASIS_SIZE = expr([
 // so a sign is never dropped once its tier is in range).
 const signLayerIds = ['sign-points', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 
-// Shared icon-id prefix: feature SIGNIDs map to `${PICTO_PREFIX}${SIGNID}`
-// for every layer that draws a pictogram (tier symbols + selection overlay),
-// and the lazy loader strips the prefix back off to fetch the PNG.
+// Pictogram icon-id prefixes. Lone signs draw from the height-normalized set
+// (`sign-` → /signs/); stacked post members (those carrying STACK_INDEX) draw
+// the width-normalized variant (`signw-` → /signs-stacked/) so the post reads
+// at true plate proportions. The lazy loader strips whichever prefix to fetch
+// the PNG. ('signw-' deliberately doesn't start with 'sign-' so they don't
+// collide.) Both sets share one SIGNID space, so PICTO_CODES gates either.
 const PICTO_PREFIX = 'sign-'
+const STACKED_PREFIX = 'signw-'
+// Each prefix paired with the public dir the lazy loader fetches its PNG from,
+// so the prefix and its folder can't drift apart on a rename.
+const PICTO_DIR = { [PICTO_PREFIX]: 'signs', [STACKED_PREFIX]: 'signs-stacked' } as const
 const PICTO_CODES = new Set(codesByTier.flat())
-// `icon-image` for every pictogram layer: the feature's SIGNID prefixed.
-const PICTO_ICON = expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']])
+// `icon-image` for every pictogram layer: the SIGNID prefixed by the set it
+// should draw from — the width-normalized variant for a stacked post member,
+// the plain one otherwise.
+const PICTO_ICON = expr([
+  'concat',
+  ['case', ['has', 'STACK_INDEX'], STACKED_PREFIX, PICTO_PREFIX],
+  ['get', 'SIGNID']
+])
 
 // Set on teardown so the async pictogram loader doesn't addImage on a removed map.
 let disposed = false
@@ -336,11 +355,15 @@ onMounted(async () => {
     // selecting one doesn't 404 the same code on every render tick.
     const inFlight = new Set<string>()
     m.on('styleimagemissing', ({ id }) => {
-      if (!id.startsWith(PICTO_PREFIX) || inFlight.has(id) || m.hasImage(id)) return
-      const code = id.slice(PICTO_PREFIX.length)
+      // Stacked members request `signw-<code>` (width-normalized, /signs-stacked);
+      // everything else `sign-<code>` (/signs). Check the stacked prefix first —
+      // 'signw-' doesn't start with 'sign-', so the two never alias.
+      const prefix = id.startsWith(STACKED_PREFIX) ? STACKED_PREFIX : PICTO_PREFIX
+      if (!id.startsWith(prefix) || inFlight.has(id) || m.hasImage(id)) return
+      const code = id.slice(prefix.length)
       if (!PICTO_CODES.has(code)) return
       inFlight.add(id)
-      m.loadImage(`/signs/${code}.png`)
+      m.loadImage(`/${PICTO_DIR[prefix]}/${code}.png`)
         .then((img) => {
           if (!disposed) m.addImage(id, img.data)
         })
@@ -393,9 +416,10 @@ onMounted(async () => {
             'icon-size': tierSizeRamp(lod),
             ...iconRotation,
             // Co-located GG_NAME assemblies hang as a vertical signpost: each
-            // member is offset one icon-height below the previous (main signs
-            // on top, supplementary at the bottom). Non-stacked signs get a
-            // [0, 0] offset and render exactly where they always did.
+            // member sits at its baked STACK_OFF down the post (main signs on
+            // top, supplementary at the bottom), drawn from the width-normalized
+            // set so plate heights follow their true aspect. Non-stacked signs
+            // get a [0, 0] offset and render exactly where they always did.
             'icon-offset': stackOffset,
             // Collision disabled outright: every sign must stay exactly where
             // it is and never be dropped or nudged by a neighbour. Each point

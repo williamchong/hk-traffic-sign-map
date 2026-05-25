@@ -1,7 +1,7 @@
 // Derive how each traffic-sign-abbreviation feature renders when it belongs to
 // a co-located assembly, so the group draws as one rigid signpost.
 // Output: data/raw/_sign_stacks.json — keyed by FEATUREID →
-//   [ stackIndex, stackSize, picWidth, anchorLng, anchorLat, bearing ]
+//   [ stackIndex, stackSize, picWidth, anchorLng, anchorLat, bearing, stackOff ]
 // Also writes app/data/signGroups.json — { SIGNID: [GG_NAME, …] } over the
 // same stacked assemblies, so the runtime sign-ID filter can pull in a matched
 // sign's post-mates and show the complete signpost (see useTrafficLayers
@@ -16,11 +16,15 @@
 // Members of a group sit at slightly different surveyed coordinates (median
 // span ~4 m), so to draw a rigid post the build collapses every member onto
 // the *primary's* (stackIndex 0) coordinate (`anchorLng`/`anchorLat`, WGS84)
-// and rotates them all by the primary's `bearing`. `picWidth` is recorded for
-// a future common-width sizing pass (so wide supplementary plates could render
-// proportionally shorter); it is not shipped to tiles yet. We only stack groups of ≥2 *catalogued* signs
-// (uncatalogued members have no pictogram) whose span is under SPAN_CAP — a
-// guard against the handful of pathological GG_NAMEs reused kilometres apart.
+// and rotates them all by the primary's `bearing`. Stacked members render at a
+// COMMON WIDTH (so a wide supplementary plate comes out as a short wide bar, a
+// tall warning sign stays tall — true plate proportions, not equal heights),
+// which means each member's vertical extent differs; `stackOff` is the baked,
+// per-member cumulative centre offset (source-px, top sign on the anchor, the
+// rest hanging below) the runtime lays the column out with. We only stack
+// groups of ≥2 *catalogued* signs (uncatalogued members have no pictogram)
+// whose span is under SPAN_CAP — a guard against the handful of pathological
+// GG_NAMEs reused kilometres apart.
 
 import { readFile, writeFile } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
@@ -31,6 +35,17 @@ import { join } from 'node:path'
 import { RAW_DIR, SOURCE_SRS, TARGET_SRS } from './sign-layers.mjs'
 
 const SPAN_CAP = 15 // metres — above this the GG_NAME isn't a real co-located assembly
+
+// Stacked plates are re-rendered to this common WIDTH (px) by gen-stacked-icons,
+// so within a post every plate is the same width and its height follows its true
+// aspect. We bake the layout offsets in that same source space here.
+const COMMON_WIDTH = 120 // px — must match gen-stacked-icons' resize width
+const STACK_GAP = 10 // px gap between stacked plates (source space)
+// Quantize each baked offset to this grid so the runtime can resolve it with a
+// finite `match` (icon-offset can't construct [0, value] from a scalar). Must
+// match OFFSET_STEP in app/components/TrafficMap.vue (duplicated per the
+// two-runtime rule — scripts/ and app/ never cross-import).
+const OFFSET_STEP = 8 // px
 
 const ABV_GML = join(RAW_DIR, 'DTAD_TS_ABV_PT.gml')
 const FACE_BEARINGS = join(RAW_DIR, '_face_bearings.json')
@@ -53,18 +68,21 @@ const attrRx = (name, kind) => new RegExp(
 const catalogue = JSON.parse(await readFile(CATALOGUE, 'utf8'))
 const faceBearings = JSON.parse(await readFile(FACE_BEARINGS, 'utf8'))
 
-// Pictogram pixel width per SIGNID, read straight from the PNG IHDR header
-// (bytes 16-19, big-endian) — no decode needed. All pictograms are 120 px tall,
-// so width alone gives the aspect the runtime needs to normalise on width.
-const widthCache = new Map()
-function picWidth(signid) {
-  if (widthCache.has(signid)) return widthCache.get(signid)
-  let w = 120
+// Pictogram pixel dimensions per SIGNID, read straight from the PNG IHDR header
+// (width bytes 16-19, height 20-23, big-endian) — no decode needed. Most are
+// 120 px tall but a handful of very wide signs are shorter, so we read both to
+// get each plate's true aspect for the common-width height/offset maths below.
+const dimsCache = new Map()
+function picDims(signid) {
+  let d = dimsCache.get(signid)
+  if (d) return d
+  d = { w: 120, h: 120 }
   try {
-    w = readFileSync(join(SIGNS_DIR, `${signid}.png`)).readUInt32BE(16)
-  } catch { /* missing pictogram → keep 120 */ }
-  widthCache.set(signid, w)
-  return w
+    const buf = readFileSync(join(SIGNS_DIR, `${signid}.png`))
+    d = { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) }
+  } catch { /* missing pictogram → keep 120×120 */ }
+  dimsCache.set(signid, d)
+  return d
 }
 
 // --- Parse ABV_PT: FEATUREID, GG_NAME, SIGNID, HK1980 position ---
@@ -98,11 +116,11 @@ console.log(`  ${parsed} ABV_PT features, ${groups.size} GG_NAME groups with cat
 // Every member of an assembly shares the primary's anchor, so records point at
 // a deduped `anchors` list (one entry per assembly) — we reproject each anchor
 // once, not once per member.
-const records = [] // { fid, i, size, picW, anchorIdx, bearing }
+const records = [] // { fid, i, size, picW, anchorIdx, bearing, off }
 const anchors = [] // [[x, y], …] EPSG:2326, unique per assembly
 const anchorIndex = new Map() // "x y" → index into `anchors`
 const groupIndex = new Map() // SIGNID → Set(GG_NAME), stacked assemblies only
-let stacked = 0, skippedSpan = 0, maxSize = 0
+let stacked = 0, skippedSpan = 0, maxSize = 0, maxOff = 0
 for (const [gg, members] of groups) {
   if (members.length < 2) continue
   const span = Math.max(
@@ -125,8 +143,20 @@ for (const [gg, members] of groups) {
     anchorIndex.set(key, ai)
     anchors.push([primary.x, primary.y])
   }
+  // Lay the column out in the common-width source space: each plate is
+  // COMMON_WIDTH wide and `COMMON_WIDTH × picH / picW` tall (its true aspect).
+  // Member 0's centre sits on the anchor; each subsequent plate hangs below,
+  // its centre a half-height + gap + half-height past the previous one's edge.
+  // Quantize the centre offset to the runtime's match grid (OFFSET_STEP).
+  let cursor = 0 // bottom edge of the last placed plate, source-px below the anchor
   members.forEach((m, i) => {
-    records.push({ fid: m.fid, i, size, picW: picWidth(m.signid), anchorIdx: ai, bearing })
+    const { w, h } = picDims(m.signid)
+    const ph = COMMON_WIDTH * h / w
+    const center = i === 0 ? 0 : cursor + STACK_GAP + ph / 2
+    cursor = center + ph / 2
+    const off = Math.round(center / OFFSET_STEP) * OFFSET_STEP
+    maxOff = Math.max(maxOff, off)
+    records.push({ fid: m.fid, i, size, picW: w, anchorIdx: ai, bearing, off })
   })
   // Index each distinct SIGNID on this post → its GG_NAME, so the runtime can
   // expand a sign-ID filter to the whole assembly (dedup signids repeated on
@@ -138,7 +168,7 @@ for (const [gg, members] of groups) {
   }
   stacked++
 }
-console.log(`  ${stacked} assemblies stacked (${records.length} signs), ${skippedSpan} skipped over ${SPAN_CAP}m span; tallest stack ${maxSize}`)
+console.log(`  ${stacked} assemblies stacked (${records.length} signs), ${skippedSpan} skipped over ${SPAN_CAP}m span; tallest stack ${maxSize}, max offset ${maxOff}px`)
 
 // --- Reproject the unique anchor points EPSG:2326 → WGS84 in one pass ---
 console.log(`Reprojecting ${anchors.length} anchors …`)
@@ -160,7 +190,7 @@ const wgs = gtOut.trim().split('\n').map(l => l.trim().split(/\s+/).map(Number))
 const out = {}
 for (const r of records) {
   const [lng, lat] = wgs[r.anchorIdx]
-  out[r.fid] = [r.i, r.size, r.picW, +lng.toFixed(6), +lat.toFixed(6), r.bearing]
+  out[r.fid] = [r.i, r.size, r.picW, +lng.toFixed(6), +lat.toFixed(6), r.bearing, r.off]
 }
 
 await writeFile(OUT, JSON.stringify(out))

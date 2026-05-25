@@ -13,9 +13,10 @@
     "data:fetch": "node scripts/fetch-data.mjs",
     "data:bearings": "node scripts/compute-bearings.mjs",
     "data:stacks": "node scripts/compute-stacks.mjs",
+    "data:stacked-icons": "node scripts/gen-stacked-icons.mjs",
     "data:tiles": "node scripts/build-tiles.mjs",
     "data:catalogue": "node scripts/build-sign-catalogue.mjs",
-    "data:build": "node scripts/fetch-data.mjs && node scripts/compute-bearings.mjs && node scripts/compute-stacks.mjs && node scripts/build-tiles.mjs"
+    "data:build": "node scripts/fetch-data.mjs && node scripts/compute-bearings.mjs && node scripts/compute-stacks.mjs && node scripts/gen-stacked-icons.mjs && node scripts/build-tiles.mjs"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.106",
