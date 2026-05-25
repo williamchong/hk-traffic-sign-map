@@ -38,5 +38,13 @@ export const SOURCE_SRS = 'EPSG:2326'
 export const TARGET_SRS = 'EPSG:4326'
 
 export const RAW_DIR = 'data/raw'
+// Two archives, both built by build-tiles.mjs from the same combined input:
+//   OUTPUT_PMTILES      — thinned overview (drop-densest LOD), the default
+//                         source for the unfiltered category view.
+//   OUTPUT_PMTILES_FULL — every point retained, abbreviation class only;
+//                         the source for sign-ID filter mode so a filtered
+//                         code shows its true distribution at low zoom.
+// See the long comment in build-tiles.mjs for why one pyramid can't do both.
 export const OUTPUT_PMTILES = 'public/data/traffic-signs.pmtiles'
+export const OUTPUT_PMTILES_FULL = 'public/data/traffic-signs-full.pmtiles'
 export const TILE_LAYER = 'signs'

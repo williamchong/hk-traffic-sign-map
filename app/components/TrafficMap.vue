@@ -3,6 +3,7 @@ import type { Map as MaplibreMap, ExpressionSpecification, MapGeoJSONFeature, Ge
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSignCategories'
 import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf } from '~/composables/useSignCatalogue'
+import type { FilterMode } from '~/composables/useTrafficLayers'
 import tilesVersion from '~/data/tilesVersion.json'
 
 // maplibre-gl touches `window` at import time and is large; it's
@@ -10,12 +11,20 @@ import tilesVersion from '~/data/tilesVersion.json'
 // and is code-split out of the initial bundle.
 let detachProtocol: (() => void) | undefined
 
-const { mapFilter, selectedSign, mapUnavailable } = useTrafficLayers()
+const { mapFilter, selectedSign, mapUnavailable, filterMode } = useTrafficLayers()
 const colorMode = useColorMode()
 const { track } = useAnalytics()
 
-const TILE_SOURCE = 'signs'
-const SOURCE_LAYER = 'signs' // tippecanoe layer name (see scripts/sign-layers.mjs)
+// Two PMTiles archives (built by scripts/build-tiles.mjs): a thinned LOD
+// overview and a retain-all full set. The sign layers read whichever one the
+// active filter mode wants — category/overview gets the thinned scatter,
+// sign-ID filter gets every point so a code's true distribution shows at low
+// zoom. One pyramid can't do both because tippecanoe's drop is filter-blind.
+const SOURCE_LOD = 'signs-lod'
+const SOURCE_FULL = 'signs-full'
+type SignSource = typeof SOURCE_LOD | typeof SOURCE_FULL
+const SOURCE_LAYER = 'signs' // tippecanoe layer name, same in both archives
+const sourceForMode = (mode: FilterMode): SignSource => mode === 'sign-id' ? SOURCE_FULL : SOURCE_LOD
 
 // Hong Kong, centred so most signed road network is in view on load.
 const HK_CENTER: [number, number] = [114.155, 22.34]
@@ -104,9 +113,12 @@ onMounted(async () => {
   // tile rebuild writes a fresh hash to tilesVersion.json so returning
   // visitors don't stitch cached chunks of the old archive together
   // with newly-fetched chunks of the new one.
-  const pmtilesUrl = `${window.location.origin}/data/traffic-signs.pmtiles?v=${tilesVersion.version}`
+  const base = window.location.origin
+  const lodUrl = `${base}/data/traffic-signs.pmtiles?v=${tilesVersion.version}`
+  const fullUrl = `${base}/data/traffic-signs-full.pmtiles?v=${tilesVersion.version}`
   const protocol = new Protocol()
-  protocol.add(new PMTiles(new RangeOrWholeSource(pmtilesUrl)))
+  protocol.add(new PMTiles(new RangeOrWholeSource(lodUrl)))
+  protocol.add(new PMTiles(new RangeOrWholeSource(fullUrl)))
   maplibregl.addProtocol('pmtiles', protocol.tile)
   detachProtocol = () => maplibregl.removeProtocol('pmtiles')
 
@@ -170,11 +182,15 @@ onMounted(async () => {
   m.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left')
 
   m.on('load', () => {
-    m.addSource(TILE_SOURCE, {
-      type: 'vector',
-      url: `pmtiles://${pmtilesUrl}`,
-      attribution: 'Traffic sign data © Transport Department, HKSAR'
-    })
+    // Two PMTiles archives, both registered on the protocol above. The sign
+    // layers read ONE of them per filter mode (see `sourceForMode`): the
+    // thinned `signs-lod` for the unfiltered overview, the retain-all
+    // `signs-full` when filtering by sign ID. A single pyramid can't serve
+    // both, so we swap the source by re-adding the layers when the mode
+    // flips. Both carry the same attribution and `signs` source-layer name.
+    const ATTRIB = 'Traffic sign data © Transport Department, HKSAR'
+    m.addSource(SOURCE_LOD, { type: 'vector', url: `pmtiles://${lodUrl}`, attribution: ATTRIB })
+    m.addSource(SOURCE_FULL, { type: 'vector', url: `pmtiles://${fullUrl}`, attribution: ATTRIB })
 
     const circlePaint = {
       // Smaller dots when zoomed out keep dense areas readable.
@@ -185,23 +201,11 @@ onMounted(async () => {
       'circle-opacity': 0.9
     }
 
-    // One dot under every visible sign at all zooms — the baseline marker.
-    // Pictogram layers draw on top from their tier's minzoom; the icon covers
-    // the small centred dot, so the dot only shows where the sign isn't
-    // rendered yet (below its tier's minzoom).
-    m.addLayer({
-      'id': 'sign-points',
-      'type': 'circle',
-      'source': TILE_SOURCE,
-      'source-layer': SOURCE_LAYER,
-      'filter': mapFilter.value,
-      'paint': { ...circlePaint }
-    })
-
-    // Highlight overlay for the sign shown in the detail panel. Its own
-    // GeoJSON source + overlap-allowed layers, raised to the very top on
-    // every selection, so the picked sign (especially while cycling through
-    // an overlapping cluster) is always visible above the collision soup.
+    // Highlight overlay for the sign shown in the detail panel. Added BEFORE
+    // the sign layers so they can be inserted beneath `sel-halo` (the
+    // beforeId below): the picked sign then always draws on top — even after
+    // the sign layers are removed and re-added on a filter-mode switch —
+    // which is why the cluster-cycle highlight stays visible above the soup.
     m.addSource('sel', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
     m.addLayer({
       id: 'sel-halo',
@@ -265,65 +269,98 @@ onMounted(async () => {
         .finally(() => inFlight.delete(id))
     })
 
-    // LOD: at each tier's minzoom the pictogram is drawn over the dot,
-    // later/larger the more complex the sign. Layers are added before any
-    // pictogram exists; the lazy loader above fills them in as tiles arrive.
-    TIER_LOD.forEach((lod, t) => {
-      if (!codesByTier[t]?.length) return
+    // The sign layers — always-on dot + per-tier pictograms — all read
+    // whichever archive the active filter mode wants. They're inserted
+    // beneath `sel-halo` so selection stays on top, and removed/re-added to
+    // swap source on a mode flip (MapLibre can't repoint a live layer).
+    const addSignLayers = (source: SignSource) => {
+      // One dot under every visible sign at all zooms — the baseline marker.
+      // Pictogram layers draw on top from their tier's minzoom; the icon
+      // covers the small centred dot, so the dot only shows where the sign
+      // isn't rendered yet (below its tier's minzoom).
       m.addLayer({
-        'id': tierLayerId(t),
-        'type': 'symbol',
-        'source': TILE_SOURCE,
+        'id': 'sign-points',
+        'type': 'circle',
+        'source': source,
         'source-layer': SOURCE_LAYER,
-        'minzoom': lod.minzoom,
-        'filter': tierFilter(t, expr(mapFilter.value)),
-        'layout': {
-          'icon-image': expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']]),
-          // Normalised first-display height (SIGN_FIRST_SIZE, shared by
-          // every tier) at the tier's reveal zoom, ramping up to the
-          // tier's "proper" size by max zoom. Safe to grow now that
-          // collision is off — it can't push already-shown signs away,
-          // and zooming in frees the space to render detail bigger.
-          'icon-size': expr([
-            'interpolate', ['linear'], ['zoom'],
-            lod.minzoom, SIGN_FIRST_SIZE,
-            MAX_ZOOM, lod.size
-          ]),
-          ...iconRotation,
-          // Collision disabled outright: every sign must stay exactly where
-          // it is and never be dropped or nudged by a neighbour. Each point
-          // is a real installed sign with a 1:1 ground meaning, so hiding it
-          // (even when icons overlap) breaks the map's contract.
-          'icon-allow-overlap': true,
-          'icon-ignore-placement': true,
-          // Lower tier draws on top, so simple regulatory signs sit above
-          // decorative ones where pictograms overlap.
-          'symbol-sort-key': t
-        },
-        'paint': {
-          // Collision is off, so signs pile up when zoomed out — and can
-          // still overlap even at max zoom. Fade hard while crowded (0.55
-          // at z13) so the stack shows through, easing to a 0.9 ceiling
-          // (never fully opaque): MapLibre can't tell which signs overlap,
-          // so the slight residual transparency keeps any leftover
-          // overlap at high zoom legible-through without hurting reading.
-          'icon-opacity': expr([
-            'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
-          ])
-        }
+        'filter': mapFilter.value,
+        'paint': { ...circlePaint }
+      }, 'sel-halo')
+
+      // LOD: at each tier's minzoom the pictogram is drawn over the dot,
+      // later/larger the more complex the sign. Layers are added before any
+      // pictogram exists; the lazy loader above fills them in as tiles arrive.
+      TIER_LOD.forEach((lod, t) => {
+        if (!codesByTier[t]?.length) return
+        m.addLayer({
+          'id': tierLayerId(t),
+          'type': 'symbol',
+          'source': source,
+          'source-layer': SOURCE_LAYER,
+          'minzoom': lod.minzoom,
+          'filter': tierFilter(t, expr(mapFilter.value)),
+          'layout': {
+            'icon-image': expr(['concat', PICTO_PREFIX, ['get', 'SIGNID']]),
+            // Normalised first-display height (SIGN_FIRST_SIZE, shared by
+            // every tier) at the tier's reveal zoom, ramping up to the
+            // tier's "proper" size by max zoom. Safe to grow now that
+            // collision is off — it can't push already-shown signs away,
+            // and zooming in frees the space to render detail bigger.
+            'icon-size': expr([
+              'interpolate', ['linear'], ['zoom'],
+              lod.minzoom, SIGN_FIRST_SIZE,
+              MAX_ZOOM, lod.size
+            ]),
+            ...iconRotation,
+            // Collision disabled outright: every sign must stay exactly where
+            // it is and never be dropped or nudged by a neighbour. Each point
+            // is a real installed sign with a 1:1 ground meaning, so hiding it
+            // (even when icons overlap) breaks the map's contract.
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true,
+            // Lower tier draws on top, so simple regulatory signs sit above
+            // decorative ones where pictograms overlap.
+            'symbol-sort-key': t
+          },
+          'paint': {
+            // Collision is off, so signs pile up when zoomed out — and can
+            // still overlap even at max zoom. Fade hard while crowded (0.55
+            // at z13) so the stack shows through, easing to a 0.9 ceiling
+            // (never fully opaque): MapLibre can't tell which signs overlap,
+            // so the slight residual transparency keeps any leftover
+            // overlap at high zoom legible-through without hurting reading.
+            'icon-opacity': expr([
+              'interpolate', ['linear'], ['zoom'], 13, 0.55, 17, 0.9
+            ])
+          }
+        }, 'sel-halo')
       })
-    })
+    }
+    const removeSignLayers = () => {
+      for (const id of signLayerIds) if (m.getLayer(id)) m.removeLayer(id)
+    }
+    addSignLayers(sourceForMode(filterMode.value))
 
     // Category visibility is a GPU-side filter — toggling is instant even
     // across 316k features (no DOM, no data refetch). The pictogram tiers
     // ride the same filter, scoped to their own code set.
     watch(mapFilter, (f) => {
-      m.setFilter('sign-points', f)
+      if (m.getLayer('sign-points')) m.setFilter('sign-points', f)
       TIER_LOD.forEach((_, t) => {
         const ico = tierLayerId(t)
         if (m.getLayer(ico)) m.setFilter(ico, tierFilter(t, expr(f)))
       })
     }, { immediate: true })
+
+    // Flipping between the category and sign-ID tabs swaps which archive the
+    // sign layers read. MapLibre can't repoint a live layer's source, so
+    // remove and re-add against the right archive — cheap, since this only
+    // fires on a tab click. `addSignLayers` re-inserts beneath `sel-halo`, so
+    // selection stays on top, and the lazy loader refills icons on demand.
+    watch(filterMode, (mode) => {
+      removeSignLayers()
+      addSignLayers(sourceForMode(mode))
+    })
 
     watch(() => colorMode.value, (mode) => {
       const dark = mode === 'dark'
@@ -331,9 +368,10 @@ onMounted(async () => {
       m.setLayoutProperty('basemap-light', 'visibility', dark ? 'none' : 'visible')
     }, { immediate: true })
 
-    // Mirror the selected sign into the highlight source and lift those
-    // layers above everything (incl. the async-added tier layers) so the
-    // sign in the panel is always drawn on top.
+    // Mirror the selected sign into the highlight source. The sel layers are
+    // added above the sign layers (which insert beneath `sel-halo`), so the
+    // picked sign always draws on top — no explicit re-ordering needed, even
+    // after the sign layers are swapped on a filter-mode flip.
     const sel = m.getSource('sel') as GeoJSONSource
     watch(selectedSign, (s) => {
       sel.setData({
@@ -346,7 +384,6 @@ onMounted(async () => {
             }]
           : []
       })
-      if (s) for (const id of ['sel-halo', 'sel-dot', 'sel-icon']) m.moveLayer(id)
     })
   })
 

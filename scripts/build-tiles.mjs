@@ -12,7 +12,8 @@ import { createInterface } from 'node:readline'
 import { dirname, join } from 'node:path'
 
 import {
-  SIGN_LAYERS, RAW_DIR, OUTPUT_PMTILES, TILE_LAYER, SOURCE_SRS, TARGET_SRS
+  SIGN_LAYERS, RAW_DIR, OUTPUT_PMTILES, OUTPUT_PMTILES_FULL,
+  TILE_LAYER, SOURCE_SRS, TARGET_SRS
 } from './sign-layers.mjs'
 
 const COMBINED = join(RAW_DIR, '_combined.geojsonl')
@@ -106,42 +107,70 @@ if (total === 0) {
   process.exit(1)
 }
 
-console.log('\nBuilding vector tiles with tippecanoe …')
-const tip = spawn('tippecanoe', [
-  '-o', OUTPUT_PMTILES,
+async function runTippecanoe(label, args) {
+  console.log(`\n${label} …`)
+  const tip = spawn('tippecanoe', args, { stdio: 'inherit' })
+  const [code] = await once(tip, 'close')
+  if (code !== 0) process.exit(code)
+}
+
+// Flags shared by both archives. `-Z 9`: build only from the map's minZoom
+// up — below z9 the viewport is locked out so those tiles are never
+// requested. `-zg`: auto-pick the max zoom from feature density.
+const COMMON = [
   '-l', TILE_LAYER,
   '-n', 'HK Traffic Signs',
-  // Build only from the map's minZoom up. Below z9 the viewport is locked
-  // out, so those tiles would never be requested. Auto-picks the max from
-  // feature density (-zg).
   '-Z', '9',
   '-zg',
-  // Retain every point at every zoom. Default `-r 2.5` drops ~326k
-  // features at z11 (visible in the archive's `strategies` metadata),
-  // which broke the sign-id filter's distribution-at-a-glance view —
-  // unfiltered tiles "looked" complete because survivors were spatially
-  // representative, but filtered tiles only contained whichever IDs
-  // happened to win the drop lottery.
-  '-r1',
-  '--no-feature-limit',
   '--no-tile-size-limit',
   '--quiet',
-  '--force',
-  COMBINED
-], { stdio: 'inherit' })
+  '--force'
+]
 
-const [tipCode] = await once(tip, 'close')
-if (tipCode !== 0) process.exit(tipCode)
+// One vector-tile pyramid can't serve both views, because tippecanoe's
+// feature-dropping is filter-blind — it decides what to keep per tile
+// before knowing what the user will filter on. So we build two:
+//
+// 1) Overview (thinned LOD) — `--drop-densest-as-needed` trims the dense
+//    urban cores at low zoom into a readable, spatially representative
+//    scatter; dropped features return by ~z14, so zoomed-in category views
+//    stay complete. This is the default source for the unfiltered map.
+await runTippecanoe('Building overview tiles (thinned LOD)', [
+  '-o', OUTPUT_PMTILES,
+  ...COMMON,
+  '--drop-densest-as-needed',
+  '--extend-zooms-if-still-dropping',
+  COMBINED
+])
+
+// 2) Full (retain-all) — `-r1 --no-feature-limit` keeps every point at every
+//    zoom so sign-ID filter mode shows a code's true distribution at a
+//    glance (default `-r 2.5` dropped ~326k features at z11; commit 5a1ad4e).
+//    Restricted to the abbreviation class via `-j`: only DTAD_TS_ABV_PT
+//    carries SIGNID, so poles/tourist signs — which no sign-ID filter can
+//    ever match — are excluded here, roughly halving this archive.
+await runTippecanoe('Building full tiles (retain-all, abbreviation only)', [
+  '-o', OUTPUT_PMTILES_FULL,
+  ...COMMON,
+  '-r1',
+  '--no-feature-limit',
+  '-j', '{"*":["==","category","traffic-sign-abbreviation"]}',
+  COMBINED
+])
+
 await rm(COMBINED, { force: true })
 
-// Hash the archive and write a tiny version file the app imports. The
-// runtime appends `?v=<hash>` to the PMTiles URL so a rebuild invalidates
-// the byte-range cache on returning visitors — otherwise the browser
-// would stitch cached chunks of the old archive together with newly
-// fetched chunks of the new one.
-const archiveBytes = await readFile(OUTPUT_PMTILES)
-const version = createHash('sha256').update(archiveBytes).digest('hex').slice(0, 12)
+// Hash both archives together and write a tiny version file the app imports.
+// The runtime appends `?v=<hash>` to each PMTiles URL so a rebuild
+// invalidates the byte-range cache on returning visitors — otherwise the
+// browser would stitch cached chunks of the old archive together with newly
+// fetched chunks of the new one. Both archives always rebuild together, so a
+// single combined hash (changes if either file's bytes change) is enough.
+const hash = createHash('sha256')
+hash.update(await readFile(OUTPUT_PMTILES))
+hash.update(await readFile(OUTPUT_PMTILES_FULL))
+const version = hash.digest('hex').slice(0, 12)
 const VERSION_FILE = join('app', 'data', 'tilesVersion.json')
 await writeFile(VERSION_FILE, JSON.stringify({ version }, null, 2) + '\n')
 
-console.log(`\nDone → ${OUTPUT_PMTILES} (v${version})`)
+console.log(`\nDone → ${OUTPUT_PMTILES} + ${OUTPUT_PMTILES_FULL} (v${version})`)
