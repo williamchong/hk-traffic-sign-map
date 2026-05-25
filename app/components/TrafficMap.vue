@@ -11,7 +11,7 @@ import tilesVersion from '~/data/tilesVersion.json'
 // and is code-split out of the initial bundle.
 let detachProtocol: (() => void) | undefined
 
-const { mapFilter, selectedSign, mapUnavailable, filterMode } = useTrafficLayers()
+const { mapFilter, selectedSign, selectedGroup, mapUnavailable, filterMode } = useTrafficLayers()
 const colorMode = useColorMode()
 const { track } = useAnalytics()
 
@@ -496,8 +496,17 @@ onMounted(async () => {
           })
           .filter(f => f.properties.STACK_INDEX !== undefined && !seen.has(f.properties.STACK_INDEX) && seen.add(f.properties.STACK_INDEX))
           .map(f => ({ type: 'Feature' as const, geometry: f.geometry, properties: f.properties }))
+          .sort((a, b) => Number(a.properties.STACK_INDEX) - Number(b.properties.STACK_INDEX))
       }
       selGroup.setData({ type: 'FeatureCollection', features: members })
+      // Publish the assembly to the popup as ready-to-select entries (top-of-
+      // post first). Every member was collapsed onto the post anchor at build
+      // time, so each shares one coordinate — a plain LngLat from it is enough
+      // for the popup to re-select via `selectedSign = member`.
+      selectedGroup.value = members.map(f => ({
+        properties: f.properties as Record<string, unknown>,
+        lngLat: new maplibregl.LngLat(...(f.geometry as GeoJSON.Point).coordinates as [number, number])
+      }))
       // Hide the selected group's base tier pictograms (the overlay draws them
       // enlarged on top); restore all tiers when a lone sign / nothing is
       // picked. Only re-filter when it actually changes — cycling within one

@@ -48,7 +48,8 @@
     "fallbackTitle": "標誌",
     "unknown": "未知",
     "close": "關閉",
-    "cycleHint": "此處第 {index} / {total} 個 · 再按可切換"
+    "cycleHint": "此處第 {index} / {total} 個 · 再按可切換",
+    "groupHeading": "同一標誌柱（共 {count} 個標誌）"
   },
   "theme": {
     "light": "淺色",

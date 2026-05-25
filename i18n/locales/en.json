@@ -48,7 +48,8 @@
     "fallbackTitle": "Sign",
     "unknown": "Unknown",
     "close": "Close",
-    "cycleHint": "{index} of {total} here · click again to cycle"
+    "cycleHint": "{index} of {total} here · click again to cycle",
+    "groupHeading": "On this signpost ({count} signs)"
   },
   "theme": {
     "light": "Light",

@@ -2,7 +2,7 @@
 import { signIconUrl, signDescription, categoryKeyOf } from '~/composables/useSignCatalogue'
 import { CATEGORY_FALLBACK_COLOR } from '~/composables/useSignCategories'
 
-const { selectedSign, categories } = useTrafficLayers()
+const { selectedSign, selectedGroup, categories } = useTrafficLayers()
 const { t, locale } = useI18n()
 
 const sign = computed(() => selectedSign.value)
@@ -27,6 +27,24 @@ const description = computed(() =>
 )
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v))
+
+// Members of the picked sign's co-located assembly. ≥2 ⇒ it shares a signpost,
+// so the popup lists the whole post as a navigable thumbnail strip.
+const isGrouped = computed(() => selectedGroup.value.length > 1)
+
+// STACK_INDEX is unique within a post and survives the re-query a thumbnail
+// click triggers, so it (not object identity) marks the current entry.
+const currentStackIndex = computed(() => sign.value?.properties.STACK_INDEX)
+
+// One resolved row per assembly member (pictogram + code + meaning), so the
+// template renders the strip without re-running the catalogue lookups inline.
+const groupEntries = computed(() => selectedGroup.value.map(m => ({
+  member: m,
+  signId: str(m.properties.SIGNID),
+  icon: signIconUrl(m.properties.SIGNID),
+  desc: signDescription(m.properties.SIGNID, locale.value),
+  current: m.properties.STACK_INDEX === currentStackIndex.value
+})))
 
 // Title prefers the most identifying field available for that sign type.
 const title = computed(() => {
@@ -60,10 +78,11 @@ const coords = computed(() => {
   return ll ? `${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : ''
 })
 
-// Shown when a click landed on several overlapping signs.
+// Shown when a click landed on several overlapping signs — but not for an
+// assembly, where the group strip is the better (and direct) way to navigate.
 const cycleHint = computed(() => {
   const s = sign.value
-  return s?.total && s.total > 1
+  return s?.total && s.total > 1 && !isGrouped.value
     ? t('signPopup.cycleHint', { index: s.index, total: s.total })
     : null
 })
@@ -123,6 +142,46 @@ const signLabel = computed(() => description.value ?? title.value)
     >
       {{ description }}
     </p>
+
+    <div v-if="isGrouped">
+      <p class="text-xs text-muted">
+        {{ $t('signPopup.groupHeading', { count: groupEntries.length }) }}
+      </p>
+      <ul class="mt-1.5 max-h-56 space-y-0.5 overflow-y-auto">
+        <li
+          v-for="e in groupEntries"
+          :key="String(e.member.properties.STACK_INDEX)"
+        >
+          <button
+            type="button"
+            class="flex w-full cursor-pointer items-center gap-2 rounded-md p-1 text-left transition-colors hover:bg-elevated"
+            :class="e.current ? 'bg-elevated ring-1 ring-primary' : ''"
+            :title="e.desc ?? e.signId ?? undefined"
+            @click="selectedSign = e.member"
+          >
+            <img
+              v-if="e.icon"
+              :src="e.icon"
+              :alt="e.desc ?? e.signId ?? ''"
+              class="shrink-0 object-contain"
+              :class="e.current ? 'size-9' : 'size-7'"
+              loading="lazy"
+            >
+            <span class="flex min-w-0 flex-1 flex-col leading-tight">
+              <span class="truncate text-sm font-medium">
+                {{ e.signId ?? $t('signPopup.fallbackTitle') }}
+              </span>
+              <span
+                v-if="e.desc"
+                class="truncate text-xs text-muted"
+              >
+                {{ e.desc }}
+              </span>
+            </span>
+          </button>
+        </li>
+      </ul>
+    </div>
 
     <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
       <template

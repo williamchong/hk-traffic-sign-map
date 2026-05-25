@@ -32,6 +32,13 @@ export interface SelectedSign {
 }
 const selectedSign = ref<SelectedSign | null>(null)
 
+// Every member of the selected sign's co-located GG_NAME assembly, ordered
+// top-of-post first (by STACK_INDEX), each as a ready-to-select SelectedSign so
+// the popup can list the whole signpost and navigate between its signs. Empty
+// for a lone sign. Populated by TrafficMap from the active tile source — it
+// owns the map and the maplibre LngLat ctor; see its selection watch.
+const selectedGroup = ref<SelectedSign[]>([])
+
 // Set by TrafficMap when MapLibre can't initialize WebGL. Shared here so the
 // filter panel can drop its now-inert category controls while still showing
 // the (WebGL-independent) About/FAQ chrome.
@@ -54,6 +61,7 @@ export function useTrafficLayers() {
     categories: SIGN_CATEGORIES,
     enabled,
     selectedSign,
+    selectedGroup,
     mapUnavailable,
     mapFilter,
     filterMode,
