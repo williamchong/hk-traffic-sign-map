@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VisibleCategoryKey } from '~/composables/useSignCategories'
-import type { FilterMode } from '~/composables/useTrafficLayers'
+import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
 
 const { categories, enabled, toggleAll, mapUnavailable, filterMode } = useTrafficLayers()
 const localePath = useLocalePath()
@@ -8,6 +8,23 @@ const { track } = useAnalytics()
 const { t } = useI18n()
 
 const allOn = computed(() => categories.every(c => enabled[c.key]))
+
+// Hydration-safe mirror of `filterMode` that the whole panel UI binds to.
+// `filterMode` is a module-scope useLocalStorage, so on the client it already
+// holds its persisted value before this prerendered panel hydrates. Vue only
+// *patches* attribute bindings (the UTabs active indicator's data-state /
+// aria-selected) on a reactive change after mount — during hydration it trusts
+// the SSR DOM as-is. So binding the tabs straight to filterMode fires no
+// post-hydration change and leaves the prerendered default indicator stuck.
+// Seeding with the SSR default and syncing from filterMode after mount makes
+// that assignment the change that patches the indicator (and the v-if body).
+const tabMode = ref<FilterMode>(DEFAULT_FILTER_MODE)
+onMounted(() => {
+  tabMode.value = filterMode.value
+})
+watch(filterMode, (v) => {
+  tabMode.value = v
+})
 
 // View-only: folds the whole filter body (tabs + active tab) away so the
 // panel shrinks to just its header + nav — essential on mobile, where the
@@ -106,7 +123,7 @@ function onTabChange(value: string | number) {
       >
         <UTabs
           :items="tabItems"
-          :model-value="filterMode"
+          :model-value="tabMode"
           size="xs"
           variant="link"
           :ui="{ list: 'border-default' }"
@@ -117,7 +134,7 @@ function onTabChange(value: string | number) {
              "Categories ⌄ Hide all" header row is redundant. We keep just the
              hide/show-all link as a small right-aligned action above the list. -->
         <div
-          v-if="filterMode === 'category'"
+          v-if="tabMode === 'category'"
           class="space-y-2"
         >
           <div class="flex justify-end">
@@ -149,7 +166,7 @@ function onTabChange(value: string | number) {
         <!-- ClientOnly: useVirtualList touches `window` at setup time and the
              index pulls in JSON that's only useful interactively. Keeps the
              prerendered HTML free of search UI it can't use. -->
-        <ClientOnly v-if="filterMode === 'sign-id'">
+        <ClientOnly v-if="tabMode === 'sign-id'">
           <LazySignIdFilterPanel />
         </ClientOnly>
       </div>

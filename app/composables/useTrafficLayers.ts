@@ -12,8 +12,12 @@ import { categoryKeyExpr } from '~/composables/useSignCatalogue'
 // non-destructive: a user's sign-ID picks survive a detour through the
 // category tab and vice versa.
 export type FilterMode = 'category' | 'sign-id'
-// Persisted across reloads via localStorage; SSR falls back to 'category'.
-const filterMode = useLocalStorage<FilterMode>('hk-signs:filter-mode', 'category')
+// The mode SSR/prerender falls back to (no localStorage on the server). The
+// panel seeds its hydration-safe tab mirror with the same value, so keep this
+// the single source — if the two drift, the tab indicator desyncs on reload.
+export const DEFAULT_FILTER_MODE: FilterMode = 'category'
+// Persisted across reloads via localStorage.
+const filterMode = useLocalStorage<FilterMode>('hk-signs:filter-mode', DEFAULT_FILTER_MODE)
 
 const enabled = reactive<Record<string, boolean>>(
   Object.fromEntries(SIGN_CATEGORIES.map(c => [c.key, true]))
