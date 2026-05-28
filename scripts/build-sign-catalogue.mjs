@@ -1,50 +1,62 @@
-// Build the sign catalogue from TD's Index Plan PDFs with Sonnet 4.6 vision.
-// Each page is a table of [No. | Symbol | Description] column-groups. We bind
-// every code to its exact row by reading the printed "No." column per cell,
-// then crop the symbol from that same row by pure geometry, normalize to a
-// PNG, and write the catalogue.
+// Build the sign catalogue from TD's Index Plan PDFs.
 //
-// Replaces an earlier tesseract + 3-layer-LIS pipeline (git history): with the
-// CAD font and noise-contaminated No.-column crops, tesseract needed extensive
-// scaffolding (primary/fallback/per-gap LIS, vRule snapping, right-cut) to
-// avoid mislabelling. The VLM reads a clean isolated-cell montage instead.
-// Three safety nets remain, because they're cheaper than trust:
+// The Index Plan PDFs are vector (a MicroStation DGN export): the table ruling
+// lines, pictograms and digits are all PATH geometry, not a scanned raster
+// (mutool trace shows ~55k linetos and zero text ops per page). So we read the
+// grid straight from that geometry instead of re-deriving it from rendered
+// pixels — no ink-profile thresholds, no hardcoded column lattice, and no VLM
+// to bind rows. Per page:
 //
-//   1. NO.-COLUMN GRID BIND. The row a code occupies comes from reading the
-//      No. cell of THAT row — not a holistic y-hint, which drifted across the
-//      blank / "SYMBOL NOT AVAILABLE" rows and mis-cropped (the bug that got
-//      an earlier recovery reverted). We crop every No. cell into a fixed R×C
-//      montage in reading order and read it in one call; a blank row reads ""
-//      in its own slot and can't shift the codes below it. The symbol is then
-//      cropped from the SAME rowBand, so code and pictogram cannot desync.
+//   1. VECTOR GRID. `mutool draw -F trace` flattens every path to device
+//      (point) coordinates. Full-table-height vertical rules are the column
+//      dividers (pictogram-internal strokes are short and filtered by height);
+//      we MEASURE the [No. | Symbol | Description] lattice (origin / pitch /
+//      sub-cell widths) from them per sheet, then synthesise any group whose
+//      internal dividers were interrupted (e.g. the bottom-right title block).
+//      Rows are found PER GROUP from the horizontal rules spanning that group's
+//      width — so a per-group rowspan (one number labelling a tall stacked cell
+//      on informatory sheets) reads as ONE row, not mis-split by a neighbour
+//      group's denser ruling. This is exactly what the old page-wide shared
+//      R×C grid could not represent — it dropped the rowspan sheets (601-700,
+//      2601-2717, 3601-3705, 3811-3936).
 //
-//   2. GML SIGNID FILTER. Vision models occasionally hallucinate plausible
-//      sequential numbers (e.g. "635" between 634 and 636 when 635 doesn't
-//      exist on any real road). We only KEEP a code if it appears at least
-//      once in data/raw/DTAD_TS_ABV_PT.gml — the authoritative set of codes
-//      actually on signs in HK. Codes not in this set wouldn't be referenced
-//      by any map feature anyway, so the filter is loss-less for the app.
+//   2. OCR BIND. The printed "No." code is read per cell with tesseract (clean
+//      isolated digits — the historical full-extraction tesseract failure
+//      doesn't apply to an isolated number cell). The symbol is then cropped
+//      from the SAME [top,bot] band, so code and pictogram cannot desync.
 //
-//   3. HUMAN GATE (--propose / --commit). Recovery stages crops + a review
-//      montage and writes NOTHING to the repo; a human verifies every
-//      code↔crop before --commit promotes them. Upholds the documented
-//      "a missed sign degrades to a dot — a MISLABELLED sign must never ship".
+// Two safety nets remain, because they're cheaper than trust:
+//
+//   - GML SIGNID FILTER. A code is only KEPT if it appears at least once in
+//     data/raw/DTAD_TS_ABV_PT.gml (the codes actually on HK road signs). Drops
+//     OCR misreads of non-existent numbers loss-lessly (the app never refs them).
+//   - HUMAN GATE (--propose / --commit). Recovery stages crops + a verify.png
+//     (each candidate's SOURCE [printed No. | pictogram] strip, labelled with the
+//     OCR'd code) and writes NOTHING to the repo; a human confirms every
+//     printed-number↔label before --commit promotes the crops. Upholds the
+//     documented "a missed sign degrades to a dot — a MISLABELLED sign must
+//     never ship". This is the gate that catches an OCR digit misread.
+//
+// Descriptions are OPT-IN (--desc): a single Sonnet full-page read per sheet
+// gives the bilingual {en, zh} text. Off by default — the runtime sources
+// descriptions from curated app/data/signDescriptions.json (it PREFERS that
+// over the extracted `desc`), and tesseract here has no Traditional-Chinese
+// model, so OCR'ing descriptions would lose the Chinese half. The default
+// image rebuild is therefore fully deterministic and needs NO API key.
 //
 // Usage:
-//   ANTHROPIC_API_KEY=sk-ant-...  node scripts/build-sign-catalogue.mjs
-//                                                # full rebuild, merge mode
-//   ... build-sign-catalogue.mjs --wipe          # full rebuild, wipe first
-//   ... build-sign-catalogue.mjs --sheet "601 - 700"   # one sheet only
-//   ... build-sign-catalogue.mjs --propose       # stage candidates, write
-//                                                # nothing (human review)
-//   ... build-sign-catalogue.mjs --commit [--reject TS208,TS209]
-//                                                # promote approved staged crops
+//   node scripts/build-sign-catalogue.mjs                  # rebuild images, merge
+//   ... --wipe                                             # rebuild, wipe first
+//   ... --sheet "601 - 700"                                # one sheet only
+//   ... --propose                                          # stage for human review
+//   ... --commit [--reject TS208,TS209]                    # promote approved crops
+//   ANTHROPIC_API_KEY=sk-ant-... ... --desc                # also read descriptions
 //
-// Cost: ~$0.30 to rebuild all 16 sheets (two Sonnet calls per page — the
-// full-page description read + the No.-column grid bind).
+// Cost: $0 by default (deterministic). With --desc, ~$0.15 to read all 16
+// sheets (one Sonnet full-page read per sheet).
 
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 
@@ -53,6 +65,7 @@ const SIGNS_DIR = 'public/signs'
 const CATALOGUE_JSON = 'app/data/signCatalogue.json'
 const GML = 'data/raw/DTAD_TS_ABV_PT.gml'
 const DPI = 400
+const PT2PX = DPI / 72 // mutool trace is in PDF points (72dpi); pdftoppm renders at DPI
 const MODEL = 'claude-sonnet-4-6'
 
 const SHEETS = [
@@ -74,10 +87,6 @@ const SHEETS = [
   { pdf: '(TS 3937 - 4062).pdf', prefix: 'TS', range: [3937, 4062], group: 'warning' }
 ]
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('ANTHROPIC_API_KEY not set')
-  process.exit(1)
-}
 function requireTool(cmd, hint) {
   if (spawnSync(cmd, ['--version']).error) {
     console.error(`Missing \`${cmd}\`. Install it: ${hint}`)
@@ -86,10 +95,12 @@ function requireTool(cmd, hint) {
 }
 requireTool('pdftoppm', 'brew install poppler')
 requireTool('magick', 'brew install imagemagick')
+requireTool('mutool', 'brew install mupdf-tools') // vector grid extraction
+requireTool('tesseract', 'brew install tesseract') // No.-column digit OCR (the bind)
 // ImageMagick registers no fonts in this environment (`magick -list font` is
-// empty), so `montage` — used for the No.-column grid read and the review
-// sheet — can't render even an empty label without an explicit -font. Resolve
-// one system TTF up front and fail loud if none exists.
+// empty), so `montage` — used for the review / verify sheets — can't render
+// even an empty label without an explicit -font. Resolve one system TTF up
+// front and fail loud if none exists.
 const FONT = [
   '/System/Library/Fonts/Supplemental/Arial.ttf',
   '/Library/Fonts/Arial.ttf',
@@ -101,8 +112,7 @@ if (!FONT) {
 }
 
 // `--sheet <pattern>` filters which Index Plan sheets to process by substring
-// match against the PDF filename. Omitted → all 16 sheets (the canonical
-// `data:catalogue` build).
+// match against the PDF filename. Omitted → all 16 sheets.
 const sheetFilter = (() => {
   const i = process.argv.indexOf('--sheet')
   return i >= 0 ? process.argv[i + 1] : null
@@ -111,31 +121,35 @@ const sheetFilter = (() => {
 // for a clean full rebuild from source. Without it the script merges into
 // what's already there, which lets `--sheet` runs do surgical updates.
 const wipe = process.argv.includes('--wipe')
-
-// Human-gated recovery (see PASS 2). `--propose` extracts candidate pictograms
-// but writes NOTHING to the repo: it stages crops + a review montage + a
-// manifest under STAGING so a human can eyeball every code↔crop before it
-// ships. `--commit` then promotes the approved staged crops into public/signs/
-// + the catalogue; `--reject TS208,TS209` drops specific codes on commit.
-// Neither flag → the original write-through behaviour (the documented
-// `data:catalogue` build), now with grid-anchored crops and additive descs.
+// Human-gated recovery. `--propose` stages crops + review/verify montages + a
+// manifest under STAGING and writes NOTHING to the repo; `--commit` promotes
+// the approved staged crops into public/signs/ + the catalogue; `--reject
+// TS208,TS209` drops specific codes on commit.
 const propose = process.argv.includes('--propose')
 const doCommit = process.argv.includes('--commit')
 const rejectList = (() => {
   const i = process.argv.indexOf('--reject')
   return new Set(i >= 0 ? (process.argv[i + 1] ?? '').split(',').map(s => s.trim()).filter(Boolean) : [])
 })()
-// PASS 1 is additive-only by default — it fills a MISSING desc but never
-// clobbers an existing one (re-running a sheet used to silently corrupt good
-// descriptions when the VLM mis-paired a code with a neighbour's text).
-// `--update-desc` opts back into overwriting, for a deliberate desc refresh.
+// PASS 1 (descriptions) is additive-only by default — it fills a MISSING desc
+// but never clobbers an existing one. `--update-desc` opts back into overwrite.
 const updateDesc = process.argv.includes('--update-desc')
+// `--desc` opts INTO the VLM bilingual-description read. Off by default (the
+// deterministic image rebuild needs no API key); see the file header.
+const descMode = process.argv.includes('--desc')
+if (descMode && !process.env.ANTHROPIC_API_KEY) {
+  console.error('--desc needs ANTHROPIC_API_KEY for the description read')
+  process.exit(1)
+}
 const STAGING = '/tmp/sign-recovery'
+// Working-tree scratch for tesseract's input crop. It must NOT live under /tmp:
+// some sandboxes let a spawned tesseract read only the working tree, so a
+// /tmp input silently fails to open (magick is unaffected — it reads /tmp
+// fine). data/raw/ is gitignored and always present (the GML lives there).
+const SCRATCH = 'data/raw/.sign-cache'
+mkdirSync(SCRATCH, { recursive: true })
 
-// ---- geometry helpers — column-band and grid-line detection on the rendered
-// page, used to locate the symbol-cell crop for each VLM-emitted code. The
-// VLM gives us a y-position hint per code; geometry tells us where the
-// nearest cell actually starts and ends so we crop the right pixels. ----
+// ---- small process / image helpers ----
 function magick(args, { binary = false } = {}) {
   const r = spawnSync('magick', args, { maxBuffer: 1 << 30, encoding: binary ? 'buffer' : 'utf8' })
   if (r.status !== 0) throw new Error(`magick ${args.join(' ')}\n${r.stderr}`)
@@ -145,159 +159,154 @@ function identify(file) {
   const out = spawnSync('magick', ['identify', '-format', '%w %h', file], { encoding: 'utf8' })
   return out.stdout.trim().split(/\s+/).map(Number)
 }
-function profile(png, w, h, axis) {
-  const size = axis === 'x' ? `${w}x1` : `1x${h}`
-  const buf = magick([png, '-colorspace', 'Gray', '-threshold', '55%', '-negate',
-    '-resize', `${size}!`, '-depth', '8', 'gray:-'], { binary: true })
-  return Uint8Array.from(buf)
-}
-// Like `profile` but counts ANY non-white pixel as content, not just dark ink.
-// Bright symbols (the green chainage/route markers on TS 3601-3705) read above
-// the 55% gray threshold and vanish from the ink profile, so their columns go
-// undetected. `+opaque white` paints every non-near-white pixel black, so a
-// colour band registers like an ink band. Used only as a fallback when the ink
-// profile under-reads (see symbol-band detection), so dark-ink sheets are
-// unaffected.
-function contentProfile(png, w, h, axis) {
-  const size = axis === 'x' ? `${w}x1` : `1x${h}`
-  const buf = magick([png, '-fuzz', '25%', '-fill', 'black', '+opaque', 'white',
-    '-colorspace', 'Gray', '-negate', '-resize', `${size}!`, '-depth', '8', 'gray:-'], { binary: true })
-  return Uint8Array.from(buf)
-}
-function runs(arr, thresh, min) {
-  const out = []
-  let s = -1
-  for (let i = 0; i <= arr.length; i++) {
-    if (i < arr.length && arr[i] >= thresh) {
-      if (s < 0) s = i
-    } else if (s >= 0) {
-      if (i - s >= min) out.push([s, i - 1])
-      s = -1
-    }
-  }
-  return out
-}
-function cluster(indices, merge) {
-  if (!indices.length) return []
-  const out = []
-  let s = indices[0], p = indices[0]
-  for (const x of indices.slice(1)) {
-    if (x - p > merge) {
-      out.push(Math.round((s + p) / 2))
-      s = x
-    }
-    p = x
-  }
-  out.push(Math.round((s + p) / 2))
-  return out
-}
-function ruleCentres(prof, thresh, merge) {
-  const idx = []
-  for (let i = 0; i < prof.length; i++) if (prof[i] >= thresh) idx.push(i)
-  return cluster(idx, merge)
-}
-function modalGap(centres) {
-  const counts = new Map()
-  for (let i = 1; i < centres.length; i++) {
-    const g = Math.round(centres[i] - centres[i - 1])
-    counts.set(g, (counts.get(g) ?? 0) + 1)
-  }
-  let best = 0, bestN = 0
-  for (const [g, n] of counts) {
-    if (n > bestN && g > 20) {
-      bestN = n
-      best = g
-    }
-  }
-  return best
-}
-function median(xs) {
-  if (!xs.length) return 0
-  const s = [...xs].sort((a, b) => a - b)
+const median = (a) => {
+  if (!a.length) return 0
+  const s = [...a].sort((p, q) => p - q)
   const m = s.length >> 1
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
 }
-// Symbol-column lattice. Every Index Plan sheet is the same CT174/51 grid
-// rendered at DPI=400, so the symbol cells sit on a fixed horizontal lattice:
-// a constant ~606 px pitch, with the first column at one of two template
-// origins (~472 on the wider informatory sheets, ~776 on the rest). Both
-// constants are empirical — they're identical across all 16 sheets, as stable
-// as DPI itself.
-//
-// runs(colProf,…) only finds a symbol band where the cell carries enough ink,
-// so faint columns are missed: light-fill plates (the yellow "no stopping"
-// rows on TS 2206-2310), or groups left half-empty beside the bottom-right
-// title block (TS 206-310). The old code mapped VLM group g → symBands[g] by
-// position, so a missed LEFT column shifted every later band's index — it both
-// SKIPPED trailing groups *and* mis-cropped the survivors (e.g. on TS 2206-2310
-// the only bands found were groups 2 & 3, yet group 0's codes were cropped from
-// group 2's column).
-//
-// We instead reconstruct the lattice and emit exactly `groupCount` columns —
-// groupCount being the VLM's group count, which reads the page reliably. Where
-// a detected band already lands on a lattice point we reuse its exact ink
-// extent, so sheets that already detect every group are byte-for-byte
-// unchanged; only the missing / mis-indexed columns differ.
-const SYM_PITCH = 606 // px between adjacent symbol columns at DPI=400
-const SYM_ORIGINS = [472, 776] // the two template first-column centres
-function symbolColumns(symBands, groupCount, W) {
-  // No early-out on empty symBands: with zero detected bands we still
-  // synthesise all groupCount columns from the default origin — recovering
-  // them is the whole point — rather than silently skipping every group.
-  if (groupCount <= 0) return symBands
-  const centres = symBands.map(([a, b]) => (a + b) / 2)
-  const bw = median(symBands.map(([a, b]) => b - a)) || 260
-  // Pick the template origin whose lattice (origin + k·pitch) best fits the
-  // detected band centres. Robust even with just a couple of bands, or
-  // slightly off-lattice ones, because the two origins are ~300 px apart —
-  // far more than any per-band jitter.
-  let O = SYM_ORIGINS[0], best = Infinity
-  for (const o of SYM_ORIGINS) {
-    let err = 0
-    for (const c of centres) {
-      const k = Math.max(0, Math.round((c - o) / SYM_PITCH))
-      err += Math.abs(c - (o + k * SYM_PITCH))
-    }
-    if (err < best) {
-      best = err
-      O = o
+
+// ---- vector grid: parse the page geometry from mutool's device-space trace ----
+// Returns horizontal + vertical axis-aligned segments in render pixels.
+function traceSegments(pdf) {
+  const tracePath = '/tmp/sign-trace.xml'
+  const r = spawnSync('mutool', ['draw', '-F', 'trace', '-o', tracePath, pdf, '1'], { maxBuffer: 1 << 30 })
+  if (r.status !== 0) throw new Error(`mutool draw failed: ${r.stderr}`)
+  const xml = readFileSync(tracePath, 'utf8')
+  const pathRe = /<(stroke_path|fill_path)\b([^>]*)>([\s\S]*?)<\/\1>/g
+  const tfRe = /transform="([^"]+)"/
+  const ptRe = /<(moveto|lineto) x="([-\d.]+)" y="([-\d.]+)"/g
+  const Hs = [], Vs = []
+  for (const pm of xml.matchAll(pathRe)) {
+    const tf = tfRe.exec(pm[2])
+    const m = tf ? tf[1].split(/\s+/).map(Number) : [1, 0, 0, 1, 0, 0]
+    let cur = null
+    for (const s of pm[3].matchAll(ptRe)) {
+      const px = +s[2], py = +s[3]
+      const X = (m[0] * px + m[2] * py + m[4]) * PT2PX
+      const Y = (m[1] * px + m[3] * py + m[5]) * PT2PX
+      if (s[1] === 'moveto') {
+        cur = [X, Y]
+        continue
+      }
+      if (cur) {
+        const [x0, y0] = cur
+        // an axis-aligned segment is a horizontal or vertical ruling candidate;
+        // the length floors drop glyph hairlines but keep per-cell borders.
+        if (Math.abs(Y - y0) < 1.5 && Math.abs(X - x0) > 15) Hs.push({ y: (Y + y0) / 2, x0: Math.min(x0, X), x1: Math.max(x0, X) })
+        if (Math.abs(X - x0) < 1.5 && Math.abs(Y - y0) > 30) Vs.push({ x: (X + x0) / 2, y0: Math.min(y0, Y), y1: Math.max(y0, Y) })
+      }
+      cur = [X, Y]
     }
   }
-  const cols = []
-  for (let k = 0; k < groupCount; k++) {
-    const x = O + k * SYM_PITCH
-    // Reuse a real detected band when one sits on this lattice point (keeps
-    // existing crops identical); otherwise synthesise a centred window. The
-    // ±0.4·pitch window is < half a pitch, so each band claims one column.
-    const hit = symBands.find(([a, b]) => Math.abs((a + b) / 2 - x) <= SYM_PITCH * 0.4)
-    cols.push(hit ?? [Math.max(0, Math.round(x - bw / 2)), Math.min(W, Math.round(x + bw / 2))])
-  }
-  return cols
+  return { Hs, Vs }
 }
-// No.-column lattice. Every group is [No. | Symbol | Description]; the printed
-// code number sits in the narrow "No." cell immediately LEFT of the symbol
-// cell. Reading that cell per row is the authoritative bind that the VLM's
-// y-hint failed to give (it drifted across blank rows). We locate the No. cell
-// from the page's vertical rules: the two rules bracketing the symbol cell's
-// left edge bound it. Where rules are faint, fall back to a fixed offset left
-// of the symbol-cell centre — stable across both CT174/51 templates.
-const NO_COL_DX = 233 // px from symbol-cell centre to No.-cell centre (fallback)
-const NO_COL_W = 150 // px No.-cell width (fallback)
-function noColumns(symCols, vRules, W) {
-  return symCols.map(([a, b]) => {
-    // Anchor on the symbol cell's LEFT EDGE (a), not its centre. Dense sign
-    // graphics throw spurious full-height rules INSIDE the symbol cell, and a
-    // centre-based search grabs those — on TS 206-310 it put group 4's "No."
-    // window on top of the pictogram. The two rules immediately left of the
-    // left edge bracket the No. cell: [1] = its left border, [0] = the
-    // No|Symbol divider. Works for synthesized columns too (their lattice left
-    // edge sits at the same offset from the divider as a detected band's).
-    const left = vRules.filter(r => r < a - 8).sort((p, q) => q - p)
-    const w = left.length >= 2 ? left[0] - left[1] : 0
-    if (w > 40 && w < 320) return [left[1], left[0]]
-    const cx = (a + b) / 2
-    return [Math.max(0, Math.round(cx - NO_COL_DX - NO_COL_W / 2)), Math.min(W, Math.round(cx - NO_COL_DX + NO_COL_W / 2))]
-  })
+
+// Reconstruct the [No. | Symbol | Description] column lattice from the vertical
+// table rules. Full-body-height rules are the real dividers; we measure the
+// group origin / pitch / sub-cell widths from them (per sheet, exactly) and
+// synthesise any group whose dividers were interrupted, so no group is dropped.
+function columnModel(Vs) {
+  const len = v => v.y1 - v.y0
+  const maxLen = Math.max(...Vs.map(len))
+  const tall = Vs.filter(v => len(v) > maxLen * 0.95)
+  const top = median(tall.map(v => v.y0)), bot = median(tall.map(v => v.y1))
+  // column boundaries = verticals spanning the full body, x-clustered so a
+  // doublet group-separator (two close lines) merges to one boundary.
+  const xs = Vs.filter(v => v.y0 <= top + 60 && v.y1 >= bot - 60).map(v => v.x).sort((a, b) => a - b)
+  const cb = []
+  for (const x of xs) {
+    if (cb.length && x - cb[cb.length - 1] < 22) cb[cb.length - 1] = (cb[cb.length - 1] + x) / 2
+    else cb.push(x)
+  }
+  const tableL = cb[0], tableR = cb[cb.length - 1]
+  // No-cells = consecutive boundary pairs the width of the narrow No. column
+  // (≈100px), excluding the outer frame's left edge.
+  const noPairs = []
+  for (let i = 0; i < cb.length - 1; i++) {
+    const w = cb[i + 1] - cb[i]
+    if (w >= 80 && w <= 140 && cb[i] > tableL + 5) noPairs.push([cb[i], cb[i + 1]])
+  }
+  const lefts = noPairs.map(p => p[0])
+  const pitch = lefts.length >= 2 ? median(lefts.slice(1).map((x, i) => x - lefts[i])) : 606
+  const noW = median(noPairs.map(p => p[1] - p[0])) || 102
+  // symbol width = the gap from a No-cell's right edge to the next boundary.
+  const symWs = []
+  for (const [, nr] of noPairs) {
+    const next = cb.find(x => x > nr + 5)
+    if (next && next - nr > 150 && next - nr < 480) symWs.push(next - nr)
+  }
+  const symW = median(symWs) || Math.round(pitch * 0.52)
+  const origin = lefts.length ? Math.min(...lefts) : tableL + 100
+  const groups = []
+  for (let k = 0; k <= 24; k++) {
+    const gl = Math.round(origin + k * pitch)
+    if (gl + noW + symW > tableR + pitch * 0.3) break
+    // snap to a detected No-cell when one lands on this lattice point (exact
+    // crop); otherwise synthesise a centred window from the measured widths.
+    const hit = noPairs.find(p => Math.abs(p[0] - gl) <= pitch * 0.35)
+    const no = hit ? [Math.round(hit[0]), Math.round(hit[1])] : [gl, Math.round(gl + noW)]
+    groups.push({ no, sym: [no[1], Math.round(no[1] + symW)] })
+  }
+  return { groups, top, bot }
+}
+
+// Per-group row rules: the horizontal table borders are drawn per-cell (short
+// collinear segments), so we cluster H-segments by y and keep a y only where
+// the segments collectively span most of the group's width. A rowspan is just
+// a larger gap between two consecutive kept rules — no uniform pitch assumed.
+function groupRows(Hs, xL, xR) {
+  const W = xR - xL
+  const segs = Hs.filter(h => h.x1 > xL && h.x0 < xR).sort((a, b) => a.y - b.y)
+  const clusters = []
+  for (const h of segs) {
+    const c = clusters[clusters.length - 1]
+    if (c && h.y - c.y < 8) c.segs.push(h)
+    else clusters.push({ y: h.y, segs: [h] })
+  }
+  const ys = []
+  for (const c of clusters) {
+    const iv = c.segs.map(h => [Math.max(xL, h.x0), Math.min(xR, h.x1)]).filter(([a, b]) => b > a).sort((p, q) => p[0] - q[0])
+    let cov = 0, cur = -1
+    for (const [a, b] of iv) {
+      const s = Math.max(a, cur)
+      if (b > s) cov += b - s
+      cur = Math.max(cur, b)
+    }
+    if (cov > W * 0.6) ys.push(Math.round(c.y))
+  }
+  return ys
+}
+
+// OCR a No. cell with tesseract → the list of number tokens it contains, top to
+// bottom. The cell holds the bold sign code AND a smaller "(TC …)" reference
+// line; both read as numbers, but they sit in DIFFERENT ranges, so the caller's
+// sheet-range gate (parseCode) keeps the SIGNID and drops the TC figure — no
+// need to isolate the bold line geometrically. Preprocessing matters: the CAD
+// digits are thin on some sheets, and a fixed threshold-then-resize erodes them
+// to nothing (reads blank). So we crop the cell (inset past the border rules —
+// x/y land ON the dividers, and a black edge defeats the trim), upscale 4×
+// BEFORE binarising, use an adaptive **OTSU** threshold (handles thin and thick
+// strokes alike) + a morphological **close** (thickens hairline digits), then
+// trim to ink and white-pad. Whitelist = digits + L/T/R suffix letters.
+function ocrCode(png, x, y, w, h) {
+  const cell = join(SCRATCH, 'ocr-no.png')
+  const outBase = join(SCRATCH, 'ocr-no')
+  magick([png, '-crop', `${w - 10}x${Math.min(h - 10, 120)}+${x + 5}+${y + 5}`, '+repage',
+    '-colorspace', 'Gray', '-resize', '400%', '-auto-threshold', 'OTSU',
+    '-negate', '-morphology', 'Close', 'Octagon:1', '-negate',
+    '-fuzz', '5%', '-trim', '+repage', '-bordercolor', 'white', '-border', '18', cell])
+  const r = spawnSync('tesseract', [cell, outBase, '--psm', '6',
+    '-c', 'tessedit_char_whitelist=0123456789LTR'], { encoding: 'utf8' })
+  if (r.status !== 0) return []
+  return readFileSync(`${outBase}.txt`, 'utf8').split(/\s+/).map(s => s.trim()).filter(Boolean)
+}
+
+// Does a catalogue entry already carry a description? `desc` is either the
+// legacy bare-string form or the {en?, zh?} object — both are checked.
+function descExists(raw) {
+  const p = typeof raw === 'string' ? { en: raw } : raw
+  return !!(p && (p.en || p.zh))
 }
 function classifyTier(w, h) {
   const aspect = w / h
@@ -330,11 +339,10 @@ const onMap = new Set()
 for (const m of gmlText.matchAll(/<gen:value>(TS\d{2,4}[A-Z]?)<\/gen:value>/g)) onMap.add(m[1])
 console.log(`GML ground-truth: ${onMap.size} distinct SIGNIDs`)
 
-// ---- VLM call ----
+// ---- VLM call (descriptions only, opt-in via --desc) ----
 const sleep = ms => new Promise(r => setTimeout(r, ms))
-// The model usually returns bare JSON, but occasionally prepends prose ("I'll
-// read each column…") despite the instruction. Salvage by extracting the
-// outermost array; return null only if even that won't parse (caller re-asks).
+// The model usually returns bare JSON, but occasionally prepends prose. Salvage
+// by extracting the outermost array; return null only if even that won't parse.
 function parseJsonLoose(raw) {
   try {
     return JSON.parse(raw)
@@ -349,13 +357,10 @@ function parseJsonLoose(raw) {
   }
 }
 // One JPEG + one text prompt → the model's raw text reply (markdown fences
-// stripped). Shared by the full-page read and the No.-column grid read so both
-// inherit the same retry/backoff and fail-loud-on-truncation behaviour.
+// stripped), with retry/backoff and fail-loud-on-truncation.
 async function callVLM(jpgBuf, prompt) {
   const body = {
     model: MODEL,
-    // 4096 tokens truncates the chainage-dense TS 3601-3705 mid-token; the
-    // richest sheets that fit use ~3.4k output tokens, so 8192 is comfortable.
     max_tokens: 8192,
     messages: [{
       role: 'user',
@@ -380,9 +385,8 @@ async function callVLM(jpgBuf, prompt) {
       })
     } catch (err) {
       // A network-level failure (EPIPE / ECONNRESET / DNS / timeout) makes
-      // fetch REJECT rather than return a status — so it bypasses the HTTP
-      // retry below and would otherwise crash the whole multi-call run. Retry
-      // it on the same backoff schedule; give up only once that's exhausted.
+      // fetch REJECT rather than return a status. Retry on the same backoff
+      // schedule; give up only once that's exhausted.
       const reason = err?.cause?.code ?? err?.cause?.message ?? err?.message
       if (attempt >= backoffs.length) {
         console.error(`network error after ${attempt + 1} attempts: ${reason}`)
@@ -394,10 +398,6 @@ async function callVLM(jpgBuf, prompt) {
     }
     if (res.ok) {
       const j = await res.json()
-      // A `max_tokens` stop would truncate the JSON — sometimes at a valid
-      // boundary, silently dropping the trailing codes. Fail loud instead so a
-      // bumped limit (or a split sheet) is an explicit decision, never a
-      // quietly-short extraction.
       if (j.stop_reason === 'max_tokens') {
         console.error(`API truncated at max_tokens (${body.max_tokens}) — raise the cap; refusing a partial read.`)
         process.exit(1)
@@ -415,9 +415,8 @@ async function callVLM(jpgBuf, prompt) {
     await sleep(backoffs[attempt])
   }
 }
-// Full-page read — column-groups of {code, en, zh}. Used for descriptions
-// (PASS 1) and to count the column-groups; the page's row binding now comes
-// from the No.-column grid read below, not from these rows' y-hints.
+// Full-page read — column-groups of {code, en, zh}. Used only for descriptions
+// when --desc is set; the row binding comes from the OCR grid, not these rows.
 async function readSheetVLM(jpgBuf) {
   const prompt = `This is one page from the Hong Kong Transport Department "Index Plan" — a reference of all traffic signs. The page is a table whose columns repeat the pattern [No. | Symbol | Description] for each column-group. Codes ("641", "642", …) appear in the small "No." column at the LEFT of each group. Codes go down each group, then continue at the top of the next group to the right.
 
@@ -439,103 +438,30 @@ Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. 
   }
   return null
 }
-// No.-column grid read — the authoritative code↔row bind. The montage is a
-// clean R×C grid of isolated No.-cell crops in reading order, so the model
-// reads pure numbers cell-by-cell with no row-skipping ambiguity. The reply
-// MUST be exactly R×C — a misshapen one means the bind would be misaligned, so
-// it is never accepted. But the model is stochastic, so we re-ask a few times
-// before giving up; on persistent failure we return null and the caller SKIPS
-// the sheet (re-runnable with --sheet) rather than crashing the whole run.
-async function readNoGridVLM(jpgBuf, R, C) {
-  const prompt = `This image is a GRID of cells cropped from the "No." column of a Hong Kong traffic-sign index table. It has exactly ${R} rows and ${C} columns, laid out in reading order: left-to-right within each row, then top-to-bottom. EVERY cell is a slot — including empty ones — so there are exactly ${R}×${C} = ${R * C} cells.
-
-Each cell shows EITHER a bold sign-code number (e.g. "208", "636L", "639T"), optionally above a smaller "(TC ...)" reference line, OR nothing.
-
-For each cell, return the bold code as a string — the digits plus any trailing letter, WITHOUT the "(TC ...)" part — or "" if the cell has no code. Do NOT skip empty cells; emit "" for them so every row has exactly ${C} entries.
-
-Return ONLY a JSON array of ${R} arrays, each containing exactly ${C} strings. No prose, no markdown fences.`
-  const shapeOf = g => Array.isArray(g) ? `${g.length}×[${g.map(r => Array.isArray(r) ? r.length : '?').join(',')}]` : 'non-array'
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const { raw, usage } = await callVLM(jpgBuf, prompt)
-    const grid = parseJsonLoose(raw)
-    if (Array.isArray(grid) && grid.length === R && grid.every(row => Array.isArray(row) && row.length === C)) {
-      return { grid, usage }
-    }
-    console.error(`  no-grid read got ${shapeOf(grid)}, expected ${R}×${C} — re-asking (attempt ${attempt + 1}/3)`)
-  }
-  return null
-}
 
 // ---- per-sheet extraction ----
-async function extractSheetVLM(sheet, catalogue) {
+async function extractSheet(sheet, catalogue) {
   const pdf = join(INDEX_PLAN_DIR, sheet.pdf)
-  const base = `/tmp/vlm-${sheet.prefix}`
+  const base = `/tmp/sign-${sheet.prefix}-${sheet.range[0]}`
   spawnSync('pdftoppm', ['-png', '-r', String(DPI), '-singlefile', pdf, base])
   const png = `${base}.png`
-  const [W, H] = identify(png)
 
-  // Geometry — same as build-sign-catalogue.mjs, so codes land at the same
-  // symbol/desc coords this script eventually writes.
-  const colProf = profile(png, W, H, 'x')
-  const symBands = runs(colProf, 25, 70)
-  // Vertical table rules run the full page height, so their columns saturate
-  // the ink profile (~255) while symbol/number ink stays well below — the same
-  // high-threshold peak-find we use for horizontal grid lines. These bound the
-  // No. cells (see noColumns).
-  const vRules = ruleCentres(colProf, 120, 5)
-  const rowProf = profile(png, W, H, 'y')
-  const gridLines = ruleCentres(rowProf, 120, 3)
-  const pitch = modalGap(gridLines)
-  // Build the full per-gap list, marking which are candidate rowBands. A
-  // gap is kept as long as it's big enough to plausibly hold a sign cell —
-  // anything from ~pitch tall up to a "rowspan" multi-row cell (e.g. the
-  // 300+ px gaps on informatory sheets where one number labels two stacked
-  // pictograms). Smaller gaps (header rules, divider speck) are dropped.
-  // These kept gaps become the rows of the No.-column grid bind below: each
-  // one is read once and its symbol cropped from the same [top, bot] range.
-  const gaps = []
-  for (let i = 1; i < gridLines.length; i++) {
-    const top = gridLines[i - 1], bot = gridLines[i]
-    const h = bot - top
-    gaps.push({ top, bot, h, kept: h >= pitch * 0.6 })
-  }
-  console.log(`[${sheet.pdf}] geom: ${symBands.length} groups, ${gaps.length} grid gaps (${gaps.filter(g => g.kept).length} kept as rowBands)`)
-
-  // VLM call on a 1600-wide JPEG of the page.
-  const jpg = `${base}.jpg`
-  magick([png, '-resize', '1600x', '-quality', '92', jpg])
-  const jpgBuf = readFileSync(jpg)
-  const pageRes = await readSheetVLM(jpgBuf)
-  if (!pageRes) {
-    console.error(`[${sheet.pdf}] full-page read never returned valid JSON after retries — SKIPPING (re-run: --propose --sheet "${sheet.range[0]} - ${sheet.range[1]}")`)
-    return 0
-  }
-  const { parsed, usage } = pageRes
-  console.log(`[${sheet.pdf}] vlm: ${parsed.length} groups, usage in=${usage?.input_tokens} out=${usage?.output_tokens}`)
-
-  // Resolve the symbol-column x-range for each VLM group from the fixed grid
-  // lattice, recovering columns runs(colProf,…) missed (see symbolColumns).
-  // When the dark-ink profile finds fewer than HALF the page's groups, the
-  // symbols are likely bright/coloured (green route markers on TS 3601-3705)
-  // and read above the gray threshold — re-detect counting any non-white
-  // content so the lattice fits real anchors instead of guessing. The <half
-  // gate keeps every sheet the ink profile reads adequately byte-stable.
-  let bands = symBands
-  if (symBands.length < parsed.length / 2) {
-    const cb = runs(contentProfile(png, W, H, 'x'), 25, 70)
-    if (cb.length > symBands.length) {
-      console.log(`[${sheet.pdf}] ink found ${symBands.length} band(s) for ${parsed.length} groups — color-aware detection found ${cb.length}`)
-      bands = cb
+  // Vector grid: columns + per-group rows (deterministic, rowspan-aware).
+  const { Hs, Vs } = traceSegments(pdf)
+  const { groups, top, bot } = columnModel(Vs)
+  for (const g of groups) {
+    const ys = groupRows(Hs, g.no[0], g.sym[1]).filter(y => y >= top - 4 && y <= bot + 4)
+    g.cells = []
+    for (let i = 0; i < ys.length - 1; i++) {
+      if (ys[i + 1] - ys[i] < 30) continue // header sliver / double rule
+      g.cells.push([ys[i], ys[i + 1]])
     }
   }
-  const symCols = symbolColumns(bands, parsed.length, W)
-  console.log(`[${sheet.pdf}] symbol cols: ${bands.length} band(s) detected -> ${symCols.length} lattice column(s) at [${symCols.map(c => Math.round((c[0] + c[1]) / 2)).join(', ')}]`)
-  // The No. cell sits left of each symbol cell — this is the row anchor.
-  const noCols = noColumns(symCols, vRules, W)
+  const totalCells = groups.reduce((n, g) => n + g.cells.length, 0)
+  console.log(`[${sheet.pdf}] grid: ${groups.length} groups, rows/group=[${groups.map(g => g.cells.length).join(',')}], ${totalCells} cells`)
 
   // Normalise a raw No.-column string to {code, base}, gated by this sheet's
-  // numeric range. Used for both the grid codes (PASS 2) and the full-page
-  // rows (PASS 1). Returns null for blanks / out-of-range / malformed reads.
+  // numeric range. Returns null for blanks / out-of-range / malformed reads.
   function parseCode(raw0) {
     const raw = String(raw0 ?? '').toUpperCase().replace(/\s+/g, '')
     if (!raw || raw === 'NONE') return null
@@ -545,9 +471,8 @@ async function extractSheetVLM(sheet, catalogue) {
     if (n < sheet.range[0] || n > sheet.range[1]) return null
     return { code: `${sheet.prefix}${m[1]}${m[2]}`, base: `${sheet.prefix}${m[1]}` }
   }
-  // Parse a full-page row into {code, base, desc}. `desc` is the {en?, zh?}
-  // bilingual shape that matches signDescriptions.json — empty strings are
-  // dropped so we only ever store a populated field.
+  // Parse a full-page (--desc) row into {code, base, desc}. `desc` is the
+  // {en?, zh?} shape that matches signDescriptions.json.
   function parseCell(item) {
     if (item == null || typeof item !== 'object') return null
     const c = parseCode(item.code)
@@ -559,71 +484,44 @@ async function extractSheetVLM(sheet, catalogue) {
     if (zh) desc.zh = zh
     return { ...c, desc }
   }
-  // Compare two desc objects shallowly — used to skip no-op writes.
   function descEqual(a, b) {
     if (!a || !b) return a === b
     return a.en === b.en && a.zh === b.zh
   }
-  // Full-page descriptions keyed by code (last read wins). Drives PASS 1 and
-  // supplies the additive desc for brand-new codes added in PASS 2.
+
+  // Optional bilingual descriptions (--desc): one Sonnet full-page read.
   const descByCode = new Map()
-  for (const group of parsed) {
-    for (const item of (group ?? [])) {
-      const cell = parseCell(item)
-      if (cell && (cell.desc.en || cell.desc.zh)) descByCode.set(cell.code, cell.desc)
+  if (descMode) {
+    const jpg = `${base}.jpg`
+    magick([png, '-resize', '1600x', '-quality', '92', jpg])
+    const pageRes = await readSheetVLM(readFileSync(jpg))
+    if (!pageRes) {
+      console.error(`[${sheet.pdf}] description read failed after retries — continuing without descs`)
+    } else {
+      for (const grp of pageRes.parsed) {
+        for (const item of (grp ?? [])) {
+          const cell = parseCell(item)
+          if (cell && (cell.desc.en || cell.desc.zh)) descByCode.set(cell.code, cell.desc)
+        }
+      }
+      console.log(`[${sheet.pdf}] descriptions: ${descByCode.size} codes, usage out=${pageRes.usage?.output_tokens}`)
     }
   }
 
-  const keptGaps = gaps.filter(g => g.kept)
-
-  // STAGE 1 — bind each code to its rowBand by reading the No. column. Crop
-  // every No.-cell (group g × rowBand i) into a clean R×C montage in reading
-  // order and read it in one call. Each cell is isolated and positionally
-  // fixed, so a blank / "SYMBOL NOT AVAILABLE" row reads "" in its slot — it
-  // can't shift the codes below it, which is exactly how the old y-hint bind
-  // drifted and mis-cropped. The grid read's shape is asserted R×C upstream.
-  const C = symCols.length
-  const R = keptGaps.length
-  const cellFiles = []
-  for (let i = 0; i < R; i++) {
-    for (let g = 0; g < C; g++) {
-      const [nx0, nx1] = noCols[g]
-      const gp = keptGaps[i]
-      const cf = `/tmp/nocell-${i}-${g}.png`
-      magick([png, '-crop', `${nx1 - nx0}x${Math.max(1, gp.bot - gp.top - 6)}+${nx0}+${gp.top + 3}`, '+repage', cf])
-      cellFiles.push(cf)
-    }
-  }
-  const gridJpg = `${base}-nogrid.jpg`
-  // -label '' suppresses montage's default per-tile filename caption so the
-  // model sees clean number cells; -font is required even for the empty label.
-  magick(['montage', ...cellFiles, '-tile', `${C}x${R}`, '-geometry', '220x96+3+3', '-background', '#dddddd', '-font', FONT, '-label', '', '-quality', '92', gridJpg])
-  const gridRes = await readNoGridVLM(readFileSync(gridJpg), R, C)
-  if (!gridRes) {
-    console.error(`[${sheet.pdf}] no-grid read never matched ${R}×${C} after retries — SKIPPING (re-run: --propose --sheet "${sheet.range[0]} - ${sheet.range[1]}")`)
-    return 0
-  }
-  const { grid, usage: gridUsage } = gridRes
-  console.log(`[${sheet.pdf}] no-grid: ${R}×${C} cells, usage in=${gridUsage?.input_tokens} out=${gridUsage?.output_tokens}`)
-
-  // `--propose` stages everything under /tmp; otherwise we write straight into
-  // public/signs/ (the documented build).
+  // `--propose` stages everything under /tmp; otherwise write into public/signs/.
   const sheetTag = `${sheet.prefix}${sheet.range[0]}-${sheet.range[1]}`
   const outDir = propose ? join(STAGING, sheetTag) : SIGNS_DIR
   if (propose) await mkdir(outDir, { recursive: true })
 
-  // PASS 1 — description fixes for codes already in the catalogue, matched by
-  // code string. Additive-only by default: fill a MISSING desc, never clobber
-  // an existing one (re-running a sheet used to corrupt good descriptions when
-  // the VLM mis-paired a code with a neighbour's text). `--update-desc` opts
-  // back into overwriting.
+  // PASS 1 — additive descriptions for codes already in the catalogue. Only
+  // populated when --desc ran above; otherwise this loop is a no-op.
   let descAdded = 0, descUpdated = 0
   const descAdds = []
   for (const [code, desc] of descByCode) {
     if (!catalogue[code]) continue
     const prevRaw = catalogue[code].desc
     const prev = typeof prevRaw === 'string' ? { en: prevRaw } : prevRaw
-    const hasPrev = !!(prev && (prev.en || prev.zh))
+    const hasPrev = descExists(prevRaw)
     if (hasPrev && !updateDesc) continue
     if (descEqual(prev, desc)) continue
     hasPrev ? descUpdated++ : descAdded++
@@ -631,21 +529,31 @@ async function extractSheetVLM(sheet, catalogue) {
     else catalogue[code].desc = desc
   }
 
-  // PASS 2 — add a NEW pictogram + entry for each code the No.-column grid
-  // bound to a rowBand. The symbol crop is pure geometry: symbol column g ×
-  // rowBand i, taken from the SAME row whose No. cell yielded the code, so it
-  // cannot drift. GML filter and dup check are retained; a row whose symbol
-  // cell is empty (a "SYMBOL NOT AVAILABLE" code) trims to nothing and
-  // degrades to a dot rather than shipping a blank crop.
-  let added = 0, droppedHallucination = 0, droppedSmall = 0, droppedDup = 0
+  // PASS 2 — pictograms. For each grid cell: OCR the No. cell → code, GML-
+  // filter, then crop the symbol from the SAME [top,bot] band so code and
+  // pictogram cannot desync. An empty symbol cell ("SYMBOL NOT AVAILABLE")
+  // trims to nothing and degrades to a dot rather than shipping a blank crop.
+  let added = 0, droppedHallucination = 0, droppedSmall = 0, droppedDup = 0, droppedUnread = 0
   const adds = []
   const seen = new Set()
-  for (let i = 0; i < R; i++) {
-    const gap = keptGaps[i]
-    const rh = gap.bot - gap.top
-    for (let g = 0; g < C; g++) {
-      const c = parseCode(grid[i][g])
-      if (!c) continue
+  for (let gi = 0; gi < groups.length; gi++) {
+    const grp = groups[gi]
+    let prevN = 0
+    for (const [rtop, rbot] of grp.cells) {
+      // Scan the cell's tokens top-to-bottom; the range gate keeps the SIGNID
+      // and drops the out-of-range "(TC …)" reference figure.
+      const tokens = ocrCode(png, grp.no[0], rtop, grp.no[1] - grp.no[0], rbot - rtop)
+      const c = tokens.map(parseCode).find(Boolean) || null
+      if (!c) {
+        if (tokens.length) droppedUnread++
+        continue
+      }
+      // The No. column is a sorted sequence within a group — flag (don't drop)
+      // an OCR read that breaks it, so a digit misread is visible in the log
+      // even before the human gate's verify.png.
+      const n = parseInt(c.code.replace(/\D/g, ''), 10)
+      if (prevN && n < prevN) console.warn(`[${sheet.pdf}] ⚠ group ${gi}: OCR ${c.code} < previous ${prevN} (out of order) — check verify.png`)
+      prevN = n
       if (catalogue[c.code] || seen.has(c.code)) {
         droppedDup++
         continue
@@ -654,9 +562,9 @@ async function extractSheetVLM(sheet, catalogue) {
         droppedHallucination++
         continue
       }
-      const [bx0, bx1] = symCols[g]
+      const [bx0, bx1] = grp.sym
       const symRaw = '/tmp/sym.png'
-      magick([png, '-crop', `${bx1 - bx0 + 12}x${rh - 8}+${bx0 - 6}+${gap.top + 4}`,
+      magick([png, '-crop', `${bx1 - bx0 + 12}x${rbot - rtop - 8}+${bx0 - 6}+${rtop + 4}`,
         '+repage', '-fuzz', '8%', '-trim', '+repage', symRaw])
       const [sw, sh] = identify(symRaw)
       if (!sw || sw < 24 || sh < 24) {
@@ -670,28 +578,24 @@ async function extractSheetVLM(sheet, catalogue) {
       seen.add(c.code)
       // src = the source row box from the No.-cell left edge through the symbol
       // cell right edge, for a ground-truth [printed number | pictogram] crop at
-      // review time (the bind is only trustworthy if that pairing checks out).
-      if (propose) adds.push({ code: c.code, ...entry, src: { x: noCols[g][0], y: gap.top, w: bx1 - noCols[g][0], h: rh } })
+      // review time (the only view that catches an OCR digit misread).
+      if (propose) adds.push({ code: c.code, ...entry, src: { x: grp.no[0], y: rtop, w: bx1 - grp.no[0], h: rbot - rtop } })
       else catalogue[c.code] = entry
       added++
     }
   }
-  console.log(`[${sheet.pdf}] added=${added}  desc-added=${descAdded}  desc-updated=${descUpdated}  hallucination-dropped=${droppedHallucination}  empty-cell-dropped=${droppedSmall}  dup=${droppedDup}`)
+  console.log(`[${sheet.pdf}] added=${added} desc-added=${descAdded} desc-updated=${descUpdated} hallucination=${droppedHallucination} empty=${droppedSmall} dup=${droppedDup} unreadable=${droppedUnread}`)
 
   // In propose mode write nothing to the repo — stage a manifest + a review
-  // montage (each candidate's code beside its crop) so a human can verify
-  // every code↔crop before --commit promotes them.
+  // montage (the normalized asset, labelled) + a verify montage (each
+  // candidate's SOURCE [printed No. | pictogram] strip, labelled with the OCR'd
+  // code) so a human can confirm every code↔crop before --commit.
   if (propose) {
     await writeFile(join(outDir, 'manifest.json'), JSON.stringify({ sheet: sheet.pdf, group: sheet.group, adds, descAdds }, null, 2) + '\n')
     if (adds.length) {
-      // review.png — the normalized asset that will actually ship, labelled.
       const labelArgs = []
       for (const a of adds) labelArgs.push('-label', a.code, join(outDir, `${a.code}.png`))
       magick(['montage', '-font', FONT, ...labelArgs, '-tile', '6x', '-geometry', '200x160+8+8', '-background', 'white', '-fill', 'black', '-pointsize', '22', join(outDir, 'review.png')])
-      // verify.png — the GATE: each candidate's SOURCE row [printed No. |
-      // pictogram] cropped straight from the page, labelled with the bound
-      // code. Confirm the printed number matches the label before --commit;
-      // this is the only view that can catch a misread No.-column digit.
       const vArgs = ['montage', '-font', FONT]
       for (const a of adds) {
         const { x, y, w, h } = a.src
@@ -727,19 +631,14 @@ if (doCommit) {
         continue
       }
       await copyFile(join(STAGING, dir, `${a.code}.png`), join(SIGNS_DIR, `${a.code}.png`))
-      // Pick only catalogue fields — never the verification-only `src` box.
       const entry = { tier: a.tier, group: a.group }
       if (a.desc) entry.desc = a.desc
       catalogue[a.code] = entry
       committed++
     }
-    // Desc-adds stay additive on commit too (only fill a missing desc) unless
-    // --update-desc, mirroring PASS 1.
     for (const da of (mf.descAdds ?? [])) {
       if (rejectList.has(da.code) || !catalogue[da.code]) continue
-      const prevRaw = catalogue[da.code].desc
-      const hasPrev = typeof prevRaw === 'string' ? !!prevRaw : !!(prevRaw && (prevRaw.en || prevRaw.zh))
-      if (hasPrev && !updateDesc) continue
+      if (descExists(catalogue[da.code].desc) && !updateDesc) continue
       catalogue[da.code].desc = da.desc
       descApplied++
     }
@@ -763,7 +662,7 @@ const catalogue = (wipe && !propose) || !existsSync(CATALOGUE_JSON)
   ? {}
   : JSON.parse(await readFile(CATALOGUE_JSON, 'utf8'))
 const before = Object.keys(catalogue).length
-console.log(`existing catalogue: ${before} codes`)
+console.log(`existing catalogue: ${before} codes${descMode ? ' (--desc: reading bilingual descriptions)' : ''}`)
 
 const sheetsToRun = sheetFilter
   ? SHEETS.filter(s => s.pdf.includes(sheetFilter))
@@ -774,11 +673,11 @@ if (sheetFilter && !sheetsToRun.length) {
 }
 let totalAdded = 0
 for (const sheet of sheetsToRun) {
-  const n = await extractSheetVLM(sheet, catalogue)
+  const n = await extractSheet(sheet, catalogue)
   totalAdded += n
 }
 if (propose) {
-  console.log(`\nproposed ${totalAdded} new pictogram(s) across ${sheetsToRun.length} sheet(s). Review each <sheet>/review.png under ${STAGING}, then: node scripts/build-sign-catalogue.mjs --commit [--reject TS###,TS###]`)
+  console.log(`\nproposed ${totalAdded} new pictogram(s) across ${sheetsToRun.length} sheet(s). Review each <sheet>/verify.png under ${STAGING}, then: node scripts/build-sign-catalogue.mjs --commit [--reject TS###,TS###]`)
 } else {
   await writeFile(CATALOGUE_JSON, JSON.stringify(catalogue, null, 2) + '\n')
   console.log(`\nfinal catalogue: ${Object.keys(catalogue).length} codes (+${totalAdded})`)
