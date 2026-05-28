@@ -6143,5 +6143,117 @@
       "en": "8AM - 8PM",
       "zh": "上午八時至下午八時"
     }
+  },
+  "TS215": {
+    "tier": 2,
+    "group": "regulatory"
+  },
+  "TS396": {
+    "tier": 1,
+    "group": "regulatory"
+  },
+  "TS397": {
+    "tier": 1,
+    "group": "regulatory"
+  },
+  "TS3603": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3604": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3605": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3606": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3615": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3616": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3617": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3618": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3619": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3620": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3662": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3668": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3669": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3671": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3672": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3674": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3675": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3676": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3677": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3678": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3679": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS3705": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS697": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS698": {
+    "tier": 2,
+    "group": "informatory"
+  },
+  "TS699": {
+    "tier": 2,
+    "group": "informatory"
   }
 }
