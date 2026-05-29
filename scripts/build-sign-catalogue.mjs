@@ -278,28 +278,43 @@ function groupRows(Hs, xL, xR) {
   return ys
 }
 
-// OCR a No. cell with tesseract → the list of number tokens it contains, top to
-// bottom. The cell holds the bold sign code AND a smaller "(TC …)" reference
-// line; both read as numbers, but they sit in DIFFERENT ranges, so the caller's
-// sheet-range gate (parseCode) keeps the SIGNID and drops the TC figure — no
-// need to isolate the bold line geometrically. Preprocessing matters: the CAD
-// digits are thin on some sheets, and a fixed threshold-then-resize erodes them
-// to nothing (reads blank). So we crop the cell (inset past the border rules —
-// x/y land ON the dividers, and a black edge defeats the trim), upscale 4×
-// BEFORE binarising, use an adaptive **OTSU** threshold (handles thin and thick
-// strokes alike) + a morphological **close** (thickens hairline digits), then
-// trim to ink and white-pad. Whitelist = digits + L/T/R suffix letters.
-function ocrCode(png, x, y, w, h) {
+// OCR a No. cell with tesseract → every number token it contains. The cell
+// holds the bold sign code AND a smaller "(TC …)" reference line; both read as
+// numbers, but they sit in DIFFERENT ranges, so the caller's sheet-range gate
+// (parseCode) keeps the SIGNID and drops the TC figure — no need to isolate the
+// bold line geometrically.
+//
+// No single binarisation reads every sheet, so we try TWO in order:
+//   A. fixed threshold → trim → upscale. Reads clean/thick glyphs, and crucially
+//      reads the slashed CAD "7" (recipe B's stroke-thickening fuses its
+//      crossbar into an "f" → the digit is dropped → TS701-805 read blank).
+//   B. upscale → adaptive OTSU → morphological close. Rescues the sheets whose
+//      strokes are too thin for a fixed threshold (recipe A reads blank there).
+// `accept` (the caller's range gate) lets us STOP after recipe A once it yields
+// an in-range code — recipe B then only runs for the thin-stroke sheets A can't
+// read. An out-of-range "(TC …)" number fails `accept`, so it can't wrongly
+// short-circuit B. We always crop inset past the border rules (x/y land ON the
+// dividers, and a black edge would defeat the trim). Whitelist = digits + L/T/R.
+function ocrCode(png, x, y, w, h, accept = () => false) {
   const cell = join(SCRATCH, 'ocr-no.png')
   const outBase = join(SCRATCH, 'ocr-no')
-  magick([png, '-crop', `${w - 10}x${Math.min(h - 10, 120)}+${x + 5}+${y + 5}`, '+repage',
-    '-colorspace', 'Gray', '-resize', '400%', '-auto-threshold', 'OTSU',
-    '-negate', '-morphology', 'Close', 'Octagon:1', '-negate',
-    '-fuzz', '5%', '-trim', '+repage', '-bordercolor', 'white', '-border', '18', cell])
-  const r = spawnSync('tesseract', [cell, outBase, '--psm', '6',
-    '-c', 'tessedit_char_whitelist=0123456789LTR'], { encoding: 'utf8' })
-  if (r.status !== 0) return []
-  return readFileSync(`${outBase}.txt`, 'utf8').split(/\s+/).map(s => s.trim()).filter(Boolean)
+  const cropGeom = `${w - 10}x${Math.min(h - 10, 120)}+${x + 5}+${y + 5}`
+  const recipes = [
+    ['-colorspace', 'Gray', '-threshold', '60%',
+      '-fuzz', '5%', '-trim', '+repage', '-bordercolor', 'white', '-border', '14', '-resize', '300%'],
+    ['-colorspace', 'Gray', '-resize', '400%', '-auto-threshold', 'OTSU',
+      '-negate', '-morphology', 'Close', 'Octagon:1', '-negate',
+      '-fuzz', '5%', '-trim', '+repage', '-bordercolor', 'white', '-border', '18']
+  ]
+  const tokens = []
+  for (const recipe of recipes) {
+    magick([png, '-crop', cropGeom, '+repage', ...recipe, cell])
+    const r = spawnSync('tesseract', [cell, outBase, '--psm', '6',
+      '-c', 'tessedit_char_whitelist=0123456789LTR'], { encoding: 'utf8' })
+    if (r.status === 0) tokens.push(...readFileSync(`${outBase}.txt`, 'utf8').split(/\s+/).map(s => s.trim()).filter(Boolean))
+    if (tokens.some(accept)) break
+  }
+  return tokens
 }
 
 // Does a catalogue entry already carry a description? `desc` is either the
@@ -540,9 +555,10 @@ async function extractSheet(sheet, catalogue) {
     const grp = groups[gi]
     let prevN = 0
     for (const [rtop, rbot] of grp.cells) {
-      // Scan the cell's tokens top-to-bottom; the range gate keeps the SIGNID
-      // and drops the out-of-range "(TC …)" reference figure.
-      const tokens = ocrCode(png, grp.no[0], rtop, grp.no[1] - grp.no[0], rbot - rtop)
+      // OCR the cell (both binarisation recipes); the range gate keeps the
+      // SIGNID and drops the out-of-range "(TC …)" reference. parseCode is also
+      // passed in so ocrCode stops after the first recipe with an in-range code.
+      const tokens = ocrCode(png, grp.no[0], rtop, grp.no[1] - grp.no[0], rbot - rtop, parseCode)
       const c = tokens.map(parseCode).find(Boolean) || null
       if (!c) {
         if (tokens.length) droppedUnread++
