@@ -2,10 +2,51 @@
 import { signIconUrl, signDescription, categoryKeyOf } from '~/composables/useSignCatalogue'
 import { CATEGORY_FALLBACK_COLOR } from '~/composables/useSignCategories'
 
-const { selectedSign, selectedGroup, categories } = useTrafficLayers()
+const {
+  selectedSign, selectedGroup, categories,
+  filterMode, enabledSignIds, hiddenSignIds,
+  filterToSign, hideSign, unhideSign
+} = useTrafficLayers()
 const { t, locale } = useI18n()
+const { track } = useAnalytics()
 
 const sign = computed(() => selectedSign.value)
+
+const str = (v: unknown) => (v == null || v === '' ? null : String(v))
+
+// Only `traffic-sign-abbreviation` features carry a SIGNID, so the filter
+// actions are gated on its presence — poles/text features can't resolve to a
+// sign type to filter by.
+const signId = computed(() => str(sign.value?.properties.SIGNID))
+
+// Already the sole sign-id pick — the "show only this" action is a no-op, so
+// the button reflects it rather than inviting a redundant click.
+const isOnlyThis = computed(() =>
+  filterMode.value === 'sign-id' && enabledSignIds.size === 1 && !!signId.value && enabledSignIds.has(signId.value)
+)
+const isHidden = computed(() => !!signId.value && hiddenSignIds.has(signId.value))
+
+function onFilterToThis() {
+  if (!signId.value) return
+  filterToSign(signId.value)
+  track('filter_signid_only', { sign_id: signId.value })
+}
+
+// Hiding closes the popup: the hidden sign vanishes from the map, so leaving it
+// selected would strand its highlight overlay at an empty spot. Un-hiding keeps
+// the popup open (the sign is back, so its highlight is valid again).
+function onToggleHide() {
+  const id = signId.value
+  if (!id) return
+  if (isHidden.value) {
+    unhideSign(id)
+    track('filter_signid_unhide', { sign_id: id })
+  } else {
+    hideSign(id)
+    track('filter_signid_hide', { sign_id: id })
+    selectedSign.value = null
+  }
+}
 
 const category = computed(() => {
   const props = sign.value?.properties
@@ -25,8 +66,6 @@ const signImage = computed(() => signIconUrl(sign.value?.properties.SIGNID))
 const description = computed(() =>
   signDescription(sign.value?.properties.SIGNID, locale.value)
 )
-
-const str = (v: unknown) => (v == null || v === '' ? null : String(v))
 
 // Members of the picked sign's co-located assembly. ≥2 ⇒ it shares a signpost,
 // so the popup lists the whole post as a navigable thumbnail strip.
@@ -142,6 +181,32 @@ const signLabel = computed(() => description.value ?? title.value)
     >
       {{ description }}
     </p>
+
+    <div
+      v-if="signId"
+      class="flex gap-2"
+    >
+      <UButton
+        size="xs"
+        :variant="isOnlyThis ? 'soft' : 'solid'"
+        color="primary"
+        block
+        class="flex-1"
+        icon="i-lucide-filter"
+        :label="t('signPopup.filterOnly')"
+        @click="onFilterToThis"
+      />
+      <UButton
+        size="xs"
+        variant="outline"
+        :color="isHidden ? 'primary' : 'neutral'"
+        block
+        class="flex-1"
+        :icon="isHidden ? 'i-lucide-eye' : 'i-lucide-eye-off'"
+        :label="isHidden ? t('signPopup.showAgain') : t('signPopup.hide')"
+        @click="onToggleHide"
+      />
+    </div>
 
     <div v-if="isGrouped">
       <p class="text-xs text-muted">

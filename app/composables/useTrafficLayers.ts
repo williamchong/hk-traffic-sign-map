@@ -26,6 +26,16 @@ const enabled = reactive<Record<string, boolean>>(
 // Explicit allowlist used in 'sign-id' mode.
 const enabledSignIds = reactive(new Set<string>())
 
+// Explicit *denylist* — SIGNIDs the user has chosen to hide. Unlike the
+// allowlist it's not mode-specific: it subtracts from whatever the active mode
+// shows (category OR sign-id), applied LAST in `mapFilter`. This is the only
+// way to truly hide a sign type while its co-located signpost-mates stay
+// visible — an allowlist can't (group-expansion would re-admit it on any
+// shared post), and "select all then unselect one" both floods the picked-list
+// chips and leaks back through that same expansion. Subtracting last sidesteps
+// both. Driven from the sign detail panel (see `hideSign`/`unhideSign`).
+const hiddenSignIds = reactive(new Set<string>())
+
 export interface SelectedSign {
   properties: Record<string, unknown>
   lngLat: LngLat
@@ -75,21 +85,69 @@ function loadGroupIndex() {
 // which matters since a common sign can sit on thousands of posts) so each
 // matched sign shows as its whole signpost, not a lone plate.
 const mapFilter = computed<FilterSpecification>(() => {
+  // Negative clause, applied last to whatever the mode selects. Null when
+  // nothing is hidden so the common case stays the same flat expression.
+  const hidden = Array.from(hiddenSignIds)
+  const notHidden = hidden.length
+    ? ['!', ['in', ['get', 'SIGNID'], ['literal', hidden]]]
+    : null
+  const subtract = (base: unknown) =>
+    (notHidden ? ['all', base, notHidden] : base) as unknown as FilterSpecification
+
   if (filterMode.value === 'sign-id') {
     const ids = Array.from(enabledSignIds)
-    const base = ['in', ['get', 'SIGNID'], ['literal', ids]]
+    if (!ids.length) {
+      // No positive picks: the denylist (if any) IS the whole filter — "show
+      // everything except these" (the exclude-only state the detail panel
+      // produces); with no denylist either, an empty allowlist shows nothing.
+      return (notHidden ?? ['in', ['get', 'SIGNID'], ['literal', []]]) as unknown as FilterSpecification
+    }
+    const allow = ['in', ['get', 'SIGNID'], ['literal', ids]]
     const idx = signGroupIndex.value
-    if (idx && ids.length) {
+    if (idx) {
       const groups = [...new Set(ids.flatMap(id => idx[id] ?? []))]
       if (groups.length) {
-        return ['any', base, ['match', ['get', 'GG_NAME'], groups, true, false]] as unknown as FilterSpecification
+        return subtract(['any', allow, ['match', ['get', 'GG_NAME'], groups, true, false]])
       }
     }
-    return base as unknown as FilterSpecification
+    return subtract(allow)
   }
   const visible = SIGN_CATEGORIES.filter(c => enabled[c.key]).map(c => c.key)
-  return ['in', categoryKeyExpr, ['literal', visible]] as unknown as FilterSpecification
+  return subtract(['in', categoryKeyExpr, ['literal', visible]])
 })
+
+// Filter actions driven from the sign detail panel. Centralised here (not in
+// the popup) so the allowlist/denylist invariants live with the state.
+
+// Add a code to the allowlist. Picking a sign always un-hides it — otherwise
+// the denylist would keep subtracting a code the user just asked to see.
+function selectSign(id: string) {
+  enabledSignIds.add(id)
+  hiddenSignIds.delete(id)
+}
+
+// "Show only this sign": replace the allowlist with this one code and switch to
+// sign-id mode. Switching modes is wanted here — sign-id mode is exactly the
+// "show only these abbreviation signs" view.
+function filterToSign(id: string) {
+  enabledSignIds.clear()
+  selectSign(id)
+  filterMode.value = 'sign-id'
+}
+
+// "Hide this sign": add to the denylist and drop it from the allowlist if it
+// was a pick. Deliberately does NOT switch modes — the subtraction works in
+// place, so a hide from the category view hides it there (whereas flipping to
+// sign-id mode would drop every non-abbreviation sign, since that mode reads
+// the abbreviation-only archive).
+function hideSign(id: string) {
+  hiddenSignIds.add(id)
+  enabledSignIds.delete(id)
+}
+
+function unhideSign(id: string) {
+  hiddenSignIds.delete(id)
+}
 
 export function useTrafficLayers() {
   return {
@@ -101,7 +159,12 @@ export function useTrafficLayers() {
     mapFilter,
     filterMode,
     enabledSignIds,
+    hiddenSignIds,
     loadGroupIndex,
+    selectSign,
+    filterToSign,
+    hideSign,
+    unhideSign,
     toggleAll(value: boolean) {
       for (const c of SIGN_CATEGORIES) enabled[c.key] = value
     }

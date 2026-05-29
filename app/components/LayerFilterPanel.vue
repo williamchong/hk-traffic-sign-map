@@ -161,6 +161,7 @@ function onTabChange(value: string | number) {
             />
             <span class="truncate">{{ $t(`categories.${c.key}`) }}</span>
           </label>
+          <HiddenSignsRow />
         </div>
 
         <!-- ClientOnly: useVirtualList touches `window` at setup time and the

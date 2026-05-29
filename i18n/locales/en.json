@@ -24,7 +24,10 @@
       "deselectMatches": "Deselect all matches",
       "clearAll": "Clear",
       "noMatches": "No signs match.",
-      "removeChip": "Remove {id}"
+      "removeChip": "Remove {id}",
+      "hiddenCount": "{n} hidden",
+      "showingAllExcept": "Showing all except {n} hidden",
+      "unhideChip": "Show {id}"
     }
   },
   "categories": {
@@ -49,7 +52,10 @@
     "unknown": "Unknown",
     "close": "Close",
     "cycleHint": "{index} of {total} here · click again to cycle",
-    "groupHeading": "On this signpost ({count} signs)"
+    "groupHeading": "On this signpost ({count} signs)",
+    "filterOnly": "Show only this sign",
+    "hide": "Hide this sign",
+    "showAgain": "Show this sign"
   },
   "theme": {
     "light": "Light",

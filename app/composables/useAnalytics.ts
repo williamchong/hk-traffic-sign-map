@@ -17,6 +17,9 @@ interface AnalyticsEvents {
   filter_signid_toggle: { sign_id: string, enabled: boolean }
   filter_signid_bulk: { count: number, enabled: boolean }
   filter_signid_clear: undefined
+  filter_signid_only: { sign_id: string }
+  filter_signid_hide: { sign_id: string }
+  filter_signid_unhide: { sign_id: string }
   locale_switch: { from: string, to: string }
   theme_change: { mode: ThemeMode }
   info_open: undefined

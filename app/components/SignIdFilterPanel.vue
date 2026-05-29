@@ -7,7 +7,7 @@ import {
 import { categoryColor } from '~/composables/useSignCategories'
 import { SIGN_SEARCH_TOTAL, useSignSearch } from '~/composables/useSignSearch'
 
-const { enabledSignIds } = useTrafficLayers()
+const { enabledSignIds, selectSign } = useTrafficLayers()
 const { t, locale } = useI18n()
 const { track } = useAnalytics()
 
@@ -37,7 +37,7 @@ const allMatchesSelected = computed(() =>
 )
 
 function onToggleSign(id: string, value: boolean) {
-  if (value) enabledSignIds.add(id)
+  if (value) selectSign(id)
   else enabledSignIds.delete(id)
   track('filter_signid_toggle', { sign_id: id, enabled: value })
 }
@@ -160,6 +160,8 @@ const selectedList = computed(() =>
         </button>
       </span>
     </div>
+
+    <HiddenSignsRow />
 
     <div
       v-bind="containerProps"

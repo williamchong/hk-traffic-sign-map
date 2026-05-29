@@ -24,7 +24,10 @@
       "deselectMatches": "取消選取結果",
       "clearAll": "清除",
       "noMatches": "沒有符合的標誌。",
-      "removeChip": "移除 {id}"
+      "removeChip": "移除 {id}",
+      "hiddenCount": "已隱藏 {n} 個",
+      "showingAllExcept": "顯示除 {n} 個隱藏外的全部",
+      "unhideChip": "顯示 {id}"
     }
   },
   "categories": {
@@ -49,7 +52,10 @@
     "unknown": "未知",
     "close": "關閉",
     "cycleHint": "此處第 {index} / {total} 個 · 再按可切換",
-    "groupHeading": "同一標誌柱（共 {count} 個標誌）"
+    "groupHeading": "同一標誌柱（共 {count} 個標誌）",
+    "filterOnly": "只顯示此標誌",
+    "hide": "隱藏此標誌",
+    "showAgain": "顯示此標誌"
   },
   "theme": {
     "light": "淺色",
