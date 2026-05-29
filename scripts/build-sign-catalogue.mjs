@@ -1,35 +1,49 @@
-// Build the sign catalogue from TD's Index Plan PDFs.
+// Build the sign catalogue from TD's Index Plan PDFs — PDF → SVG, follow the grid.
 //
 // The Index Plan PDFs are vector (a MicroStation DGN export): the table ruling
-// lines, pictograms and digits are all PATH geometry, not a scanned raster
-// (mutool trace shows ~55k linetos and zero text ops per page). So we read the
-// grid straight from that geometry instead of re-deriving it from rendered
-// pixels — no ink-profile thresholds, no hardcoded column lattice, and no VLM
-// to bind rows. Per page:
+// lines, the printed "No." digits and most pictograms are PATH geometry, with a
+// handful of pictograms embedded as raster images. There is no text layer, so
+// the digits still have to be READ (OCR), but everything else is recoverable
+// from the vector structure. So we DON'T rasterise the whole page and hunt for
+// signs in pixels; instead, per page:
 //
-//   1. VECTOR GRID. `mutool draw -F trace` flattens every path to device
-//      (point) coordinates. Full-table-height vertical rules are the column
-//      dividers (pictogram-internal strokes are short and filtered by height);
-//      we MEASURE the [No. | Symbol | Description] lattice (origin / pitch /
-//      sub-cell widths) from them per sheet, then synthesise any group whose
-//      internal dividers were interrupted (e.g. the bottom-right title block).
-//      Rows are found PER GROUP from the horizontal rules spanning that group's
-//      width — so a per-group rowspan (one number labelling a tall stacked cell
-//      on informatory sheets) reads as ONE row, not mis-split by a neighbour
-//      group's denser ruling. This is exactly what the old page-wide shared
-//      R×C grid could not represent — it dropped the rowspan sheets (601-700,
-//      2601-2717, 3601-3705, 3811-3936).
+//   1. RENDER FROM SVG. `mutool draw -F svg` emits the page as an SVG whose
+//      viewBox is in PDF points; `rsvg-convert` renders it crisply (vector signs
+//      AND the embedded-image ones). One high-resolution page raster per sheet,
+//      in the SAME point coordinate system as the grid below.
 //
-//   2. OCR BIND. The printed "No." code is read per cell with tesseract (clean
-//      isolated digits — the historical full-extraction tesseract failure
-//      doesn't apply to an isolated number cell). The symbol is then cropped
-//      from the SAME [top,bot] band, so code and pictogram cannot desync.
+//   2. VECTOR GRID (point-space). `mutool draw -F trace` flattens every path to
+//      device coordinates; we keep them in POINTS (no DPI scaling) so geometry
+//      and the SVG share one coordinate system. Full-table-height vertical rules
+//      are the column dividers; the table repeats [No. | Symbol | Description]
+//      per column-group. Rows are found PER GROUP from the horizontal rules
+//      spanning that group's width, so a per-group rowspan (one number labelling
+//      a tall stacked cell on the informatory sheets) reads as ONE row.
 //
-// Two safety nets remain, because they're cheaper than trust:
+//   3. SYMBOL CELL = ACTUAL DIVIDERS. Each sign's crop box is bounded by that
+//      group's OWN full-height dividers: symbol-left = the rule after the No.
+//      cell, symbol-right = that group's next full-height rule (the Symbol|
+//      Description divider). This is the key correctness property — a single
+//      median symbol width applied to every group used to bleed past the real
+//      divider into the description column on the informatory/rowspan sheets, so
+//      the trim couldn't tighten and the sign came out a wide sliver. A measured
+//      median width is used ONLY to synthesise a group whose dividers were
+//      interrupted (e.g. the bottom-right title block).
 //
-//   - GML SIGNID FILTER. A code is only KEPT if it appears at least once in
-//     data/raw/DTAD_TS_ABV_PT.gml (the codes actually on HK road signs). Drops
-//     OCR misreads of non-existent numbers loss-lessly (the app never refs them).
+//   4. OCR BIND. The printed "No." code is read per cell with tesseract from the
+//      crisp rsvg render. The symbol is cropped from the SAME row band, so code
+//      and pictogram cannot desync.
+//
+// Misread defenses (the catalogue is the Index Plan's set of DEFINED sign types,
+// which is a superset of the installed inventory — so we deliberately do NOT
+// filter against the GML point inventory; that would drop real, defined-but-
+// not-currently-installed signs):
+//
+//   - RANGE GATE. A read is kept only if it parses to a number inside this
+//     sheet's printed range, so an out-of-range "(TC …)" reference or stray digit
+//     can't become a sign.
+//   - MONOTONICITY WARNING. The No. column is sorted within a group; an
+//     out-of-order read is logged so a digit misread is visible before review.
 //   - HUMAN GATE (--propose / --commit). Recovery stages crops + a verify.png
 //     (each candidate's SOURCE [printed No. | pictogram] strip, labelled with the
 //     OCR'd code) and writes NOTHING to the repo; a human confirms every
@@ -39,21 +53,21 @@
 //
 // Descriptions are OPT-IN (--desc): a single Sonnet full-page read per sheet
 // gives the bilingual {en, zh} text. Off by default — the runtime sources
-// descriptions from curated app/data/signDescriptions.json (it PREFERS that
-// over the extracted `desc`), and tesseract here has no Traditional-Chinese
-// model, so OCR'ing descriptions would lose the Chinese half. The default
-// image rebuild is therefore fully deterministic and needs NO API key.
+// descriptions from curated app/data/signDescriptions.json (it PREFERS that over
+// the extracted `desc`), and tesseract here has no Traditional-Chinese model.
+// The default image rebuild is fully deterministic and needs NO API key.
 //
 // Usage:
 //   node scripts/build-sign-catalogue.mjs                  # rebuild images, merge
-//   ... --wipe                                             # rebuild, wipe first
+//   ... --wipe --propose                                   # stage a CLEAN full rebuild
+//   ... --propose                                          # stage only NEW signs
 //   ... --sheet "601 - 700"                                # one sheet only
-//   ... --propose                                          # stage for human review
-//   ... --commit [--reject TS208,TS209]                    # promote approved crops
+//   ... --wipe --commit [--reject TS208,TS209]             # replace repo with staged
+//   ... --commit [--reject TS208,TS209]                    # merge staged into repo
 //   ANTHROPIC_API_KEY=sk-ant-... ... --desc                # also read descriptions
 //
-// Cost: $0 by default (deterministic). With --desc, ~$0.15 to read all 16
-// sheets (one Sonnet full-page read per sheet).
+// Tools: brew install librsvg mupdf-tools imagemagick tesseract
+// Cost: $0 by default (deterministic). With --desc, ~$0.15 to read all 16 sheets.
 
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
@@ -63,10 +77,23 @@ import { join } from 'node:path'
 const INDEX_PLAN_DIR = 'data/tadrawings_dataspec/Index Plan'
 const SIGNS_DIR = 'public/signs'
 const CATALOGUE_JSON = 'app/data/signCatalogue.json'
-const GML = 'data/raw/DTAD_TS_ABV_PT.gml'
-const DPI = 400
-const PT2PX = DPI / 72 // mutool trace is in PDF points (72dpi); pdftoppm renders at DPI
 const MODEL = 'claude-sonnet-4-6'
+// Page raster scale: SVG user units are PDF points, so rendered px = point × this.
+// 8 ≈ 576 DPI — crisp pictograms and legible No.-cell digits for OCR.
+const RENDER_SCALE = 8
+
+// Grid geometry thresholds, all in PDF POINTS (the trace/SVG coordinate system).
+const CB_MERGE = 4 // cluster verticals closer than this (doublet group separators)
+const NO_W = [12, 32] // No.-column cell width band
+const SYM_W = [24, 140] // Symbol-cell width band (validates the actual divider)
+const MIN_ROW = 5 // drop row bands thinner than this (header slivers / double rules)
+const STAGING = '/tmp/sign-recovery'
+// Working-tree scratch for tesseract's input crop. It must NOT live under /tmp:
+// some sandboxes let a spawned tesseract read only the working tree, so a /tmp
+// input silently fails to open (magick is unaffected — it reads /tmp fine).
+// data/raw/ is gitignored and always present (the GML lives there).
+const SCRATCH = 'data/raw/.sign-cache'
+mkdirSync(SCRATCH, { recursive: true })
 
 const SHEETS = [
   { pdf: '(TS 101 - 205).pdf', prefix: 'TS', range: [101, 205], group: 'regulatory' },
@@ -93,14 +120,13 @@ function requireTool(cmd, hint) {
     process.exit(1)
   }
 }
-requireTool('pdftoppm', 'brew install poppler')
-requireTool('magick', 'brew install imagemagick')
-requireTool('mutool', 'brew install mupdf-tools') // vector grid extraction
+requireTool('mutool', 'brew install mupdf-tools') // PDF → SVG + path-geometry trace
+requireTool('rsvg-convert', 'brew install librsvg') // SVG → crisp page raster
+requireTool('magick', 'brew install imagemagick') // crops / normalisation / montages
 requireTool('tesseract', 'brew install tesseract') // No.-column digit OCR (the bind)
 // ImageMagick registers no fonts in this environment (`magick -list font` is
-// empty), so `montage` — used for the review / verify sheets — can't render
-// even an empty label without an explicit -font. Resolve one system TTF up
-// front and fail loud if none exists.
+// empty), so `montage` — used for the review / verify sheets — can't render even
+// an empty label without an explicit -font. Resolve one system TTF up front.
 const FONT = [
   '/System/Library/Fonts/Supplemental/Arial.ttf',
   '/Library/Fonts/Arial.ttf',
@@ -117,37 +143,28 @@ const sheetFilter = (() => {
   const i = process.argv.indexOf('--sheet')
   return i >= 0 ? process.argv[i + 1] : null
 })()
-// `--wipe` blows away the existing catalogue + public/signs/ before running,
-// for a clean full rebuild from source. Without it the script merges into
-// what's already there, which lets `--sheet` runs do surgical updates.
+// `--wipe` is a CLEAN rebuild: in --propose it stages every sign (no dup-skip
+// against the existing catalogue); in --commit it clears public/signs/ and resets
+// the catalogue to {} before promoting, so the rebuild REPLACES rather than merges.
 const wipe = process.argv.includes('--wipe')
 // Human-gated recovery. `--propose` stages crops + review/verify montages + a
-// manifest under STAGING and writes NOTHING to the repo; `--commit` promotes
-// the approved staged crops into public/signs/ + the catalogue; `--reject
-// TS208,TS209` drops specific codes on commit.
+// manifest under STAGING and writes NOTHING to the repo; `--commit` promotes the
+// approved staged crops; `--reject TS208,TS209` drops specific codes on commit.
 const propose = process.argv.includes('--propose')
 const doCommit = process.argv.includes('--commit')
 const rejectList = (() => {
   const i = process.argv.indexOf('--reject')
   return new Set(i >= 0 ? (process.argv[i + 1] ?? '').split(',').map(s => s.trim()).filter(Boolean) : [])
 })()
-// PASS 1 (descriptions) is additive-only by default — it fills a MISSING desc
-// but never clobbers an existing one. `--update-desc` opts back into overwrite.
+// PASS 1 (descriptions) is additive-only by default — it fills a MISSING desc but
+// never clobbers an existing one. `--update-desc` opts back into overwrite.
 const updateDesc = process.argv.includes('--update-desc')
-// `--desc` opts INTO the VLM bilingual-description read. Off by default (the
-// deterministic image rebuild needs no API key); see the file header.
+// `--desc` opts INTO the VLM bilingual-description read. Off by default.
 const descMode = process.argv.includes('--desc')
 if (descMode && !process.env.ANTHROPIC_API_KEY) {
   console.error('--desc needs ANTHROPIC_API_KEY for the description read')
   process.exit(1)
 }
-const STAGING = '/tmp/sign-recovery'
-// Working-tree scratch for tesseract's input crop. It must NOT live under /tmp:
-// some sandboxes let a spawned tesseract read only the working tree, so a
-// /tmp input silently fails to open (magick is unaffected — it reads /tmp
-// fine). data/raw/ is gitignored and always present (the GML lives there).
-const SCRATCH = 'data/raw/.sign-cache'
-mkdirSync(SCRATCH, { recursive: true })
 
 // ---- small process / image helpers ----
 function magick(args, { binary = false } = {}) {
@@ -165,13 +182,32 @@ const median = (a) => {
   const m = s.length >> 1
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
 }
+const PX = pt => Math.round(pt * RENDER_SCALE) // points → page-raster pixels
+async function clearSignsDir() {
+  for (const f of await readdir(SIGNS_DIR).catch(() => [])) {
+    if (f.endsWith('.png')) await rm(join(SIGNS_DIR, f))
+  }
+}
 
-// ---- vector grid: parse the page geometry from mutool's device-space trace ----
-// Returns horizontal + vertical axis-aligned segments in render pixels.
+// ---- render the page from its SVG (points → crisp raster) ----
+function renderPage(pdf, tag) {
+  const svg = `/tmp/sign-${tag}.svg`
+  const r = spawnSync('mutool', ['draw', '-F', 'svg', '-o', svg, pdf, '1'], { maxBuffer: 1 << 30 })
+  if (r.status !== 0) throw new Error(`mutool svg failed: ${r.stderr}`)
+  // -b white: rsvg renders a TRANSPARENT background by default, which every
+  // downstream grayscale op (OCR threshold, symbol trim/flood) composites as
+  // black — erasing the page. A white page is what the pipeline expects.
+  const png = `/tmp/sign-${tag}.png`
+  const c = spawnSync('rsvg-convert', ['-z', String(RENDER_SCALE), '-b', 'white', svg, '-o', png], { maxBuffer: 1 << 30 })
+  if (c.status !== 0) throw new Error(`rsvg-convert failed: ${c.stderr}`)
+  return png
+}
+
+// ---- vector grid: parse axis-aligned ruling segments from the trace, in POINTS ----
 function traceSegments(pdf) {
   const tracePath = '/tmp/sign-trace.xml'
   const r = spawnSync('mutool', ['draw', '-F', 'trace', '-o', tracePath, pdf, '1'], { maxBuffer: 1 << 30 })
-  if (r.status !== 0) throw new Error(`mutool draw failed: ${r.stderr}`)
+  if (r.status !== 0) throw new Error(`mutool trace failed: ${r.stderr}`)
   const xml = readFileSync(tracePath, 'utf8')
   const pathRe = /<(stroke_path|fill_path)\b([^>]*)>([\s\S]*?)<\/\1>/g
   const tfRe = /transform="([^"]+)"/
@@ -183,18 +219,13 @@ function traceSegments(pdf) {
     let cur = null
     for (const s of pm[3].matchAll(ptRe)) {
       const px = +s[2], py = +s[3]
-      const X = (m[0] * px + m[2] * py + m[4]) * PT2PX
-      const Y = (m[1] * px + m[3] * py + m[5]) * PT2PX
-      if (s[1] === 'moveto') {
-        cur = [X, Y]
-        continue
-      }
-      if (cur) {
+      const X = m[0] * px + m[2] * py + m[4] // POINTS
+      const Y = m[1] * px + m[3] * py + m[5]
+      if (s[1] === 'lineto' && cur) {
         const [x0, y0] = cur
-        // an axis-aligned segment is a horizontal or vertical ruling candidate;
-        // the length floors drop glyph hairlines but keep per-cell borders.
-        if (Math.abs(Y - y0) < 1.5 && Math.abs(X - x0) > 15) Hs.push({ y: (Y + y0) / 2, x0: Math.min(x0, X), x1: Math.max(x0, X) })
-        if (Math.abs(X - x0) < 1.5 && Math.abs(Y - y0) > 30) Vs.push({ x: (X + x0) / 2, y0: Math.min(y0, Y), y1: Math.max(y0, Y) })
+        // length floors (in points) drop glyph hairlines but keep cell borders.
+        if (Math.abs(Y - y0) < 0.3 && Math.abs(X - x0) > 3) Hs.push({ y: (Y + y0) / 2, x0: Math.min(x0, X), x1: Math.max(x0, X) })
+        if (Math.abs(X - x0) < 0.3 && Math.abs(Y - y0) > 5) Vs.push({ x: (X + x0) / 2, y0: Math.min(y0, Y), y1: Math.max(y0, Y) })
       }
       cur = [X, Y]
     }
@@ -202,66 +233,73 @@ function traceSegments(pdf) {
   return { Hs, Vs }
 }
 
-// Reconstruct the [No. | Symbol | Description] column lattice from the vertical
-// table rules. Full-body-height rules are the real dividers; we measure the
-// group origin / pitch / sub-cell widths from them (per sheet, exactly) and
-// synthesise any group whose dividers were interrupted, so no group is dropped.
+// Reconstruct the [No. | Symbol | Description] column-groups from the full-height
+// vertical rules. Each group's symbol cell is bounded by that group's OWN
+// dividers; a measured median width only synthesises a group whose dividers were
+// interrupted. Returns groups (points) + the table top/bot (points).
 function columnModel(Vs) {
   const len = v => v.y1 - v.y0
   const maxLen = Math.max(...Vs.map(len))
   const tall = Vs.filter(v => len(v) > maxLen * 0.95)
   const top = median(tall.map(v => v.y0)), bot = median(tall.map(v => v.y1))
-  // column boundaries = verticals spanning the full body, x-clustered so a
-  // doublet group-separator (two close lines) merges to one boundary.
-  const xs = Vs.filter(v => v.y0 <= top + 60 && v.y1 >= bot - 60).map(v => v.x).sort((a, b) => a - b)
+  // column boundaries = verticals that START at the table top (every group's
+  // dividers begin at the header row, even a ragged right-side group that ends
+  // early after a few rows), long enough to be a real divider not a glyph stroke.
+  // Requiring full height instead would drop the short ragged groups entirely.
+  const xs = Vs.filter(v => v.y0 <= top + 10 && v.y1 - v.y0 > 40).map(v => v.x).sort((a, b) => a - b)
   const cb = []
   for (const x of xs) {
-    if (cb.length && x - cb[cb.length - 1] < 22) cb[cb.length - 1] = (cb[cb.length - 1] + x) / 2
+    if (cb.length && x - cb[cb.length - 1] < CB_MERGE) cb[cb.length - 1] = (cb[cb.length - 1] + x) / 2
     else cb.push(x)
   }
   const tableL = cb[0], tableR = cb[cb.length - 1]
-  // No-cells = consecutive boundary pairs the width of the narrow No. column
-  // (≈100px), excluding the outer frame's left edge.
-  const noPairs = []
+  // No-cells = consecutive boundary pairs the width of the narrow No. column,
+  // excluding the outer frame's left edge. noIdx[k] is the cb index of a No-left.
+  const noIdx = []
   for (let i = 0; i < cb.length - 1; i++) {
     const w = cb[i + 1] - cb[i]
-    if (w >= 80 && w <= 140 && cb[i] > tableL + 5) noPairs.push([cb[i], cb[i + 1]])
+    if (w >= NO_W[0] && w <= NO_W[1] && cb[i] > tableL + 1) noIdx.push(i)
   }
-  const lefts = noPairs.map(p => p[0])
-  const pitch = lefts.length >= 2 ? median(lefts.slice(1).map((x, i) => x - lefts[i])) : 606
-  const noW = median(noPairs.map(p => p[1] - p[0])) || 102
-  // symbol width = the gap from a No-cell's right edge to the next boundary.
+  const lefts = noIdx.map(i => cb[i])
+  const pitch = lefts.length >= 2 ? median(lefts.slice(1).map((x, k) => x - lefts[k])) : 109
+  const noW = median(noIdx.map(i => cb[i + 1] - cb[i])) || 20
+  // measured symbol width = No-right → next boundary; used only for synthesis.
   const symWs = []
-  for (const [, nr] of noPairs) {
-    const next = cb.find(x => x > nr + 5)
-    if (next && next - nr > 150 && next - nr < 480) symWs.push(next - nr)
+  for (const i of noIdx) {
+    const nr = cb[i + 1], nxt = cb[i + 2]
+    if (nxt && nxt - nr > SYM_W[0] && nxt - nr < SYM_W[1]) symWs.push(nxt - nr)
   }
   const symW = median(symWs) || Math.round(pitch * 0.52)
-  const origin = lefts.length ? Math.min(...lefts) : tableL + 100
+  const origin = lefts.length ? Math.min(...lefts) : tableL + noW
   const groups = []
   for (let k = 0; k <= 24; k++) {
-    const gl = Math.round(origin + k * pitch)
+    const gl = origin + k * pitch
     if (gl + noW + symW > tableR + pitch * 0.3) break
-    // snap to a detected No-cell when one lands on this lattice point (exact
-    // crop); otherwise synthesise a centred window from the measured widths.
-    const hit = noPairs.find(p => Math.abs(p[0] - gl) <= pitch * 0.35)
-    const no = hit ? [Math.round(hit[0]), Math.round(hit[1])] : [gl, Math.round(gl + noW)]
-    groups.push({ no, sym: [no[1], Math.round(no[1] + symW)] })
+    // snap to a detected No-cell on this lattice point (exact, with the real
+    // Symbol|Description divider); otherwise synthesise from measured widths.
+    const hit = noIdx.find(i => Math.abs(cb[i] - gl) <= pitch * 0.35)
+    if (hit !== undefined) {
+      const nL = cb[hit], nR = cb[hit + 1], sR = cb[hit + 2]
+      const symRight = (sR && sR - nR > SYM_W[0] && sR - nR < SYM_W[1]) ? sR : nR + symW
+      groups.push({ no: [nL, nR], sym: [nR, symRight] })
+    } else {
+      groups.push({ no: [gl, gl + noW], sym: [gl + noW, gl + noW + symW] })
+    }
   }
   return { groups, top, bot }
 }
 
-// Per-group row rules: the horizontal table borders are drawn per-cell (short
-// collinear segments), so we cluster H-segments by y and keep a y only where
-// the segments collectively span most of the group's width. A rowspan is just
-// a larger gap between two consecutive kept rules — no uniform pitch assumed.
+// Per-group row rules: horizontal borders are drawn per-cell (short collinear
+// segments), so cluster H-segments by y and keep a y only where the segments
+// collectively span most of the group's width. A rowspan is just a larger gap
+// between two kept rules — no uniform pitch assumed.
 function groupRows(Hs, xL, xR) {
   const W = xR - xL
   const segs = Hs.filter(h => h.x1 > xL && h.x0 < xR).sort((a, b) => a.y - b.y)
   const clusters = []
   for (const h of segs) {
     const c = clusters[clusters.length - 1]
-    if (c && h.y - c.y < 8) c.segs.push(h)
+    if (c && h.y - c.y < 2) c.segs.push(h)
     else clusters.push({ y: h.y, segs: [h] })
   }
   const ys = []
@@ -273,36 +311,31 @@ function groupRows(Hs, xL, xR) {
       if (b > s) cov += b - s
       cur = Math.max(cur, b)
     }
-    if (cov > W * 0.6) ys.push(Math.round(c.y))
+    if (cov > W * 0.6) ys.push(c.y)
   }
   return ys
 }
 
-// OCR a No. cell with tesseract → every number token it contains. The cell
-// holds the bold sign code AND a smaller "(TC …)" reference line; both read as
-// numbers, but they sit in DIFFERENT ranges, so the caller's sheet-range gate
-// (parseCode) keeps the SIGNID and drops the TC figure — no need to isolate the
-// bold line geometrically.
-//
-// No single binarisation reads every sheet, so we try TWO in order:
-//   A. fixed threshold → trim → upscale. Reads clean/thick glyphs, and crucially
-//      reads the slashed CAD "7" (recipe B's stroke-thickening fuses its
-//      crossbar into an "f" → the digit is dropped → TS701-805 read blank).
-//   B. upscale → adaptive OTSU → morphological close. Rescues the sheets whose
-//      strokes are too thin for a fixed threshold (recipe A reads blank there).
-// `accept` (the caller's range gate) lets us STOP after recipe A once it yields
-// an in-range code — recipe B then only runs for the thin-stroke sheets A can't
-// read. An out-of-range "(TC …)" number fails `accept`, so it can't wrongly
-// short-circuit B. We always crop inset past the border rules (x/y land ON the
-// dividers, and a black edge would defeat the trim). Whitelist = digits + L/T/R.
+// OCR a No. cell (point box) → every number token it contains. The cell holds the
+// bold sign code AND a smaller "(TC …)" reference line; both read as numbers but
+// sit in DIFFERENT ranges, so the caller's range gate keeps the SIGNID and drops
+// the TC figure. Two binarisations are tried in order:
+//   A. fixed threshold → trim → upscale. Reads clean/thick glyphs.
+//   B. upscale → adaptive OTSU → close. Rescues sheets whose strokes are too thin
+//      for a fixed threshold.
+// `accept` (the range gate) lets us STOP after A once it yields an in-range code,
+// so B only runs where A reads blank. We inset the crop past the border rules (a
+// black edge would defeat the trim) and cap the height so a tall rowspan cell
+// doesn't pull in unrelated text. Whitelist = digits + L/T/R suffix letters.
 function ocrCode(png, x, y, w, h, accept = () => false) {
   const cell = join(SCRATCH, 'ocr-no.png')
   const outBase = join(SCRATCH, 'ocr-no')
-  const cropGeom = `${w - 10}x${Math.min(h - 10, 120)}+${x + 5}+${y + 5}`
+  const inset = Math.round(RENDER_SCALE * 0.8)
+  const cropGeom = `${w - 2 * inset}x${Math.min(h - 2 * inset, PX(18))}+${x + inset}+${y + inset}`
   const recipes = [
     ['-colorspace', 'Gray', '-threshold', '60%',
       '-fuzz', '5%', '-trim', '+repage', '-bordercolor', 'white', '-border', '14', '-resize', '300%'],
-    ['-colorspace', 'Gray', '-resize', '400%', '-auto-threshold', 'OTSU',
+    ['-colorspace', 'Gray', '-resize', '200%', '-auto-threshold', 'OTSU',
       '-negate', '-morphology', 'Close', 'Octagon:1', '-negate',
       '-fuzz', '5%', '-trim', '+repage', '-bordercolor', 'white', '-border', '18']
   ]
@@ -317,12 +350,14 @@ function ocrCode(png, x, y, w, h, accept = () => false) {
   return tokens
 }
 
-// Does a catalogue entry already carry a description? `desc` is either the
-// legacy bare-string form or the {en?, zh?} object — both are checked.
+// Does a catalogue entry already carry a description? `desc` is either the legacy
+// bare-string form or the {en?, zh?} object — both are checked.
+const descObj = raw => (typeof raw === 'string' ? { en: raw } : raw) || null
 function descExists(raw) {
-  const p = typeof raw === 'string' ? { en: raw } : raw
+  const p = descObj(raw)
   return !!(p && (p.en || p.zh))
 }
+// Visual-complexity band (controls the runtime reveal zoom + top-of-ramp size).
 function classifyTier(w, h) {
   const aspect = w / h
   if (aspect > 1.7 || aspect < 0.58) return 2
@@ -334,6 +369,11 @@ function opaqueFraction(file) {
   const r = spawnSync('magick', [file, '-alpha', 'extract', '-format', '%[fx:mean]', 'info:'], { encoding: 'utf8' })
   return parseFloat(r.stdout) || 0
 }
+// Trim to content, flood-fill the contiguous background to transparent, and size
+// to fit 320×120 as 32-bit PNG. The flood removes the cell's white margin around
+// an inscribed sign (circle/triangle); but for a filled rectangular plate the
+// flood would eat the whole sign, so if too little opaque area survives we fall
+// back to the plain trimmed (opaque) crop.
 function normalizeSign(symRaw, outPath) {
   const trimmed = '/tmp/sym-t.png'
   magick([symRaw, '-fuzz', '6%', '-trim', '+repage', trimmed])
@@ -348,16 +388,8 @@ function normalizeSign(symRaw, outPath) {
   magick([...base, '-resize', '320x120', '-background', 'none', '+repage', `PNG32:${outPath}`])
 }
 
-// ---- ground-truth SIGNID set (codes that appear on real road signs) ----
-const gmlText = readFileSync(GML, 'utf8')
-const onMap = new Set()
-for (const m of gmlText.matchAll(/<gen:value>(TS\d{2,4}[A-Z]?)<\/gen:value>/g)) onMap.add(m[1])
-console.log(`GML ground-truth: ${onMap.size} distinct SIGNIDs`)
-
 // ---- VLM call (descriptions only, opt-in via --desc) ----
 const sleep = ms => new Promise(r => setTimeout(r, ms))
-// The model usually returns bare JSON, but occasionally prepends prose. Salvage
-// by extracting the outermost array; return null only if even that won't parse.
 function parseJsonLoose(raw) {
   try {
     return JSON.parse(raw)
@@ -371,8 +403,6 @@ function parseJsonLoose(raw) {
     }
   }
 }
-// One JPEG + one text prompt → the model's raw text reply (markdown fences
-// stripped), with retry/backoff and fail-loud-on-truncation.
 async function callVLM(jpgBuf, prompt) {
   const body = {
     model: MODEL,
@@ -399,9 +429,6 @@ async function callVLM(jpgBuf, prompt) {
         body: JSON.stringify(body)
       })
     } catch (err) {
-      // A network-level failure (EPIPE / ECONNRESET / DNS / timeout) makes
-      // fetch REJECT rather than return a status. Retry on the same backoff
-      // schedule; give up only once that's exhausted.
       const reason = err?.cause?.code ?? err?.cause?.message ?? err?.message
       if (attempt >= backoffs.length) {
         console.error(`network error after ${attempt + 1} attempts: ${reason}`)
@@ -430,8 +457,6 @@ async function callVLM(jpgBuf, prompt) {
     await sleep(backoffs[attempt])
   }
 }
-// Full-page read — column-groups of {code, en, zh}. Used only for descriptions
-// when --desc is set; the row binding comes from the OCR grid, not these rows.
 async function readSheetVLM(jpgBuf) {
   const prompt = `This is one page from the Hong Kong Transport Department "Index Plan" — a reference of all traffic signs. The page is a table whose columns repeat the pattern [No. | Symbol | Description] for each column-group. Codes ("641", "642", …) appear in the small "No." column at the LEFT of each group. Codes go down each group, then continue at the top of the next group to the right.
 
@@ -457,26 +482,25 @@ Return ONLY a JSON array of arrays. Outer array = column-groups, left to right. 
 // ---- per-sheet extraction ----
 async function extractSheet(sheet, catalogue) {
   const pdf = join(INDEX_PLAN_DIR, sheet.pdf)
-  const base = `/tmp/sign-${sheet.prefix}-${sheet.range[0]}`
-  spawnSync('pdftoppm', ['-png', '-r', String(DPI), '-singlefile', pdf, base])
-  const png = `${base}.png`
+  const tag = `${sheet.prefix}-${sheet.range[0]}`
+  const png = renderPage(pdf, tag)
 
-  // Vector grid: columns + per-group rows (deterministic, rowspan-aware).
+  // Vector grid: columns (actual dividers) + per-group rows, all in points.
   const { Hs, Vs } = traceSegments(pdf)
   const { groups, top, bot } = columnModel(Vs)
   for (const g of groups) {
-    const ys = groupRows(Hs, g.no[0], g.sym[1]).filter(y => y >= top - 4 && y <= bot + 4)
+    const ys = groupRows(Hs, g.no[0], g.sym[1]).filter(y => y >= top - 1 && y <= bot + 1)
     g.cells = []
     for (let i = 0; i < ys.length - 1; i++) {
-      if (ys[i + 1] - ys[i] < 30) continue // header sliver / double rule
+      if (ys[i + 1] - ys[i] < MIN_ROW) continue
       g.cells.push([ys[i], ys[i + 1]])
     }
   }
   const totalCells = groups.reduce((n, g) => n + g.cells.length, 0)
   console.log(`[${sheet.pdf}] grid: ${groups.length} groups, rows/group=[${groups.map(g => g.cells.length).join(',')}], ${totalCells} cells`)
 
-  // Normalise a raw No.-column string to {code, base}, gated by this sheet's
-  // numeric range. Returns null for blanks / out-of-range / malformed reads.
+  // Normalise a raw No.-column string to {code}, gated by this sheet's numeric
+  // range. Returns null for blanks / out-of-range / malformed reads.
   function parseCode(raw0) {
     const raw = String(raw0 ?? '').toUpperCase().replace(/\s+/g, '')
     if (!raw || raw === 'NONE') return null
@@ -484,10 +508,8 @@ async function extractSheet(sheet, catalogue) {
     if (!m) return null
     const n = +m[1]
     if (n < sheet.range[0] || n > sheet.range[1]) return null
-    return { code: `${sheet.prefix}${m[1]}${m[2]}`, base: `${sheet.prefix}${m[1]}` }
+    return { code: `${sheet.prefix}${m[1]}${m[2]}` }
   }
-  // Parse a full-page (--desc) row into {code, base, desc}. `desc` is the
-  // {en?, zh?} shape that matches signDescriptions.json.
   function parseCell(item) {
     if (item == null || typeof item !== 'object') return null
     const c = parseCode(item.code)
@@ -507,7 +529,7 @@ async function extractSheet(sheet, catalogue) {
   // Optional bilingual descriptions (--desc): one Sonnet full-page read.
   const descByCode = new Map()
   if (descMode) {
-    const jpg = `${base}.jpg`
+    const jpg = `/tmp/sign-${tag}.jpg`
     magick([png, '-resize', '1600x', '-quality', '92', jpg])
     const pageRes = await readSheetVLM(readFileSync(jpg))
     if (!pageRes) {
@@ -523,19 +545,17 @@ async function extractSheet(sheet, catalogue) {
     }
   }
 
-  // `--propose` stages everything under /tmp; otherwise write into public/signs/.
   const sheetTag = `${sheet.prefix}${sheet.range[0]}-${sheet.range[1]}`
   const outDir = propose ? join(STAGING, sheetTag) : SIGNS_DIR
   if (propose) await mkdir(outDir, { recursive: true })
 
-  // PASS 1 — additive descriptions for codes already in the catalogue. Only
-  // populated when --desc ran above; otherwise this loop is a no-op.
+  // PASS 1 — additive descriptions for codes already in the catalogue.
   let descAdded = 0, descUpdated = 0
   const descAdds = []
   for (const [code, desc] of descByCode) {
     if (!catalogue[code]) continue
     const prevRaw = catalogue[code].desc
-    const prev = typeof prevRaw === 'string' ? { en: prevRaw } : prevRaw
+    const prev = descObj(prevRaw)
     const hasPrev = descExists(prevRaw)
     if (hasPrev && !updateDesc) continue
     if (descEqual(prev, desc)) continue
@@ -544,43 +564,36 @@ async function extractSheet(sheet, catalogue) {
     else catalogue[code].desc = desc
   }
 
-  // PASS 2 — pictograms. For each grid cell: OCR the No. cell → code, GML-
-  // filter, then crop the symbol from the SAME [top,bot] band so code and
-  // pictogram cannot desync. An empty symbol cell ("SYMBOL NOT AVAILABLE")
-  // trims to nothing and degrades to a dot rather than shipping a blank crop.
-  let added = 0, droppedHallucination = 0, droppedSmall = 0, droppedDup = 0, droppedUnread = 0
+  // PASS 2 — pictograms. For each grid cell: OCR the No. cell → code (range-gated),
+  // then crop the symbol from the SAME row band so code and pictogram can't
+  // desync. With --wipe we re-extract every code (clean rebuild); otherwise a code
+  // already in the catalogue is skipped as a dup.
+  let added = 0, droppedSmall = 0, droppedDup = 0, droppedUnread = 0
   const adds = []
   const seen = new Set()
+  const ins = 1.5 // point inset past the cell ruling lines
   for (let gi = 0; gi < groups.length; gi++) {
     const grp = groups[gi]
     let prevN = 0
     for (const [rtop, rbot] of grp.cells) {
-      // OCR the cell (both binarisation recipes); the range gate keeps the
-      // SIGNID and drops the out-of-range "(TC …)" reference. parseCode is also
-      // passed in so ocrCode stops after the first recipe with an in-range code.
-      const tokens = ocrCode(png, grp.no[0], rtop, grp.no[1] - grp.no[0], rbot - rtop, parseCode)
+      const tokens = ocrCode(png, PX(grp.no[0]), PX(rtop), PX(grp.no[1] - grp.no[0]), PX(rbot - rtop), parseCode)
       const c = tokens.map(parseCode).find(Boolean) || null
       if (!c) {
         if (tokens.length) droppedUnread++
         continue
       }
-      // The No. column is a sorted sequence within a group — flag (don't drop)
-      // an OCR read that breaks it, so a digit misread is visible in the log
-      // even before the human gate's verify.png.
+      // The No. column is sorted within a group — flag (don't drop) an OCR read
+      // that breaks it, so a digit misread is visible in the log.
       const n = parseInt(c.code.replace(/\D/g, ''), 10)
       if (prevN && n < prevN) console.warn(`[${sheet.pdf}] ⚠ group ${gi}: OCR ${c.code} < previous ${prevN} (out of order) — check verify.png`)
       prevN = n
-      if (catalogue[c.code] || seen.has(c.code)) {
+      if (seen.has(c.code) || (!wipe && catalogue[c.code])) {
         droppedDup++
         continue
       }
-      if (!onMap.has(c.code) && !onMap.has(c.base)) {
-        droppedHallucination++
-        continue
-      }
-      const [bx0, bx1] = grp.sym
+      const [sx0, sx1] = grp.sym
       const symRaw = '/tmp/sym.png'
-      magick([png, '-crop', `${bx1 - bx0 + 12}x${rbot - rtop - 8}+${bx0 - 6}+${rtop + 4}`,
+      magick([png, '-crop', `${PX(sx1 - sx0 - 2 * ins)}x${PX(rbot - rtop - 2 * ins)}+${PX(sx0 + ins)}+${PX(rtop + ins)}`,
         '+repage', '-fuzz', '8%', '-trim', '+repage', symRaw])
       const [sw, sh] = identify(symRaw)
       if (!sw || sw < 24 || sh < 24) {
@@ -592,20 +605,18 @@ async function extractSheet(sheet, catalogue) {
       const desc = descByCode.get(c.code)
       if (desc && (desc.en || desc.zh)) entry.desc = desc
       seen.add(c.code)
-      // src = the source row box from the No.-cell left edge through the symbol
-      // cell right edge, for a ground-truth [printed number | pictogram] crop at
-      // review time (the only view that catches an OCR digit misread).
-      if (propose) adds.push({ code: c.code, ...entry, src: { x: grp.no[0], y: rtop, w: bx1 - grp.no[0], h: rbot - rtop } })
+      // src = the source row box (No.-cell left → symbol-cell right) for a
+      // ground-truth [printed number | pictogram] crop at review time.
+      if (propose) adds.push({ code: c.code, ...entry, src: { x: grp.no[0], y: rtop, w: sx1 - grp.no[0], h: rbot - rtop } })
       else catalogue[c.code] = entry
       added++
     }
   }
-  console.log(`[${sheet.pdf}] added=${added} desc-added=${descAdded} desc-updated=${descUpdated} hallucination=${droppedHallucination} empty=${droppedSmall} dup=${droppedDup} unreadable=${droppedUnread}`)
+  console.log(`[${sheet.pdf}] added=${added} desc-added=${descAdded} desc-updated=${descUpdated} empty=${droppedSmall} dup=${droppedDup} unreadable=${droppedUnread}`)
 
   // In propose mode write nothing to the repo — stage a manifest + a review
-  // montage (the normalized asset, labelled) + a verify montage (each
-  // candidate's SOURCE [printed No. | pictogram] strip, labelled with the OCR'd
-  // code) so a human can confirm every code↔crop before --commit.
+  // montage (the normalized asset) + a verify montage (each candidate's SOURCE
+  // [printed No. | pictogram] strip) so a human can confirm every code↔crop.
   if (propose) {
     await writeFile(join(outDir, 'manifest.json'), JSON.stringify({ sheet: sheet.pdf, group: sheet.group, adds, descAdds }, null, 2) + '\n')
     if (adds.length) {
@@ -616,7 +627,7 @@ async function extractSheet(sheet, catalogue) {
       for (const a of adds) {
         const { x, y, w, h } = a.src
         const vf = `/tmp/vsrc-${a.code}.png`
-        magick([png, '-crop', `${w + 8}x${h - 4}+${Math.max(0, x - 4)}+${y + 2}`, '+repage', '-resize', '440x180', vf])
+        magick([png, '-crop', `${PX(w) + 8}x${PX(h) - 4}+${Math.max(0, PX(x) - 4)}+${PX(y) + 2}`, '+repage', '-resize', '440x180', vf])
         vArgs.push('-label', a.code, vf)
       }
       vArgs.push('-tile', '3x', '-geometry', '460x200+8+8', '-background', 'white', '-fill', 'black', '-pointsize', '26', join(outDir, 'verify.png'))
@@ -634,7 +645,13 @@ if (doCommit) {
     process.exit(1)
   }
   await mkdir(SIGNS_DIR, { recursive: true })
-  const catalogue = JSON.parse(await readFile(CATALOGUE_JSON, 'utf8'))
+  // --wipe commit REPLACES: clear public/signs/ + start the catalogue from {}.
+  let catalogue = JSON.parse(await readFile(CATALOGUE_JSON, 'utf8'))
+  if (wipe) {
+    await clearSignsDir()
+    catalogue = {}
+    console.log('--wipe commit: cleared public/signs/ and reset the catalogue')
+  }
   let committed = 0, rejected = 0, descApplied = 0
   for (const dir of (await readdir(STAGING).catch(() => []))) {
     const mfPath = join(STAGING, dir, 'manifest.json')
@@ -666,12 +683,11 @@ if (doCommit) {
 
 // ---- main ----
 await mkdir(SIGNS_DIR, { recursive: true })
-// --propose never mutates the repo, so even with --wipe we keep the real
-// catalogue + public/signs/ intact (we only read them for dup/desc checks).
+// --propose never mutates the repo, so even with --wipe we keep the real catalogue
+// + public/signs/ intact here (we only read them for the dup/desc checks; --wipe
+// in propose just means "stage every sign", handled in extractSheet).
 if (wipe && !propose) {
-  for (const f of await readdir(SIGNS_DIR).catch(() => [])) {
-    if (f.endsWith('.png')) await rm(join(SIGNS_DIR, f))
-  }
+  await clearSignsDir()
   console.log('--wipe: cleared public/signs/ and starting from an empty catalogue')
 }
 const catalogue = (wipe && !propose) || !existsSync(CATALOGUE_JSON)
@@ -689,11 +705,13 @@ if (sheetFilter && !sheetsToRun.length) {
 }
 let totalAdded = 0
 for (const sheet of sheetsToRun) {
-  const n = await extractSheet(sheet, catalogue)
-  totalAdded += n
+  totalAdded += await extractSheet(sheet, catalogue)
 }
 if (propose) {
-  console.log(`\nproposed ${totalAdded} new pictogram(s) across ${sheetsToRun.length} sheet(s). Review each <sheet>/verify.png under ${STAGING}, then: node scripts/build-sign-catalogue.mjs --commit [--reject TS###,TS###]`)
+  const commitHint = wipe
+    ? 'node scripts/build-sign-catalogue.mjs --wipe --commit [--reject TS###,TS###]'
+    : 'node scripts/build-sign-catalogue.mjs --commit [--reject TS###,TS###]'
+  console.log(`\nproposed ${totalAdded} pictogram(s) across ${sheetsToRun.length} sheet(s). Review each <sheet>/verify.png under ${STAGING}, then: ${commitHint}`)
 } else {
   await writeFile(CATALOGUE_JSON, JSON.stringify(catalogue, null, 2) + '\n')
   console.log(`\nfinal catalogue: ${Object.keys(catalogue).length} codes (+${totalAdded})`)
