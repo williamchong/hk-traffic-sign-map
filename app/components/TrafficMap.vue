@@ -2,7 +2,7 @@
 import type { Map as MaplibreMap, ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSignCategories'
-import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf } from '~/composables/useSignCatalogue'
+import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf, plateSizeFactorExpr } from '~/composables/useSignCatalogue'
 import type { FilterMode } from '~/composables/useTrafficLayers'
 import tilesVersion from '~/data/tilesVersion.json'
 
@@ -111,11 +111,17 @@ const tierClause = TIER_LOD.map(
 const tierFilter = (t: number, base: ExpressionSpecification) =>
   expr(['all', base, tierClause[t], ['!', ['has', 'STACK_INDEX']]])
 // Per-tier on-screen size ramp for lone signs: the shared SIGN_FIRST_SIZE at
-// the tier's reveal zoom up to its `size` at MAX_ZOOM.
+// the tier's reveal zoom up to its `size` at MAX_ZOOM, then scaled down for
+// solid rectangular plates (plateSizeFactorExpr is 1 for circles/triangles) so a
+// full-bleed square like the blue "P" doesn't read heavier than a same-tier
+// roundel. Stacked posts keep their own width-normalized sizing (sign-stack).
+// The plate shrink rides in the interpolate's STOP OUTPUTS (data-driven `match`),
+// not as an outer `*` — MapLibre only allows a `zoom` input directly under a
+// top-level interpolate, so the factor has to fold into each stop value.
 const tierSizeRamp = (lod: typeof TIER_LOD[number]) => expr([
   'interpolate', ['linear'], ['zoom'],
-  lod.minzoom, SIGN_FIRST_SIZE,
-  MAX_ZOOM, lod.size
+  lod.minzoom, ['*', SIGN_FIRST_SIZE, plateSizeFactorExpr],
+  MAX_ZOOM, ['*', lod.size, plateSizeFactorExpr]
 ])
 
 // A co-located signpost is ONE sizing unit: every member is drawn by this single

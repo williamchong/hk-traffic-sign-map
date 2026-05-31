@@ -1,5 +1,6 @@
 import catalogueJson from '~/data/signCatalogue.json'
 import descOverridesJson from '~/data/signDescriptions.json'
+import plateCodesJson from '~/data/signShapes.json'
 
 // Real sign pictograms extracted from the TD Index Plan, keyed by SIGNID
 // (e.g. "TS101"). `tier` is a visual-complexity band that drives level-of-
@@ -122,6 +123,21 @@ export const categoryKeyExpr: unknown = [
   ['==', ['get', 'category'], 'traffic-sign-abbreviation'], 'other-traffic',
   'none'
 ]
+
+// Codes whose pictogram is a solid rectangular plate (vs a circular roundel or a
+// triangle) — classified by bounding-box coverage in scripts/compute-sign-shapes.mjs,
+// which explains the geometry. Plates read heavier than circles at equal on-screen
+// height, so we shrink them to rebalance visible area (everything else stays at 1).
+const plateCodes = plateCodesJson as readonly string[]
+// Size multiplier for a plate — unrelated to the script's PLATE_COVERAGE
+// classification threshold despite both happening to be 0.85.
+export const PLATE_SHRINK = 0.85
+// MapLibre factor (multiplies a tier's icon-size ramp): PLATE_SHRINK for a plate,
+// 1 for anything else — including unlisted/newly-added signs, which thus keep
+// full size. `match` over an array of labels is O(1) for the thousands of points.
+export const plateSizeFactorExpr: unknown = plateCodes.length
+  ? ['match', ['get', 'SIGNID'], plateCodes, PLATE_SHRINK, 1]
+  : 1
 
 // Same classification in JS, for the details panel.
 export function categoryKeyOf(props: Record<string, unknown>): CategoryKey {
