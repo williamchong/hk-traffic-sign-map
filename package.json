@@ -29,7 +29,7 @@
     "@vueuse/core": "^14.3.0",
     "@vueuse/nuxt": "^14.3.0",
     "maplibre-gl": "^5.24.0",
-    "nuxt": "^4.4.6",
+    "nuxt": "^4.5.1",
     "pmtiles": "^4.4.1",
     "tailwindcss": "^4.3.0"
   },
