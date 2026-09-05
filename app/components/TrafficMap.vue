@@ -35,6 +35,11 @@ const HK_BOUNDS: [[number, number], [number, number]] = [[113.80, 22.13], [114.4
 const MAX_ZOOM = 19
 
 const OSM_ATTRIB = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+// CARTO Basemaps key for the dark raster tiles: without it every tile is
+// stamped "API KEY REQUIRED". A tile key is public by design — it rides on
+// every tile request — so it sits here rather than in an env var, which the
+// static GitHub Pages deploy has no secrets step to fill anyway.
+const CARTO_KEY = 'cb1_2y7w_1_240b0b843b318318c4f7eef1'
 
 const container = ref<HTMLDivElement>()
 const map = shallowRef<MaplibreMap>()
@@ -235,8 +240,8 @@ onMounted(async () => {
           'osm-dark': {
             type: 'raster',
             tiles: [
-              'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-              'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+              `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?key=${CARTO_KEY}`,
+              `https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?key=${CARTO_KEY}`
             ],
             tileSize: 256,
             maxzoom: 19,

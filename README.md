@@ -103,4 +103,5 @@ production host.
 Contains data from the Transport Department of the Government of the Hong Kong
 SAR, available under the
 [data.gov.hk Terms and Conditions](https://data.gov.hk/en/terms-and-conditions).
-Basemap © OpenStreetMap contributors.
+Basemap © OpenStreetMap contributors; dark basemap tiles ©
+[CARTO](https://carto.com/attributions).
