@@ -107,7 +107,14 @@ const rows = computed(() => {
     [t('signPopup.fields.poleId'), str(p.POLEID)],
     [t('signPopup.fields.type'), str(p.TYPE)],
     [t('signPopup.fields.group'), str(p.GG_NAME)],
-    [t('signPopup.fields.bearing'), p.ANGLE != null ? `${Math.round(Number(p.ANGLE))}°` : null],
+    // The derived facing (see TrafficMap's FACE_BEARING notes), not TD's ANGLE —
+    // that is the drawing's label rotation and says nothing about the sign.
+    // A marking-fallback bearing (FACE_ABS 0) is only relative, so it is
+    // labelled as such.
+    [
+      t(p.FACE_ABS === 0 ? 'signPopup.fields.bearingRelative' : 'signPopup.fields.bearing'),
+      p.FACE_BEARING != null ? `${Math.round(Number(p.FACE_BEARING))}°` : null
+    ],
     [t('signPopup.fields.updated'), updated.value]
   ].filter(([, v]) => v) as [string, string][]
 })

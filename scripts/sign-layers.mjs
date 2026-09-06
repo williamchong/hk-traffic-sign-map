@@ -21,14 +21,40 @@ export const SIGN_LAYERS = [
 ]
 
 // Build-time-only inputs: downloaded by fetch-data, consumed by
-// compute-bearings, but never tiled into PMTiles. Road-marking lines are the
-// densest road-geometry layer in the TAD set (lane lines, kerb edges) and we
-// use them at build time to derive a face bearing per traffic-sign feature.
-// Why not tile them too: the source GML is ~155 MB, mostly short stroke
-// segments that don't render usefully at the zoom levels this viewer covers.
+// compute-bearings, but never tiled into PMTiles. `file` + `ext` name the
+// on-disk file in RAW_DIR; `url` overrides the default `DATA_BASE_URL/file.ext`
+// for a resource published elsewhere.
+//
+// • Road Network v2 (TD's Intelligent Road Network Package) as one FGDB zip —
+//   17 MB for all 17 layers, where the per-layer GML of CENTERLINE alone is
+//   486 MB. Its CENTERLINE is *directed*: TRAVEL_DIRECTION 3 = travel only in
+//   the digitised direction, 1 = both ways. That direction is what makes a
+//   sign's face bearing absolute (see compute-bearings.mjs). GDAL reads the
+//   zip in place via /vsizip/.
+// • Road-marking lines (the densest road-geometry layer in the TAD set: lane
+//   lines, kerb edges) stay as the fallback host for signs no centreline
+//   reaches — they give a road tangent but no direction. Not tiled: ~155 MB
+//   of short strokes that don't render usefully at the viewer's zooms.
 export const BUILD_TIME_DATA = [
-  { file: 'DTAD_RD_MARK_LINE', label: 'Road marking line (for face-bearing derivation)' }
+  {
+    file: 'RdNet_IRNP.gdb', ext: 'zip',
+    url: 'https://static.data.gov.hk/td/road-network-v2/RdNet_IRNP.gdb.zip',
+    label: 'Road Network v2 (directed centrelines, for absolute face bearings)'
+  },
+  { file: 'DTAD_RD_MARK_LINE', ext: 'gml', label: 'Road marking line (fallback face-bearing host)' }
 ]
+// Layer name inside the Road Network FGDB that carries the directed centrelines.
+export const RDNET_CENTERLINE_LAYER = 'CENTERLINE'
+
+// Sign codes that address the driver coming the WRONG way — the "no entry"
+// family. Every other plate speaks to traffic already legally on the road and
+// faces back at it; these stand at the mouth a driver must not enter by, so
+// they face 180° from their post (hk-taxi-Q decision Q72: "a NO ENTRY faces the
+// traffic it forbids, not the traffic it stands beside"). Applied by
+// compute-stacks (post faces) and build-tiles (lone signs); the runtime never
+// needs it — it only ever reads the final FACE_BEARING.
+//   TS115 No entry for all vehicles · TS116 All vehicles prohibited both directions
+export const AGAINST_TRAFFIC_CODES = ['TS115', 'TS116']
 
 export const DATA_BASE_URL = 'https://static.data.gov.hk/td/traffic-aids-drawings-v2'
 

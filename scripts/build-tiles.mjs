@@ -13,7 +13,7 @@ import { dirname, join } from 'node:path'
 
 import {
   SIGN_LAYERS, RAW_DIR, OUTPUT_PMTILES, OUTPUT_PMTILES_FULL,
-  TILE_LAYER, SOURCE_SRS, TARGET_SRS
+  TILE_LAYER, SOURCE_SRS, TARGET_SRS, AGAINST_TRAFFIC_CODES
 } from './sign-layers.mjs'
 
 const COMBINED = join(RAW_DIR, '_combined.geojsonl')
@@ -24,6 +24,7 @@ const COMBINED = join(RAW_DIR, '_combined.geojsonl')
 // every zoom for the sign-ID filter.
 const COMBINED_LOD = join(RAW_DIR, '_combined_lod.geojsonl')
 const FACE_BEARINGS = join(RAW_DIR, '_face_bearings.json')
+const POLE_ANCHORS = join(RAW_DIR, '_pole_anchors.json')
 const SIGN_STACKS = join(RAW_DIR, '_sign_stacks.json')
 
 // The zoom at which the stacked pictograms start to form the signpost
@@ -32,20 +33,34 @@ const SIGN_STACKS = join(RAW_DIR, '_sign_stacks.json')
 // per assembly; from it up, every member is pinned so the post is complete.
 const STACK_LOD_MINZOOM = 13
 
-// Map<FEATUREID-as-string, faceBearingDegrees>; populated only for the
-// traffic-sign-abbreviation layer. If the bearings file is missing (someone
-// runs build-tiles without compute-bearings) we silently fall through with
-// no FACE_BEARING property and the runtime will leave those signs upright —
-// a degraded view, not a broken build.
+// Map<FEATUREID-as-string, [postFacingDeg, source]> (source 1 = directed
+// centreline, absolute; 0 = road-marking fallback, relative); populated only
+// for the traffic-sign-abbreviation layer. If the bearings file is missing
+// (someone runs build-tiles without compute-bearings) we silently fall through
+// with no FACE_BEARING property and the runtime will leave those signs upright
+// — a degraded view, not a broken build.
 const faceBearings = existsSync(FACE_BEARINGS)
   ? JSON.parse(await readFile(FACE_BEARINGS, 'utf8'))
   : null
 if (!faceBearings) console.warn(`No ${FACE_BEARINGS} — signs will render upright. Run \`node scripts/compute-bearings.mjs\` first.`)
+// Map<GG_NAME, [lng, lat]> — the surveyed pole of every sign group that has
+// one (written alongside the bearings). A lone sign is drawn there rather than
+// at TD's abbreviation point, which is a label position a median 2.3 m off;
+// stacked members get the same pole through _sign_stacks.json.
+const poleAnchors = existsSync(POLE_ANCHORS)
+  ? JSON.parse(await readFile(POLE_ANCHORS, 'utf8'))
+  : null
+if (!poleAnchors) console.warn(`No ${POLE_ANCHORS} — lone signs will render at their label point, not their pole.`)
+// The no-entry family faces the wrong-way driver: 180° from its post (see
+// sign-layers.mjs). Stacked members already carry the turned bearing from
+// compute-stacks; lone signs get it here.
+const againstTraffic = new Set(AGAINST_TRAFFIC_CODES)
 
 // Map<FEATUREID-as-string, [stackIndex, size, picW, anchorLng, anchorLat,
-// bearing, stackOff, primaryTier]> for signs that belong to a co-located GG_NAME assembly
-// (see compute-stacks.mjs). Same fall-through contract as bearings: missing
-// file → signs just don't stack (render at their own point), never a broken build.
+// bearing, stackOff, primaryTier, stackId]> for signs that belong to a co-located
+// signpost — one or more GG_NAME faces sharing a pole point (see
+// compute-stacks.mjs). Same fall-through contract as bearings: missing file →
+// signs just don't stack (render at their own point), never a broken build.
 const signStacks = existsSync(SIGN_STACKS)
   ? JSON.parse(await readFile(SIGN_STACKS, 'utf8'))
   : null
@@ -75,11 +90,12 @@ async function convertLayer({ file, category }, out, outLod) {
   ])
   ogr.stderr.on('data', d => process.stderr.write(`[ogr2ogr ${file}] ${d}`))
 
-  // Only ABV_PT features carry FACE_BEARING / stack order; checked once here.
+  // Only ABV_PT features carry FACE_BEARING / stack order / a pole; checked once here.
   const isAbv = category === 'traffic-sign-abbreviation'
   const injectBearing = faceBearings && isAbv
+  const injectPole = poleAnchors && isAbv
   const injectStack = signStacks && isAbv
-  let count = 0, bearingsApplied = 0, stacksApplied = 0
+  let count = 0, bearingsApplied = 0, stacksApplied = 0, polesApplied = 0
   const rl = createInterface({ input: ogr.stdout, crlfDelay: Infinity })
   for await (const line of rl) {
     // GeoJSONSeq may prefix records with the RFC 8142 record separator
@@ -92,28 +108,46 @@ async function convertLayer({ file, category }, out, outLod) {
     // may surface it as number or string. Coerce once and reuse.
     const fid = (injectBearing || injectStack) ? String(feature.properties.FEATUREID ?? '') : ''
     if (injectBearing) {
-      const bearing = faceBearings[fid]
-      if (bearing !== undefined) {
-        feature.properties.FACE_BEARING = bearing
+      const fb = faceBearings[fid]
+      if (fb !== undefined) {
+        const [facing, source] = fb
+        // Plate facing = post facing, turned 180° for a no-entry (Q72). A stacked
+        // member's is overridden below with its face's (already turned) bearing.
+        const flip = againstTraffic.has(feature.properties.SIGNID) ? 180 : 0
+        feature.properties.FACE_BEARING = (facing + flip) % 360
+        feature.properties.FACE_ABS = source
         bearingsApplied++
+      }
+    }
+    if (injectPole) {
+      // Draw the sign at its surveyed pole; a stacked member is moved again to
+      // its post anchor below (the same pole, via compute-stacks).
+      const pole = poleAnchors[feature.properties.GG_NAME]
+      if (pole) {
+        feature.geometry.coordinates = [pole[0], pole[1]]
+        polesApplied++
       }
     }
     if (injectStack) {
       const stack = signStacks[fid]
       if (stack !== undefined) {
-        // Collapse the member onto its assembly's primary coordinate and adopt
-        // the primary's bearing, so the whole group renders as one rigid
-        // signpost (see compute-stacks.mjs). STACK_INDEX marks the member as
-        // stacked (the runtime swaps in the width-normalized pictogram for it);
-        // STACK_OFF is its baked vertical offset down the post; STACK_TIER is the
-        // primary's tier, so the runtime sizes the whole post as one unit and the
-        // plates keep their real-life ratio. (`size`/`picW` stay in the JSON only
-        // for the build log; no tile property carries them.)
-        const [index, , , anchorLng, anchorLat, bearing, stackOff, tier] = stack
+        // Collapse the member onto its post's anchor and adopt its FACE's
+        // bearing (the main face's road-derived one; the other faces of a
+        // back-to-back pole are fanned apart from it), so the whole post renders
+        // as one rigid signpost (see compute-stacks.mjs). STACK_INDEX marks the
+        // member as stacked (the runtime swaps in the width-normalized pictogram
+        // for it); STACK_OFF is its baked offset down its face's column;
+        // STACK_TIER is the primary's tier, so the runtime sizes the whole post
+        // as one unit and the plates keep their real-life ratio; STACK_ID names
+        // the post (its main face's GG_NAME) — the runtime groups by it, since a
+        // multi-face post spans several GG_NAMEs. (`size`/`picW` stay in the
+        // JSON only for the build log; no tile property carries them.)
+        const [index, , , anchorLng, anchorLat, bearing, stackOff, tier, stackId] = stack
         feature.geometry.coordinates = [anchorLng, anchorLat]
         feature.properties.STACK_INDEX = index
         feature.properties.STACK_OFF = stackOff
         feature.properties.STACK_TIER = tier
+        feature.properties.STACK_ID = stackId
         if (bearing === null) delete feature.properties.FACE_BEARING
         else feature.properties.FACE_BEARING = bearing
         stacksApplied++
@@ -145,6 +179,7 @@ async function convertLayer({ file, category }, out, outLod) {
     count++
   }
   if (injectBearing) console.log(`    + FACE_BEARING on ${bearingsApplied} / ${count} (${(bearingsApplied / count * 100).toFixed(1)}%)`)
+  if (injectPole) console.log(`    + ${polesApplied} / ${count} drawn at their pole`)
   if (injectStack) console.log(`    + STACK order on ${stacksApplied} / ${count} (${(stacksApplied / count * 100).toFixed(1)}%)`)
 
   const [code] = await once(ogr, 'close')
@@ -189,12 +224,18 @@ async function runTippecanoe(label, args) {
 
 // Flags shared by both archives. `-Z 9`: build only from the map's minZoom
 // up — below z9 the viewport is locked out so those tiles are never
-// requested. `-zg`: auto-pick the max zoom from feature density.
+// requested. `-z 15`: pin the max zoom — MapLibre overzooms past it, which is
+// fine for points. It used to be `-zg` (guess from feature spacing), which
+// settled at 15 while every sign sat at its own label point; once signs were
+// collapsed onto shared pole anchors the guess jumped to 20, tripling both
+// archives with z16–20 tiles the app never requests, splitting the directory
+// into leaves (an extra range request per cold tile) and re-calibrating the
+// drop-densest thinning so the z11 overview came out ~30× sparser.
 const COMMON = [
   '-l', TILE_LAYER,
   '-n', 'HK Traffic Signs',
   '-Z', '9',
-  '-zg',
+  '-z', '15',
   '--no-tile-size-limit',
   '--quiet',
   '--force'
@@ -214,7 +255,6 @@ await runTippecanoe('Building overview tiles (thinned LOD)', [
   '-o', OUTPUT_PMTILES,
   ...COMMON,
   '--drop-densest-as-needed',
-  '--extend-zooms-if-still-dropping',
   COMBINED_LOD
 ])
 

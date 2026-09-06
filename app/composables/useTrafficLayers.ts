@@ -46,7 +46,7 @@ export interface SelectedSign {
 }
 const selectedSign = ref<SelectedSign | null>(null)
 
-// Every member of the selected sign's co-located GG_NAME assembly, ordered
+// Every member of the selected sign's co-located post (STACK_ID), ordered
 // top-of-post first (by STACK_INDEX), each as a ready-to-select SelectedSign so
 // the popup can list the whole signpost and navigate between its signs. Empty
 // for a lone sign. Populated by TrafficMap from the active tile source — it
@@ -58,8 +58,9 @@ const selectedGroup = ref<SelectedSign[]>([])
 // the (WebGL-independent) About/FAQ chrome.
 const mapUnavailable = ref(false)
 
-// Lazily-loaded SIGNID → companion GG_NAME[] index (app/data/signGroups.json,
-// built by compute-stacks over the stacked assemblies). Only sign-ID mode needs
+// Lazily-loaded SIGNID → companion STACK_ID[] index (app/data/signGroups.json,
+// built by compute-stacks over the stacked posts — a post is every GG_NAME
+// face sharing one pole point, named by its main face's GG_NAME). Only sign-ID mode needs
 // it — to complete a matched sign's signpost — so it's dynamic-imported
 // (code-split, ~0.2 MB gzip) the first time that mode is active, never in the
 // initial bundle. Until it resolves, the filter falls back to plain SIGNID
@@ -81,7 +82,7 @@ function loadGroupIndex() {
 // One MapLibre filter expression, switched by `filterMode`. The category form
 // is a flat literal `in`; the sign-ID form `in`-matches the picked SIGNIDs and,
 // once the group index is loaded, also admits every co-located post-mate of a
-// match (via a `match` on GG_NAME — MapLibre compiles it to an O(1) lookup,
+// match (via a `match` on STACK_ID — MapLibre compiles it to an O(1) lookup,
 // which matters since a common sign can sit on thousands of posts) so each
 // matched sign shows as its whole signpost, not a lone plate.
 const mapFilter = computed<FilterSpecification>(() => {
@@ -107,7 +108,7 @@ const mapFilter = computed<FilterSpecification>(() => {
     if (idx) {
       const groups = [...new Set(ids.flatMap(id => idx[id] ?? []))]
       if (groups.length) {
-        return subtract(['any', allow, ['match', ['get', 'GG_NAME'], groups, true, false]])
+        return subtract(['any', allow, ['match', ['get', 'STACK_ID'], groups, true, false]])
       }
     }
     return subtract(allow)

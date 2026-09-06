@@ -45,7 +45,8 @@
       "poleId": "Pole ID",
       "type": "Type",
       "group": "Group",
-      "bearing": "Bearing",
+      "bearing": "Facing",
+      "bearingRelative": "Facing (relative)",
       "updated": "Updated"
     },
     "fallbackTitle": "Sign",

@@ -45,7 +45,8 @@
       "poleId": "標誌柱編號",
       "type": "類型",
       "group": "組別",
-      "bearing": "方位",
+      "bearing": "朝向",
+      "bearingRelative": "朝向（相對）",
       "updated": "更新日期"
     },
     "fallbackTitle": "標誌",

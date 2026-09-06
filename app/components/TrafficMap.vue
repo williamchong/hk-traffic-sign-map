@@ -57,18 +57,30 @@ const categoryColor = [
 // runtime; this is the one documented place we widen through `unknown`.
 const expr = (e: unknown) => e as ExpressionSpecification
 
-// FACE_BEARING is computed at build time by scripts/compute-bearings.mjs:
-// each abbreviation point is snapped to the nearest ≥3 m road-marking line,
-// its compass tangent is taken, and the sign's side of the line (cross-
-// product sign) flips one carriageway by 180° so opposite-bound signs end
-// up 180° apart in the data. TD's raw `ANGLE` looked like it should fill
-// this role but turned out to be the MicroStation symbol-cell rotation
-// (commit 42c343a), which gave both carriageways the same value.
+// FACE_BEARING is the way the plate faces (its outward normal, toward the
+// drivers who read it), computed at build time by scripts/compute-bearings.mjs
+// and rotated here so the pictogram's top points that way. The sign's POLE is
+// snapped to the nearest Road Network v2 centreline, which is *directed*, so
+// with the kerb side and drive-on-the-left the facing is absolute: on a
+// one-way edge both kerbs face back against the flow, on a two-way edge the
+// nearside kerb faces back and the offside faces along it (hk-taxi-Q's
+// `facing_from_side`). A "no entry" (TS115/TS116) speaks to the wrong-way
+// driver and is turned 180° from its post. TD's raw `ANGLE` looked like it
+// should fill this role but is the MicroStation label rotation (commit
+// 42c343a), unrelated to the road.
 //
-// Coverage is ~76 % of the 178k signs; the rest (off-network ferry piers,
-// gantries set back from the carriageway, signs already inside junction
-// geometry) have no FACE_BEARING and fall through `coalesce` to 0 → upright,
-// matching the pre-rotation state for them.
+// Coverage is ~98 % of the 178k signs; ~1 % fall back to the old road-marking
+// tangent (relative only — FACE_ABS 0) and ~1 % (off-network piers, gantries)
+// have no FACE_BEARING and fall through `coalesce` to 0 → upright. Nothing
+// publishes a facing to grade this against, and a corner pole 5.7 m from one
+// street and 5.8 m from the other is hosted on the nearest — the known weak
+// spot (see CLAUDE.md, pipeline step 2).
+//
+// Stacked post members carry their FACE's bearing: compute-stacks gives each
+// face a quarter turn from the post facing by meaning — a forward face takes
+// the front, a no-entry face the back, further faces the sides — so "Give
+// way" and "No entry" on one pole point opposite ways instead of sharing a
+// rotation.
 //
 // `icon-rotation-alignment: 'map'` keeps the bearing geo-aligned through
 // map rotation — without it the rotation would lock to the viewport and the
@@ -78,20 +90,24 @@ const iconRotation = {
   'icon-rotation-alignment': 'map' as const
 }
 
-// Signs sharing a GG_NAME assembly are stacked into a vertical signpost. Each
-// plate is re-rendered to a common WIDTH (see /signs-stacked + the icon-image
-// below), so heights vary by true aspect — a wide supplementary plate becomes
-// a short wide bar, a tall sign stays tall. compute-stacks.mjs bakes each
-// member's cumulative centre offset down the post into STACK_OFF (icon
-// source-px, quantized to OFFSET_STEP; top sign on the anchor, the rest below).
+// Signs sharing a post (STACK_ID — one or more GG_NAME faces on one pole
+// point) are stacked into a vertical signpost. Each plate is re-rendered to a
+// common WIDTH (see /signs-stacked + the icon-image below), so heights vary by
+// true aspect — a wide supplementary plate becomes a short wide bar, a tall
+// sign stays tall. compute-stacks.mjs bakes each member's cumulative centre
+// offset down its face's column into STACK_OFF (icon source-px, quantized to
+// OFFSET_STEP; the main face's top sign on the anchor, the rest below).
 // `icon-offset` can't construct [0, value] from a scalar, so we enumerate a
 // fixed grid of `match` arms (value → [0, value]); a member's baked STACK_OFF
 // always lands on one. The offset is in icon source-px, so it scales with
 // `icon-size` (the column stays proportional at every zoom — the icon-size
-// factor cancels out of the spacing) and rides `icon-rotate` so the post leans
-// the way the signs face. Non-stacked signs have no STACK_OFF → the [0, 0]
-// default. OFFSET_STEP must match scripts/compute-stacks.mjs (duplicated per
-// the two-runtime rule); OFFSET_MAX has headroom over the tallest post
+// factor cancels out of the spacing) and rides `icon-rotate`, so each member's
+// column hangs along its own FACE_BEARING: a back-to-back pole's faces (fanned
+// apart at build time, their offsets starting past the anchor plate) read as
+// columns pointing away from the anchor in different directions, not one
+// column. Non-stacked signs have no STACK_OFF → the [0, 0] default.
+// OFFSET_STEP must match scripts/compute-stacks.mjs (duplicated per the
+// two-runtime rule); OFFSET_MAX has headroom over the tallest post
 // (compute-stacks logs it) — a larger offset falls to [0, 0] rather than error.
 const OFFSET_STEP = 8
 const OFFSET_MAX = 2000
@@ -133,12 +149,12 @@ const tierSizeRamp = (lod: typeof TIER_LOD[number]) => expr([
 // `sign-stack` layer at one icon-size, so the width-normalized plates keep their
 // real-life height ratio at every zoom (per-tier sizing scaled members
 // differently and skewed it). Members reveal together at the base stack zoom
-// (≥2 tiers in a post would otherwise pop in at different zooms). `hideGG` drops
-// one assembly so the group-highlight overlay can redraw it enlarged without
-// doubling.
+// (≥2 tiers in a post would otherwise pop in at different zooms). `hideStack`
+// drops one post (by STACK_ID) so the group-highlight overlay can redraw it
+// enlarged without doubling.
 const STACK_MINZOOM = TIER_LOD[0].minzoom
-const stackFilter = (base: ExpressionSpecification, hideGG: string | null = null) =>
-  expr(['all', base, ['has', 'STACK_INDEX'], ...(hideGG ? [['!=', ['get', 'GG_NAME'], hideGG]] : [])])
+const stackFilter = (base: ExpressionSpecification, hideStack: string | null = null) =>
+  expr(['all', base, ['has', 'STACK_INDEX'], ...(hideStack ? [['!=', ['get', 'STACK_ID'], hideStack]] : [])])
 // Shared post size ramp, branching on the primary tier (baked STACK_TIER) so a
 // post matches the prominence of its main sign while every member scales alike.
 const stackSizeRamp = expr([
@@ -297,7 +313,7 @@ onMounted(async () => {
     }
 
     // Group-highlight overlay (drawn beneath the single-sign `sel` overlay):
-    // clicking any sign in a GG_NAME assembly fills this with every member so
+    // clicking any sign in a post (STACK_ID) fills this with every member so
     // the whole signpost lights up and enlarges together (see the layers
     // below). A soft disc, drawn once here and reused, sits behind each
     // pictogram as the highlight ring — a touch larger than the 120 px
@@ -323,7 +339,7 @@ onMounted(async () => {
     // pictogram is re-drawn enlarged on top. Every member shares the same
     // size + `stackOffset`, so the whole post enlarges together as one unit.
     // The selected post's base pictograms (on the `sign-stack` layer) are hidden
-    // (see stackFilter's hideGG) so they don't show doubled under the enlarged copy.
+    // (see stackFilter's hideStack) so they don't show doubled under the enlarged copy.
     for (const [id, image] of [['sel-group-glow', 'sel-glow'], ['sel-group-top', null]] as const) {
       m.addLayer({
         id,
@@ -408,9 +424,9 @@ onMounted(async () => {
         .finally(() => inFlight.delete(id))
     })
 
-    // The GG_NAME whose base pictograms are currently hidden from the sign-stack
-    // layer because a group is selected (the overlay draws them enlarged).
-    let hiddenGG: string | null = null
+    // The STACK_ID whose base pictograms are currently hidden from the sign-stack
+    // layer because a post is selected (the overlay draws them enlarged).
+    let hiddenStack: string | null = null
 
     // The sign layers — always-on dot, per-tier lone pictograms, and the
     // single sign-stack layer for signposts — all read whichever archive the
@@ -475,14 +491,15 @@ onMounted(async () => {
         'source': source,
         'source-layer': SOURCE_LAYER,
         'minzoom': STACK_MINZOOM,
-        'filter': stackFilter(expr(mapFilter.value), hiddenGG),
+        'filter': stackFilter(expr(mapFilter.value), hiddenStack),
         'layout': {
           'icon-image': PICTO_ICON,
           'icon-size': stackSizeRamp,
           ...iconRotation,
-          // Hang each member at its baked STACK_OFF down the post (main on top,
-          // supplementary at the bottom); the offset rides icon-rotate + scales
-          // with icon-size, so the whole post stays a rigid, proportional column.
+          // Hang each member at its baked STACK_OFF down its face's column (main
+          // on top, supplementary at the bottom); the offset rides the member's
+          // own icon-rotate (its face's bearing) + scales with icon-size, so each
+          // face stays a rigid, proportional column hanging along its facing.
           'icon-offset': stackOffset,
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
@@ -502,10 +519,10 @@ onMounted(async () => {
     if (filterMode.value === 'sign-id') loadGroupIndex()
 
     // Re-apply just the sign-stack filter — the only sign layer that depends on
-    // `hiddenGG` (the selected post to hide while its enlarged overlay draws). The
-    // selection path calls this alone; the tier layers don't carry hiddenGG.
+    // `hiddenStack` (the selected post to hide while its enlarged overlay draws).
+    // The selection path calls this alone; the tier layers don't carry it.
     const refreshStackFilter = () => {
-      if (m.getLayer('sign-stack')) m.setFilter('sign-stack', stackFilter(expr(mapFilter.value), hiddenGG))
+      if (m.getLayer('sign-stack')) m.setFilter('sign-stack', stackFilter(expr(mapFilter.value), hiddenStack))
     }
     // Re-apply ALL sign-layer filters — for a category-visibility (`mapFilter`)
     // change, a GPU-side filter instant across 316k features (no DOM/refetch),
@@ -546,14 +563,15 @@ onMounted(async () => {
     const sel = m.getSource('sel') as GeoJSONSource
     const selGroup = m.getSource('sel-group') as GeoJSONSource
     watch(selectedSign, (s) => {
-      // A picked sign in a co-located GG_NAME assembly is shown via the *group*
-      // overlay (the whole post enlarges together), so the single-sign `sel`
-      // overlay is suppressed for it — otherwise only the clicked member would
-      // balloon and its halo would sit at the post anchor, not on the offset
-      // pictogram. Lone signs keep the single-sign overlay.
-      const ggRaw = s?.properties?.GG_NAME
-      const gg = typeof ggRaw === 'string' ? ggRaw : null
-      const grouped = !!s && s.properties?.STACK_INDEX !== undefined && gg !== null
+      // A picked sign in a co-located post (STACK_ID — every GG_NAME face on
+      // that pole) is shown via the *group* overlay (the whole post enlarges
+      // together), so the single-sign `sel` overlay is suppressed for it —
+      // otherwise only the clicked member would balloon and its halo would sit
+      // at the post anchor, not on the offset pictogram. Lone signs keep the
+      // single-sign overlay.
+      const idRaw = s?.properties?.STACK_ID
+      const stackId = typeof idRaw === 'string' ? idRaw : null
+      const grouped = !!s && s.properties?.STACK_INDEX !== undefined && stackId !== null
       sel.setData({
         type: 'FeatureCollection',
         features: s && !grouped
@@ -564,29 +582,30 @@ onMounted(async () => {
             }]
           : []
       })
-      // Gather every member of the assembly from the active *source* — not the
-      // tier layers, since we hide the selected group's tiers just below (and a
+      // Gather every member of the post from the active *source* — not the
+      // tier layers, since we hide the selected post's plates just below (and a
       // source query also survives re-clicking the same post). build-tiles
-      // already collapsed each member onto the primary's coordinate + bearing
-      // (see compute-stacks.mjs), so these are already a rigid post; just dedup
-      // the tile-boundary copies by STACK_INDEX (one sign per stack position).
+      // already collapsed each member onto the post anchor with its face's
+      // bearing (see compute-stacks.mjs), so these are already a rigid post;
+      // just dedup the tile-boundary copies by STACK_INDEX (one sign per
+      // stack position — unique across all faces).
       let members: GeoJSON.Feature[] = []
       if (grouped) {
         const seen = new Set<unknown>()
         members = m
           .querySourceFeatures(sourceForMode(filterMode.value), {
             sourceLayer: SOURCE_LAYER,
-            filter: ['==', ['get', 'GG_NAME'], gg] as FilterSpecification
+            filter: ['==', ['get', 'STACK_ID'], stackId] as FilterSpecification
           })
           .filter(f => f.properties.STACK_INDEX !== undefined && !seen.has(f.properties.STACK_INDEX) && seen.add(f.properties.STACK_INDEX))
           .map(f => ({ type: 'Feature' as const, geometry: f.geometry, properties: f.properties }))
           .sort((a, b) => Number(a.properties.STACK_INDEX) - Number(b.properties.STACK_INDEX))
       }
       selGroup.setData({ type: 'FeatureCollection', features: members })
-      // Publish the assembly to the popup as ready-to-select entries (top-of-
-      // post first). Every member was collapsed onto the post anchor at build
-      // time, so each shares one coordinate — a plain LngLat from it is enough
-      // for the popup to re-select via `selectedSign = member`.
+      // Publish the post to the popup as ready-to-select entries (top-of-post
+      // first, face by face). Every member was collapsed onto the post anchor
+      // at build time, so each shares one coordinate — a plain LngLat from it
+      // is enough for the popup to re-select via `selectedSign = member`.
       selectedGroup.value = members.map(f => ({
         properties: f.properties as Record<string, unknown>,
         lngLat: new maplibregl.LngLat(...(f.geometry as GeoJSON.Point).coordinates as [number, number])
@@ -595,9 +614,9 @@ onMounted(async () => {
       // overlay draws them enlarged on top); restore when a lone sign / nothing
       // is picked. Only re-filter when it actually changes — cycling within one
       // post / through lone signs leaves it unchanged and shouldn't re-run setFilter.
-      const nextHiddenGG = grouped ? gg : null
-      if (nextHiddenGG !== hiddenGG) {
-        hiddenGG = nextHiddenGG
+      const nextHiddenStack = grouped ? stackId : null
+      if (nextHiddenStack !== hiddenStack) {
+        hiddenStack = nextHiddenStack
         refreshStackFilter()
       }
     })
@@ -611,7 +630,9 @@ onMounted(async () => {
   const featureKey = (f: MapGeoJSONFeature) => {
     const [lng, lat] = (f.geometry as unknown as { coordinates: [number, number] }).coordinates
     const p = f.properties
-    return `${lng.toFixed(6)},${lat.toFixed(6)}|${p.SIGNID ?? p.POLEID ?? p.REFNAME ?? ''}|${p.category ?? ''}`
+    // STACK_INDEX keeps two faces of one post apart when they carry the same
+    // code at the same anchor (a "Taxi stand" plate facing each way).
+    return `${lng.toFixed(6)},${lat.toFixed(6)}|${p.SIGNID ?? p.POLEID ?? p.REFNAME ?? ''}|${p.category ?? ''}|${p.STACK_INDEX ?? ''}`
   }
 
   m.on('click', (e) => {
