@@ -111,14 +111,42 @@ const iconRotation = {
 // (compute-stacks logs it) — a larger offset falls to [0, 0] rather than error.
 const OFFSET_STEP = 8
 const OFFSET_MAX = 2000
-const stackOffset = expr([
-  'match', ['get', 'STACK_OFF'],
+// `icon-offset` = [0, <prop>] over a fixed grid of `step` px up to `max`;
+// a value off the grid falls to [0, 0] rather than error.
+const offsetGrid = (prop: string, step: number, max: number) => expr([
+  'match', ['get', prop],
   ...Array.from(
-    { length: OFFSET_MAX / OFFSET_STEP + 1 },
-    (_, k) => [k * OFFSET_STEP, ['literal', [0, k * OFFSET_STEP]]]
+    { length: max / step + 1 },
+    (_, k) => [k * step, ['literal', [0, k * step]]]
   ).flat(),
   ['literal', [0, 0]]
 ])
+const stackOffset = offsetGrid('STACK_OFF', OFFSET_STEP, OFFSET_MAX)
+
+// Facing mark for the *selected* sign: a rotationally symmetric pictogram (a
+// plain roundel, a circular "no stopping") gives no clue which way its top —
+// i.e. its FACE_BEARING — points once rotated, so the highlight underlines
+// the plate. The bar sits just past the pictogram's bottom edge and rides the
+// same `icon-rotate`/`icon-size` as the plate, so it reads as the plate's
+// physical edge seen from above, with the artwork spread out on the side the
+// drivers read it from. Sizes are icon source px (pictogram space): a lone
+// pictogram is height-normalized to PICTO_PX, a stacked member is
+// width-normalized so its height is read back from the loaded image. Each
+// feature carries its own MARK_OFF (the bar's centre offset); one bar per
+// post *face* (under that face's bottom plate) keeps a tall column uncluttered.
+// PICTO_PX is the authored pictogram size — every /signs plate is 120 px tall
+// (useSignCatalogue.ts) and every /signs-stacked plate 120 px wide
+// (COMMON_WIDTH in scripts/compute-stacks.mjs; duplicated per the two-runtime
+// rule) — so it is also the square fallback for a stacked image not yet loaded.
+const PICTO_PX = 120
+const MARK_W = 72
+const MARK_H = 8
+const MARK_GAP = 12
+const MARK_STEP = 4
+const MARK_MAX = 800 // headroom over the tallest post's bottom edge (~576 + a plate)
+const markOffset = offsetGrid('MARK_OFF', MARK_STEP, MARK_MAX)
+const markOffFor = (plateHeight: number) =>
+  Math.round((plateHeight / 2 + MARK_GAP + MARK_H / 2) / MARK_STEP) * MARK_STEP
 
 const tierLayerId = (t: number) => `sign-tier-${t}`
 // The SIGNID set per tier is static, so precompute that clause once and only
@@ -319,19 +347,42 @@ onMounted(async () => {
     // pictogram as the highlight ring — a touch larger than the 120 px
     // pictograms; rotating it is a no-op but its `icon-offset` must ride
     // `icon-rotate` like the pictograms' to stay aligned with the stack.
+    // Rasterise a `w`×`h` (icon source px) overlay glyph at 2× into the style.
+    const addDrawnImage = (id: string, w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = w * 2
+      canvas.height = h * 2
+      const ctx = canvas.getContext('2d')!
+      ctx.scale(2, 2)
+      draw(ctx)
+      m.addImage(id, ctx.getImageData(0, 0, w * 2, h * 2), { pixelRatio: 2 })
+    }
     const GLOW_PX = 150
-    const glow = document.createElement('canvas')
-    glow.width = glow.height = GLOW_PX * 2
-    const gctx = glow.getContext('2d')!
-    gctx.scale(2, 2)
-    gctx.beginPath()
-    gctx.arc(GLOW_PX / 2, GLOW_PX / 2, GLOW_PX / 2 - 4, 0, Math.PI * 2)
-    gctx.fillStyle = 'rgba(37,99,235,0.16)'
-    gctx.fill()
-    gctx.lineWidth = 5
-    gctx.strokeStyle = '#2563eb'
-    gctx.stroke()
-    m.addImage('sel-glow', gctx.getImageData(0, 0, GLOW_PX * 2, GLOW_PX * 2), { pixelRatio: 2 })
+    addDrawnImage('sel-glow', GLOW_PX, GLOW_PX, (ctx) => {
+      ctx.beginPath()
+      ctx.arc(GLOW_PX / 2, GLOW_PX / 2, GLOW_PX / 2 - 4, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(37,99,235,0.16)'
+      ctx.fill()
+      ctx.lineWidth = 5
+      ctx.strokeStyle = '#2563eb'
+      ctx.stroke()
+    })
+    // The facing underline (see MARK_*): a black bar with a thin white halo so
+    // it stands out on both basemaps; the canvas is padded by the halo.
+    const MARK_PAD = 3
+    const markW = MARK_W + MARK_PAD * 2
+    const markH = MARK_H + MARK_PAD * 2
+    addDrawnImage('sel-facing', markW, markH, (ctx) => {
+      ctx.lineCap = 'round'
+      for (const [width, color] of [[MARK_H + 3, '#ffffff'], [MARK_H, '#000000']] as const) {
+        ctx.lineWidth = width
+        ctx.strokeStyle = color
+        ctx.beginPath()
+        ctx.moveTo(MARK_PAD + MARK_H / 2, markH / 2)
+        ctx.lineTo(markW - MARK_PAD - MARK_H / 2, markH / 2)
+        ctx.stroke()
+      }
+    })
 
     m.addSource('sel-group', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
     // Two layers (a uniform EMPHASIS_SIZE means one zoom-interpolate, so no
@@ -400,6 +451,26 @@ onMounted(async () => {
         'icon-ignore-placement': true
       }
     })
+    // Facing underline for the highlighted sign — one layer per overlay
+    // source (lone sign / post members), drawn topmost so a neighbouring
+    // plate never covers it. Only features given a MARK_OFF get a bar (the
+    // bottom plate of each post face; every lone sign).
+    for (const [id, source] of [['sel-group-facing', 'sel-group'], ['sel-facing', 'sel']] as const) {
+      m.addLayer({
+        id,
+        type: 'symbol',
+        source,
+        filter: expr(['has', 'MARK_OFF']),
+        layout: {
+          'icon-image': 'sel-facing',
+          'icon-size': EMPHASIS_SIZE,
+          ...iconRotation,
+          'icon-offset': markOffset,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true
+        }
+      })
+    }
 
     // Pictograms load lazily: MapLibre fires `styleimagemissing` once per
     // unknown icon-image a visible tile references, and we fetch that one
@@ -407,6 +478,10 @@ onMounted(async () => {
     // its pictogram is in flight, and uncatalogued SIGNIDs are dropped so
     // selecting one doesn't 404 the same code on every render tick.
     const inFlight = new Set<string>()
+    // Stacked codes whose image the last selection sync needed for a facing
+    // mark but couldn't find in the style yet (see syncSelection): when one
+    // lands, the sync re-runs once to place that mark from the real height.
+    const pendingMarkCodes = new Set<string>()
     m.on('styleimagemissing', ({ id }) => {
       // Stacked members request `signw-<code>` (width-normalized, /signs-stacked);
       // everything else `sign-<code>` (/signs). Check the stacked prefix first —
@@ -418,7 +493,9 @@ onMounted(async () => {
       inFlight.add(id)
       m.loadImage(`/${PICTO_DIR[prefix]}/${code}.png`)
         .then((img) => {
-          if (!disposed) m.addImage(id, img.data)
+          if (disposed) return
+          m.addImage(id, img.data)
+          if (pendingMarkCodes.delete(code)) syncSelection()
         })
         .catch(err => console.error('[signs]', err))
         .finally(() => inFlight.delete(id))
@@ -562,7 +639,8 @@ onMounted(async () => {
     // after the sign layers are swapped on a filter-mode flip.
     const sel = m.getSource('sel') as GeoJSONSource
     const selGroup = m.getSource('sel-group') as GeoJSONSource
-    watch(selectedSign, (s) => {
+    const syncSelection = () => {
+      const s = selectedSign.value
       // A picked sign in a co-located post (STACK_ID — every GG_NAME face on
       // that pole) is shown via the *group* overlay (the whole post enlarges
       // together), so the single-sign `sel` overlay is suppressed for it —
@@ -578,7 +656,9 @@ onMounted(async () => {
           ? [{
               type: 'Feature',
               geometry: { type: 'Point', coordinates: [s.lngLat.lng, s.lngLat.lat] },
-              properties: s.properties
+              // Lone pictograms are height-normalized, so the facing underline
+              // always hangs the same distance below the anchor.
+              properties: { ...s.properties, MARK_OFF: markOffFor(PICTO_PX) }
             }]
           : []
       })
@@ -598,8 +678,25 @@ onMounted(async () => {
             filter: ['==', ['get', 'STACK_ID'], stackId] as FilterSpecification
           })
           .filter(f => f.properties.STACK_INDEX !== undefined && !seen.has(f.properties.STACK_INDEX) && seen.add(f.properties.STACK_INDEX))
-          .map(f => ({ type: 'Feature' as const, geometry: f.geometry, properties: f.properties }))
+          .map(f => ({ type: 'Feature' as const, geometry: f.geometry, properties: { ...f.properties } }))
           .sort((a, b) => Number(a.properties.STACK_INDEX) - Number(b.properties.STACK_INDEX))
+        // One facing underline per face — under the face's bottom plate (its
+        // largest STACK_OFF; members of one face share a FACE_BEARING). The
+        // bar hangs past that plate's bottom edge, whose height is the
+        // width-normalized image's (read from the style once loaded; until
+        // then a square is assumed and the loader re-syncs when it lands).
+        const bottomByFace = new Map<unknown, GeoJSON.Feature>()
+        for (const f of members) {
+          const prev = bottomByFace.get(f.properties!.FACE_BEARING)
+          if (!prev || Number(f.properties!.STACK_OFF ?? 0) > Number(prev.properties!.STACK_OFF ?? 0)) bottomByFace.set(f.properties!.FACE_BEARING, f)
+        }
+        pendingMarkCodes.clear()
+        for (const f of bottomByFace.values()) {
+          const code = String(f.properties!.SIGNID)
+          const img = m.getImage(STACKED_PREFIX + code)
+          if (!img) pendingMarkCodes.add(code)
+          f.properties!.MARK_OFF = Number(f.properties!.STACK_OFF ?? 0) + markOffFor(img?.data.height ?? PICTO_PX)
+        }
       }
       selGroup.setData({ type: 'FeatureCollection', features: members })
       // Publish the post to the popup as ready-to-select entries (top-of-post
@@ -619,7 +716,8 @@ onMounted(async () => {
         hiddenStack = nextHiddenStack
         refreshStackFilter()
       }
-    })
+    }
+    watch(selectedSign, syncSelection)
   })
 
   // A click can land on several overlapping/collided signs. Collect them all
