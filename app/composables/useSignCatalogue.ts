@@ -12,13 +12,18 @@ export type SignGroup
 export interface SignCatalogueEntry {
   tier: 0 | 1 | 2
   group: SignGroup
-  // Bilingual meaning extracted from the Index Plan Description column by the
-  // catalogue builder. Same `{en?, zh?}` shape as `signDescriptions.json`
-  // (which still wins at runtime when curated). Legacy entries from older
-  // builds may carry a bare string here — treated as `{en: <string>}` by
-  // `signDescription` below. The fields are independent: a sign can have
-  // English-only, Chinese-only, both, or neither.
-  desc?: string | { en?: string, zh?: string }
+  // English meaning read off the Index Plan's Description column by the
+  // catalogue builder. English-only by construction: that column has no
+  // Chinese on any sheet, so zh comes solely from curated
+  // `signDescriptions.json` (which also wins over this when both exist).
+  desc?: { en?: string }
+  // Set on a suffix variant (TS639L, TS2701U) that reuses its base sign's
+  // pictogram — see scripts/catalogue/aliases.mjs. Descriptions fall back to
+  // the base's.
+  alias?: string
+  // The sheet shades this row grey: "SUPERSEDED OR DELETED". Still installed
+  // on the ground in ~2,000 places, so it renders like any other sign.
+  superseded?: boolean
 }
 
 const catalogue = catalogueJson as Record<string, SignCatalogueEntry>
@@ -69,27 +74,25 @@ export function signIconUrl(signId: unknown): string | null {
     : null
 }
 
-// Both languages a sign has, regardless of UI locale. Curated overrides
-// still win per-language so a hand-edited zh wording never gets clobbered
-// by a VLM-extracted one; the catalogue's bilingual `desc` fills gaps the
-// curated file hasn't reached. Useful when both languages are needed at
+// Both languages a sign has, regardless of UI locale. The curated override
+// wins per-language; the catalogue's extracted English fills the gaps the
+// curated file hasn't reached, and a suffix variant falls back to the sign
+// it aliases. Chinese exists only where curated — the Index Plan's
+// Description column has none. Useful when both languages are needed at
 // once — e.g. building a search index that should match either.
 export function bilingualDescription(
   signId: unknown
 ): { en?: string, zh?: string } {
   if (typeof signId !== 'string') return {}
-  const o = descOverrides[signId] ?? {}
-  // Legacy entries had `desc: string` (English only). Newer entries are
-  // `{ en?, zh? }`. Normalise once so the merge below is symmetric.
-  const c = catalogue[signId]?.desc
-  const cat = typeof c === 'string' ? { en: c } : (c ?? {})
-  return { en: o.en ?? cat.en, zh: o.zh ?? cat.zh }
+  const alias = catalogue[signId]?.alias
+  const o = descOverrides[signId] ?? (alias ? descOverrides[alias] : undefined) ?? {}
+  const cat = catalogue[signId]?.desc ?? (alias ? catalogue[alias]?.desc : undefined) ?? {}
+  return { en: o.en ?? cat.en, zh: o.zh }
 }
 
 // A sign's human meaning for the given UI locale. Resolution order:
-//   curated zh (if zh UI) → catalogue zh (if zh UI) → curated en →
-//   catalogue en → null. English shows verbatim in the zh UI when neither
-// source has zh — source beats an empty field.
+//   curated zh (if zh UI) → curated en → catalogue en → null. English shows
+// verbatim in the zh UI when no source has zh — source beats an empty field.
 export function signDescription(
   signId: unknown,
   locale: 'en' | 'zh-HK'
