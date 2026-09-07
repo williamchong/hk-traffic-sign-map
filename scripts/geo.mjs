@@ -2,8 +2,10 @@
 // scripts that read the raw layers (compute-bearings, compute-stacks). Node
 // only — app/ never imports from scripts/ (see CLAUDE.md, "Two runtimes").
 
+import { createReadStream } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
+import { createInterface } from 'node:readline'
 
 import { SOURCE_SRS, TARGET_SRS } from './sign-layers.mjs'
 
@@ -35,6 +37,27 @@ export function parsePolePoints(gmlText, keep = () => true) {
     poles.set(gg, { x: parseFloat(pos[1]), y: parseFloat(pos[2]), elev: body.match(elevRx)?.[1]?.trim() ?? '' })
   }
   return poles
+}
+
+// Installed SIGNID → feature count, straight off DTAD_TS_ABV_PT.gml. Streamed
+// line-by-line rather than regexed over the whole text: the file is ~206 MB and
+// callers only want the tally. `SIGNID` exists on the abbreviation class alone
+// (pole classes are bare posts), and its <gen:value> sits on the line after the
+// attribute tag.
+export async function readSignIdCounts(gmlPath) {
+  const counts = new Map()
+  const rl = createInterface({ input: createReadStream(gmlPath), crlfDelay: Infinity })
+  let pending = false
+  for await (const line of rl) {
+    if (pending) {
+      const v = line.match(/<gen:value>([^<]*)<\/gen:value>/)?.[1]?.trim()
+      if (v) counts.set(v, (counts.get(v) ?? 0) + 1)
+      pending = false
+    } else if (line.includes('<gen:stringAttribute name="SIGNID">')) {
+      pending = true
+    }
+  }
+  return counts
 }
 
 // Reproject HK1980 [x, y] pairs to WGS84 [lng, lat] (6 dp, ~0.1 m) in ONE
