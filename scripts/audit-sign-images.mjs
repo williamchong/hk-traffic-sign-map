@@ -38,12 +38,13 @@
 
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { identify, magick, requireTool, resolveFont } from './catalogue/proc.mjs'
-import { CATALOGUE_JSON, SIGNS_DIR, STAGING } from './catalogue/sheets.mjs'
+import { readCatalogue } from './catalogue/store.mjs'
+import { SIGNS_DIR, STAGING, SUFFIX_ALIAS } from './catalogue/sheets.mjs'
 
 const RSF_ORIGIN = 'https://roadsignfactory.hk'
 const RSF_INDEX = `${RSF_ORIGIN}/data/signs.json`
@@ -54,6 +55,15 @@ const rsfAsset = filename => `${RSF_ORIGIN}/api/proxy?asset=${encodeURIComponent
 const CACHE = 'data/raw/.rsf-cache'
 const OUT = 'data/raw/sign-audit'
 const FETCH_DELAY_MS = 250 // one-off audit against someone else's endpoint — be polite
+
+// Scratch consumed within a single iteration. Fixed names on purpose: at ~1,200
+// codes, `${code}__…` variants would strand thousands of dead files, the exact
+// pile-up CLAUDE.md records costing 266 MB in .sign-cache. Only the `__ours` /
+// `__rsf` pair survives an iteration, and only for the rows the montage shows.
+const SC_OURS_SQ = 'data/raw/sign-audit/_scratch_ours_sq.png'
+const SC_REF = 'data/raw/sign-audit/_scratch_rsf.png'
+const SC_REF_RAW = 'data/raw/sign-audit/_scratch_rsf_raw.png'
+const SC_REF_SQ = 'data/raw/sign-audit/_scratch_rsf_sq.png'
 
 // Both sides are trimmed to ink before anything is measured. RSF renders every
 // sign onto a common 566x269 frame, so without the trim every aspect ratio comes
@@ -88,25 +98,47 @@ const font = resolveFont()
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
+// FETCH_DELAY_MS is a minimum INTERVAL between requests, not a nap taken after
+// each one: measuring from the last request lets the render/compare work for the
+// previous code fill the gap rather than extend it, and the request rate still
+// never exceeds the declared floor.
+let lastFetchAt = 0
+async function paceFetch() {
+  const wait = FETCH_DELAY_MS - (Date.now() - lastFetchAt)
+  if (wait > 0) await sleep(wait)
+  lastFetchAt = Date.now()
+}
+
+// writeFile is not atomic. An interrupted run would otherwise leave a truncated
+// SVG in the cache that looks valid forever, with only --refresh (a full
+// re-fetch of all ~1,200) to escape it.
+async function cacheWrite(dst, data) {
+  const tmp = `${dst}.part`
+  await writeFile(tmp, data)
+  await rename(tmp, dst)
+}
+
 // RSF keys an Index Plan number without the `TS`, and spells the TS2701 variants
 // out in full. It has NO bare key for a "(DOUBLE SIDES)" row — only <n>L/<n>R —
 // so a bare base of ours has to fall through to that pair (same convention the
 // name list uses; see data/sign-names/README.md).
 function rsfToSignId(key) {
-  const full = { '-URBAN': 'U', '-NT': 'N', '-LANTAU': 'L' }
-  for (const [suffix, letter] of Object.entries(full)) {
-    if (key.endsWith(suffix)) return `TS${key.slice(0, -suffix.length)}${letter}`
+  for (const [letter, spelled] of Object.entries(SUFFIX_ALIAS)) {
+    if (key.endsWith(spelled)) return `TS${key.slice(0, -spelled.length)}${letter}`
   }
   return `TS${key}`
 }
 
 async function fetchRsfIndex() {
   const cached = join(CACHE, 'signs.json')
-  if (!values.refresh && existsSync(cached)) return JSON.parse(await readFile(cached, 'utf8'))
+  if (!values.refresh) {
+    const hit = await readFile(cached, 'utf8').catch(() => null)
+    if (hit) return JSON.parse(hit)
+  }
   const res = await fetch(RSF_INDEX)
   if (!res.ok) throw new Error(`RSF index: HTTP ${res.status}`)
   const body = await res.text()
-  await writeFile(cached, body)
+  await cacheWrite(cached, body)
   return JSON.parse(body)
 }
 
@@ -114,13 +146,13 @@ async function fetchRsfIndex() {
 async function fetchPlate(filename) {
   const dst = join(CACHE, filename)
   if (!values.refresh && existsSync(dst)) return dst
+  await paceFetch()
   const res = await fetch(rsfAsset(filename), { headers: { Referer: `${RSF_ORIGIN}/sign-index` } })
-  await sleep(FETCH_DELAY_MS)
   if (!res.ok || !(res.headers.get('content-type') ?? '').includes('svg')) {
     console.warn(`⚠ ${filename}: HTTP ${res.status} ${res.headers.get('content-type') ?? ''}`)
     return null
   }
-  await writeFile(dst, Buffer.from(await res.arrayBuffer()))
+  await cacheWrite(dst, Buffer.from(await res.arrayBuffer()))
   return dst
 }
 
@@ -133,23 +165,29 @@ function rmseOf(a, b) {
   return m ? Number(m[1]) : null
 }
 
-function normalizedOurs(src, dst) {
-  magick([src, '-background', 'white', '-alpha', 'remove', '-alpha', 'off',
-    '-fuzz', TRIM_FUZZ, '-trim', '+repage', '-resize', `x${CMP_H}`, dst])
+// Both sides finish identically — trim to ink, normalise height, measure — and
+// differ only in how they become a raster, so that is all a caller passes.
+function trimAndMeasure(pre, dst) {
+  magick([...pre, '-fuzz', TRIM_FUZZ, '-trim', '+repage', '-resize', `x${CMP_H}`, dst])
   return identify(dst)
 }
+
+const normalizedOurs = (src, dst) =>
+  trimAndMeasure([src, '-background', 'white', '-alpha', 'remove', '-alpha', 'off'], dst)
 
 function normalizedRsf(svg, raw, dst) {
   const r = spawnSync('rsvg-convert', ['-h', String(RENDER_H), '-b', 'white', svg, '-o', raw], { encoding: 'buffer' })
   if (r.status !== 0) return null
-  magick([raw, '-fuzz', TRIM_FUZZ, '-trim', '+repage', '-resize', `x${CMP_H}`, dst])
-  return identify(dst)
+  return trimAndMeasure([raw], dst)
 }
 
 function squash(src, dst) {
   magick([src, '-colorspace', 'gray', '-resize', CMP_BOX, dst])
 }
 
+// Deliberately a separate, coarser vocabulary from names.mjs's text verdicts
+// (`agree`/`fill`/`digit-conflict`/`code-misread`/…): these are image-similarity
+// bands ranking a review queue, not a decision about what to ship.
 function verdictOf(rmse, arDelta) {
   if (rmse === null) return 'no-compare'
   if (rmse < AGREE_RMSE && arDelta < AGREE_AR) return 'agree'
@@ -164,13 +202,14 @@ async function ourPictograms() {
     const files = (await readdir(SIGNS_DIR).catch(() => [])).filter(f => f.endsWith('.png'))
     return new Map(files.map(f => [f.slice(0, -4), join(SIGNS_DIR, f)]))
   }
+  // Driven off each sheet's manifest rather than globbing the directory: it also
+  // holds review/verify montages and provisional __top/__bottom halves, and
+  // those filename conventions are extract.mjs's private business to change.
   const out = new Map()
   for (const dir of (await readdir(STAGING).catch(() => []))) {
-    for (const f of (await readdir(join(STAGING, dir)).catch(() => []))) {
-      // Skip the montages and the provisional __top/__bottom split halves.
-      if (!f.endsWith('.png') || f.includes('__') || f === 'review.png' || f === 'verify.png') continue
-      out.set(f.slice(0, -4), join(STAGING, dir, f))
-    }
+    const mf = await readFile(join(STAGING, dir, 'manifest.json'), 'utf8').catch(() => null)
+    if (!mf) continue
+    for (const add of (JSON.parse(mf).adds ?? [])) out.set(add.code, join(STAGING, dir, `${add.code}.png`))
   }
   return out
 }
@@ -183,7 +222,7 @@ const bySignId = new Map()
 for (const e of index) bySignId.set(rsfToSignId(e.signNumber), e.filename)
 
 const ours = await ourPictograms()
-const catalogue = JSON.parse(await readFile(CATALOGUE_JSON, 'utf8'))
+const catalogue = await readCatalogue()
 console.log(`ours: ${ours.size} pictogram(s) from ${values.staged ? STAGING : SIGNS_DIR} | RSF: ${index.length} plate(s)`)
 
 // Candidate RSF plates for one of our codes: the exact key, else — for a bare
@@ -205,32 +244,35 @@ for (const [code, file] of ours) {
   done++
 
   const oursN = join(OUT, `${code}__ours.png`)
-  let ourDim
-  try {
-    ourDim = normalizedOurs(file, oursN)
-  } catch {
-    console.warn(`⚠ ${code}: unreadable pictogram`)
-    continue
-  }
-  const arOurs = ourDim[0] / ourDim[1]
-  squash(oursN, join(OUT, `${code}__ours_sq.png`))
-
   let best = null
-  for (const filename of cands) {
-    const svg = await fetchPlate(filename)
-    if (!svg) continue
-    const refN = join(OUT, `${code}__rsf.png`)
-    const dim = normalizedRsf(svg, join(OUT, `${code}__rsf_raw.png`), refN)
-    if (!dim) {
-      console.warn(`⚠ ${code}: rsvg-convert failed on ${filename}`)
-      continue
+  try {
+    const [ow, oh] = normalizedOurs(file, oursN)
+    const arOurs = ow / oh
+    squash(oursN, SC_OURS_SQ)
+
+    for (const filename of cands) {
+      const svg = await fetchPlate(filename)
+      if (!svg) continue
+      const dim = normalizedRsf(svg, SC_REF_RAW, SC_REF)
+      if (!dim) {
+        console.warn(`⚠ ${code}: rsvg-convert failed on ${filename}`)
+        continue
+      }
+      squash(SC_REF, SC_REF_SQ)
+      const rmse = rmseOf(SC_OURS_SQ, SC_REF_SQ)
+      const arRef = dim[0] / dim[1]
+      const arDelta = Math.abs(Math.log(arOurs / arRef))
+      const score = (rmse ?? 1) + Math.min(arDelta, 1)
+      if (best && score >= best.score) continue
+      best = { filename, rmse, arRef, arDelta, score, arOurs }
+      // Retain the WINNER's raster. Rendering every candidate to one path left
+      // whichever rendered last on disk, so an L/R pair could show one face
+      // under the other's label in the montage.
+      await copyFile(SC_REF, join(OUT, `${code}__rsf.png`))
     }
-    squash(refN, join(OUT, `${code}__rsf_sq.png`))
-    const rmse = rmseOf(join(OUT, `${code}__ours_sq.png`), join(OUT, `${code}__rsf_sq.png`))
-    const arRef = dim[0] / dim[1]
-    const arDelta = Math.abs(Math.log(arOurs / arRef))
-    const score = (rmse ?? 1) + Math.min(arDelta, 1)
-    if (!best || score < best.score) best = { filename, rmse, arRef, arDelta, score }
+  } catch (err) {
+    console.warn(`⚠ ${code}: comparison failed — ${err.message.split('\n')[0]}`)
+    continue
   }
   if (!best) {
     noRef++
@@ -242,7 +284,7 @@ for (const [code, file] of ours) {
     ref: best.filename,
     verdict: verdictOf(best.rmse, best.arDelta),
     rmse: best.rmse === null ? null : Number(best.rmse.toFixed(3)),
-    arOurs: Number(arOurs.toFixed(2)),
+    arOurs: Number(best.arOurs.toFixed(2)),
     arRef: Number(best.arRef.toFixed(2)),
     arDelta: Number(best.arDelta.toFixed(3)),
     score: Number(best.score.toFixed(3)),
@@ -253,6 +295,11 @@ for (const [code, file] of ours) {
 }
 
 rows.sort((a, b) => b.score - a.score)
+for (const r of rows.slice(TOP)) {
+  await rm(join(OUT, `${r.code}__ours.png`), { force: true })
+  await rm(join(OUT, `${r.code}__rsf.png`), { force: true })
+}
+for (const f of [SC_OURS_SQ, SC_REF, SC_REF_RAW, SC_REF_SQ]) await rm(f, { force: true })
 const tally = rows.reduce((t, r) => ({ ...t, [r.verdict]: (t[r.verdict] ?? 0) + 1 }), {})
 await writeFile(join(OUT, 'manifest.json'), JSON.stringify({
   generatedAt: new Date().toISOString(),

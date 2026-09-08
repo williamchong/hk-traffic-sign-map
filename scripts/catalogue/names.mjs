@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { NAMES_DIR } from './sheets.mjs'
+import { NAMES_DIR, SUFFIX_ALIAS } from './sheets.mjs'
 
 export function loadNames() {
   const names = JSON.parse(readFileSync(join(NAMES_DIR, 'descriptions.json'), 'utf8'))
@@ -88,8 +88,6 @@ const shippable = s => String(s).replace(/[^\w &()'./,:%$-]+/g, ' ').replace(/\s
 
 // TD installs `TS2701U`/`N`/`L` for the URBAN / NEW TERRITORIES / LANTAU variants
 // of one Index Plan row; the list keys those as `2701-URBAN` etc.
-const SUFFIX_ALIAS = { U: '-URBAN', N: '-NT', L: '-LANTAU' }
-
 // Resolve a SIGNID to its list entry. The list has NO bare key for a
 // "(DOUBLE SIDES)" row — it keys the two faces (`639L`, `639R`) which carry
 // identical text — so a bare base has to fall through to its faces, or every one
