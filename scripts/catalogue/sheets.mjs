@@ -23,6 +23,9 @@ export const CB_MERGE = 4 // cluster verticals closer than this (doublet group s
 export const NO_W = [12, 32] // No.-column cell width band
 export const SYM_W = [24, 140] // Symbol-cell width band (validates the actual divider)
 export const MIN_ROW = 5 // drop row bands thinner than this (header slivers / double rules)
+export const RULE_JOIN = 1 // join collinear rule segments this far apart (a row rule's
+// per-cell halves meet AT the No.|Symbol divider, so they must merge before groupRows
+// can ask whether the rule crosses it)
 
 // Crop insets past a cell's ruling lines, in points.
 //
@@ -47,10 +50,24 @@ export const NO_BAND_PT = 18
 // `--variants` flag can't drift apart on which letters count.
 export const SIGN_SUFFIXES = 'LRTBFUN'
 
+// TD writes the three TS2701 variants as suffix letters; both of Road Sign
+// Factory's files spell them out instead. Kept here, not in names.mjs, because
+// two modules now read it in OPPOSITE directions — names.mjs maps SIGNID → list
+// key, audit-sign-images.mjs maps plate key → SIGNID — and a new variant must
+// not drift between two hand-written copies.
+export const SUFFIX_ALIAS = { U: '-URBAN', N: '-NT', L: '-LANTAU' }
+
 // A row this much taller than its group's median is a rowspan — on the
 // informatory sheets that means a "(DOUBLE SIDES)" cell holding two stacked
 // plates (see variants.mjs).
 export const TALL_ROW_RATIO = 1.6
+
+// The table's own bottom border is missing from the traced geometry on some
+// sheets, so a group's last row is never closed by a rule and its sign is lost
+// (TS3621, TS3680, TS3701). Close it against the table bottom instead — but only
+// when the trailing gap is about one row, or a title-block group (median row 0 or
+// most of the page) would swallow half the sheet.
+export const LAST_ROW_BAND = [0.6, 1.9]
 
 // Everything transient goes here. It must NOT be /tmp: some sandboxes let a
 // spawned tesseract read only the working tree, so a /tmp input silently fails

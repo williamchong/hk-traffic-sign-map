@@ -11,7 +11,7 @@ import { cleanSheetScratch, renderPage, traceSegments } from './render.mjs'
 import { splitPlates } from './variants.mjs'
 import { isDoubleSided, isListedSuperseded, verdictFor } from './names.mjs'
 import {
-  INDEX_PLAN_DIR, MIN_ROW, PX, RENDER_SCALE, SCRATCH, SIGNS_DIR, STAGING, SYM_INSET_PT, TALL_ROW_RATIO
+  INDEX_PLAN_DIR, LAST_ROW_BAND, MIN_ROW, PX, RENDER_SCALE, SCRATCH, SIGNS_DIR, STAGING, SYM_INSET_PT, TALL_ROW_RATIO
 } from './sheets.mjs'
 
 const sheetTag = s => `${s.prefix}${s.range[0]}-${s.range[1]}`
@@ -40,13 +40,20 @@ export async function extractSheet(sheet, catalogue, opts) {
   const { groups, top, bot } = columnModel(Vs)
   const greys = greyBoxes(fills)
   for (const g of groups) {
-    const ys = groupRows(Hs, g.no[0], g.sym[1]).filter(y => y >= top - 1 && y <= bot + 1)
+    const ys = groupRows(Hs, g.no[0], g.no[1], g.sym[1]).filter(y => y >= top - 1 && y <= bot + 1)
     g.cells = []
     for (let i = 0; i < ys.length - 1; i++) {
       if (ys[i + 1] - ys[i] < MIN_ROW) continue
       g.cells.push([ys[i], ys[i + 1]])
     }
     g.medianRow = median(g.cells.map(([a, b]) => b - a))
+    // Close the group's last row against the table bottom when no rule did.
+    // Deliberately after the median, so this synthesised cell can't skew it.
+    const lastY = ys[ys.length - 1]
+    if (g.medianRow && lastY !== undefined) {
+      const gap = bot - lastY
+      if (gap >= g.medianRow * LAST_ROW_BAND[0] && gap <= g.medianRow * LAST_ROW_BAND[1]) g.cells.push([lastY, bot])
+    }
   }
   const totalCells = groups.reduce((n, g) => n + g.cells.length, 0)
   console.log(`[${sheet.pdf}] grid: ${groups.length} groups, rows/group=[${groups.map(g => g.cells.length).join(',')}], ${totalCells} cells, ${greys.length} grey box(es)`)

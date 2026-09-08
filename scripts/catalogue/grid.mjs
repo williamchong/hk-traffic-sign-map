@@ -10,7 +10,7 @@
 // a wide sliver. A measured median is now only the fallback for a group whose
 // dividers were interrupted (e.g. the bottom-right title block).
 
-import { CB_MERGE, NO_W, SYM_W } from './sheets.mjs'
+import { CB_MERGE, NO_W, RULE_JOIN, SYM_W } from './sheets.mjs'
 
 export const median = (a) => {
   if (!a.length) return 0
@@ -88,9 +88,21 @@ export function columnModel(Vs) {
 
 // Per-group row rules: horizontal borders are drawn per-cell (short collinear
 // segments), so cluster H-segments by y and keep a y only where the segments
-// collectively span most of the group's width. A rowspan is just a larger gap
-// between two kept rules — no uniform pitch assumed.
-export function groupRows(Hs, xL, xR) {
+// collectively span most of the group's width AND cross the No.|Symbol divider
+// (`noR`). A rowspan is just a larger gap between two kept rules — no uniform
+// pitch assumed.
+//
+// The crossing test is the one that matters. A row divider separates two printed
+// numbers, so it must run through the No. column; a sign's own plate outline sits
+// entirely inside the Symbol cell and never does. Width alone cannot tell them
+// apart: real rules cover 98-100 % of the group but a full-bleed pictogram
+// reaches ~74 % (Symbol cell ÷ group width), so a 60 % floor admits the wider
+// plates. That mis-read TS3643's rowspan as three slivers — its vertically
+// centred number then straddled a false divider, both halves OCR'd to garbage,
+// and the row vanished silently (TS3649 likewise shipped a truncated half-row).
+// The 60 % floor is kept as a cheap guard on a degenerate lattice.
+export function groupRows(Hs, noL, noR, symR) {
+  const [xL, xR] = [noL, symR]
   const W = xR - xL
   const segs = Hs.filter(h => h.x1 > xL && h.x0 < xR).sort((a, b) => a.y - b.y)
   const clusters = []
@@ -102,13 +114,16 @@ export function groupRows(Hs, xL, xR) {
   const ys = []
   for (const c of clusters) {
     const iv = c.segs.map(h => [Math.max(xL, h.x0), Math.min(xR, h.x1)]).filter(([a, b]) => b > a).sort((p, q) => p[0] - q[0])
-    let cov = 0, cur = -1
+    // Merge into runs first: a row rule's borders are drawn per CELL, so its No.
+    // and Symbol halves meet exactly at `noR` and neither half crosses it alone.
+    const runs = []
     for (const [a, b] of iv) {
-      const s = Math.max(a, cur)
-      if (b > s) cov += b - s
-      cur = Math.max(cur, b)
+      const last = runs[runs.length - 1]
+      if (last && a <= last[1] + RULE_JOIN) last[1] = Math.max(last[1], b)
+      else runs.push([a, b])
     }
-    if (cov > W * 0.6) ys.push(c.y)
+    const cov = runs.reduce((s, [a, b]) => s + (b - a), 0)
+    if (cov > W * 0.6 && runs.some(([a, b]) => a < noR && b > noR)) ys.push(c.y)
   }
   return ys
 }
