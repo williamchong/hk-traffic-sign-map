@@ -4819,15 +4819,12 @@
     "tier": 2,
     "group": "regulatory",
     "desc": {
-      "en": "MID-MAD RED LIGHT SIGNAL"
+      "en": "WIG WAG RED LIGHT SIGNAL"
     }
   },
   "TS256": {
-    "tier": 1,
-    "group": "regulatory",
-    "desc": {
-      "en": "TOLL AREA"
-    }
+    "tier": 2,
+    "group": "regulatory"
   },
   "TS313": {
     "tier": 1,
@@ -6114,32 +6111,11 @@
       "en": "AMBER T' LIGHT SIGNAL (TRAM)"
     }
   },
-  "TS292": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": {
-      "en": "LIGHT SIGNAL"
-    }
-  },
   "TS254": {
     "tier": 0,
     "group": "regulatory",
     "desc": {
       "en": "AUTOTOLL BOOTH"
-    }
-  },
-  "TS299": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": {
-      "en": "WIG WAG RED LIGHT SIGNAL"
-    }
-  },
-  "TS296": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": {
-      "en": "TOLL AREA NON -EXPRESSWAYS"
     }
   },
   "TS257": {
@@ -6189,13 +6165,6 @@
     "group": "regulatory",
     "desc": {
       "en": "LEAVE AT NEXT EXIT ON RIGHT"
-    }
-  },
-  "TS206": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": {
-      "en": "AMBER LIGHT USED IN CONJUNCTION WITH MATRIX SIGNAL"
     }
   },
   "TS267": {
@@ -6350,20 +6319,6 @@
     "group": "regulatory",
     "desc": {
       "en": "NEARSIDE LANE FOR FRANCHISED BUSES"
-    }
-  },
-  "TS394": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": {
-      "en": "END OF AN EXPRESSWAY"
-    }
-  },
-  "TS335": {
-    "tier": 0,
-    "group": "regulatory",
-    "desc": {
-      "en": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 60KkmM/h"
     }
   },
   "TS357": {
@@ -8378,5 +8333,26 @@
     "tier": 1,
     "group": "informatory",
     "alias": "TS3643"
+  },
+  "TS252": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
+  },
+  "TS266": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "AMBER LIGHT USED IN CONJUNCTION WITH MATRIX SIGNAL"
+    }
+  },
+  "TS355": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 60km/h"
+    }
   }
 }

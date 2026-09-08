@@ -95,7 +95,7 @@ console.log(`existing catalogue: ${Object.keys(catalogue).length} codes`)
 const names = loadNames()
 let totalAdded = 0
 for (const sheet of opts.sheets) {
-  totalAdded += await extractSheet(sheet, catalogue, { propose: opts.propose, wipe: opts.wipe, names, font, overrides })
+  totalAdded += await extractSheet(sheet, catalogue, { propose: opts.propose, wipe: opts.wipe, names, font, overrides, rebind: opts.rebind })
 }
 
 if (opts.propose) {

@@ -31,7 +31,7 @@ function resolveSplit(add, overrides, { trustHeuristic = false } = {}) {
 }
 
 export async function extractSheet(sheet, catalogue, opts) {
-  const { propose, wipe, names, font, overrides } = opts
+  const { propose, wipe, names, font, overrides, rebind = new Map() } = opts
   const pdf = join(INDEX_PLAN_DIR, sheet.pdf)
   const tag = `${sheet.prefix}-${sheet.range[0]}`
   const png = renderPage(pdf, tag)
@@ -86,10 +86,20 @@ export async function extractSheet(sheet, catalogue, opts) {
     for (const [rtop, rbot] of grp.cells) {
       const rowH = rbot - rtop
       const tokens = ocrCode(png, PX(grp.no[0]), PX(rtop), PX(grp.no[1] - grp.no[0]), PX(rowH), parseCode)
-      const c = tokens.map(parseCode).find(Boolean) || null
+      let c = tokens.map(parseCode).find(Boolean) || null
       if (!c) {
         if (tokens.length) tally.unreadable++
         continue
+      }
+      // A reviewer's --rebind correction lands here, on the read itself, so the
+      // dup check, monotonicity, superseded lookup and name cross-check all see
+      // the corrected code. In particular the name check now scores this crop
+      // against the REBOUND code's reference entry, so a mistaken rebind is
+      // visible as `disagree`/`code-misread` instead of shipping quietly.
+      const to = rebind.get(c.code)
+      if (to) {
+        console.warn(`[${sheet.pdf}] ↻ ${c.code} rebound to ${to} (reviewer override, group ${gi}, y≈${rtop.toFixed(0)})`)
+        c = { code: to, n: parseInt(to.replace(/^\D+/, ''), 10) }
       }
       // The No. column is sorted within a group — flag (don't drop) an OCR read
       // that breaks it, so a digit misread is visible in the log.
@@ -104,7 +114,10 @@ export async function extractSheet(sheet, catalogue, opts) {
         tally.dup++
         continue
       }
-      if (!wipe && catalogue[c.code]) {
+      // A rebind is a correction to something already in the catalogue — usually
+      // a WRONG plate (TS256 ships a "P"+lorry) — so it must override the
+      // merge-run skip that normally leaves an existing code alone.
+      if (!wipe && !to && catalogue[c.code]) {
         tally.dup++
         continue
       }
