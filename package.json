@@ -15,10 +15,11 @@
     "data:stacks": "node scripts/compute-stacks.mjs",
     "data:stacked-icons": "node scripts/gen-stacked-icons.mjs",
     "data:tiles": "node scripts/build-tiles.mjs",
+    "data:road-rules": "node scripts/build-road-rules.mjs",
     "data:sign-shapes": "node scripts/compute-sign-shapes.mjs",
     "data:catalogue": "node scripts/build-sign-catalogue.mjs",
     "data:aliases": "node scripts/catalogue/aliases.mjs",
-    "data:build": "node scripts/fetch-data.mjs && node scripts/compute-bearings.mjs && node scripts/compute-stacks.mjs && node scripts/gen-stacked-icons.mjs && node scripts/build-tiles.mjs"
+    "data:build": "node scripts/fetch-data.mjs && node scripts/compute-bearings.mjs && node scripts/compute-stacks.mjs && node scripts/gen-stacked-icons.mjs && node scripts/build-tiles.mjs && node scripts/build-road-rules.mjs"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.106",

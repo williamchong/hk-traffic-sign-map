@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import type { Map as MaplibreMap, ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, GeoJSONSource } from 'maplibre-gl'
+import type { Map as MaplibreMap, ExpressionSpecification, FilterSpecification, MapGeoJSONFeature, GeoJSONFeature, GeoJSONSource, LineLayerSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSignCategories'
 import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf, plateSizeFactorExpr } from '~/composables/useSignCatalogue'
-import type { FilterMode } from '~/composables/useTrafficLayers'
+import type { FilterMode, SelectedSign } from '~/composables/useTrafficLayers'
+import {
+  RULE_SOURCE, RULE_ROWS, SIGN_RULE_LINKS, SIGN_RULE_RADIUS_M,
+  speedColorStops, prohibitionColorStops, type RuleLayer
+} from '~/composables/useRoadRules'
+import { pointToLineMetres } from '~/utils/geo'
 import tilesVersion from '~/data/tilesVersion.json'
 
 // maplibre-gl touches `window` at import time and is large; it's
@@ -12,6 +17,7 @@ import tilesVersion from '~/data/tilesVersion.json'
 let detachProtocol: (() => void) | undefined
 
 const { mapFilter, selectedSign, selectedGroup, mapUnavailable, filterMode, loadGroupIndex } = useTrafficLayers()
+const { rulesEnabled, enabledKinds, isRowEnabled, selectedRule, governingRule } = useRoadRules()
 const colorMode = useColorMode()
 const { track } = useAnalytics()
 
@@ -211,6 +217,44 @@ const ICON_OPACITY = expr([
 // so a sign is never dropped once its tier is in range).
 const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tierLayerId(t))]
 
+// Road-rules overlay: line layers from the third archive
+// (public/data/road-rules.pmtiles, one source-layer per RuleLayer). Each kind
+// is two layers — a wide, fully transparent `-hit` line that is ALWAYS on, and
+// the visible line the legend toggles. The hit line does two jobs: it gives
+// clicks tolerance on a 1–6 px line, and it keeps the source's tiles resident
+// even when every overlay is off, because MapLibre only loads tiles for
+// non-hidden layers and the sign popup's "applies here" lookup
+// (querySourceFeatures below) needs them loaded regardless. Rule ids stay OUT
+// of signLayerIds: the click handler's featureKey assumes point geometry.
+const RULE_LAYERS: RuleLayer[] = ['speed', 'buslane', 'prohibition']
+const ruleLayerId = (layer: RuleLayer) => `rule-${layer}`
+const ruleHitLayerId = (layer: RuleLayer) => `rule-${layer}-hit`
+const ruleHitLayerIds = RULE_LAYERS.map(ruleHitLayerId)
+// Speed limits run for kilometres and read at the overview; bus lanes and
+// prohibitions are short urban segments that only make sense street-level.
+const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11 }
+const RULE_LINE_WIDTH = expr(['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 3, 17, 6])
+const ruleColor = (key: string) => RULE_ROWS.find(r => r.key === key)!.color
+// A bus lane's `bound` is its side of the centreline in the digitised
+// direction (1 left, -1 right, 0 both); `line-offset` is positive to the
+// right of the line, so the lane draws on its own side. The side factor rides
+// in the interpolate's STOP OUTPUTS — a zoom input is only legal directly
+// under a top-level interpolate, so it can't be an outer `*`.
+const busLaneSide = expr(['match', ['get', 'bound'], 1, -1, -1, 1, 0])
+const RULE_PAINT: Record<RuleLayer, LineLayerSpecification['paint']> = {
+  speed: {
+    'line-color': expr(['match', ['get', 'speed'], ...speedColorStops, ruleColor('speed')])
+  },
+  buslane: {
+    'line-color': ruleColor('buslane'),
+    'line-offset': expr(['interpolate', ['linear'], ['zoom'], 12, ['*', busLaneSide, 1], 17, ['*', busLaneSide, 5]])
+  },
+  prohibition: {
+    'line-color': expr(['match', ['get', 'kind'], ...prohibitionColorStops, ruleColor('proh-other')]),
+    'line-dasharray': [2, 1.5]
+  }
+}
+
 // Pictogram icon-id prefixes. Lone signs draw from the height-normalized set
 // (`sign-` → /signs/); stacked post members (those carrying STACK_INDEX) draw
 // the width-normalized variant (`signw-` → /signs-stacked/) so the post reads
@@ -255,9 +299,13 @@ onMounted(async () => {
   const base = window.location.origin
   const lodUrl = `${base}/data/traffic-signs.pmtiles?v=${tilesVersion.version}`
   const fullUrl = `${base}/data/traffic-signs-full.pmtiles?v=${tilesVersion.version}`
+  // The road-rules archive has its own hash: it is rebuilt on its own cadence
+  // by scripts/build-road-rules.mjs and must not bust the sign cache.
+  const rulesUrl = `${base}/data/road-rules.pmtiles?v=${tilesVersion.rulesVersion}`
   const protocol = new Protocol()
   protocol.add(new PMTiles(new RangeOrWholeSource(lodUrl)))
   protocol.add(new PMTiles(new RangeOrWholeSource(fullUrl)))
+  protocol.add(new PMTiles(new RangeOrWholeSource(rulesUrl)))
   maplibregl.addProtocol('pmtiles', protocol.tile)
   detachProtocol = () => maplibregl.removeProtocol('pmtiles')
 
@@ -327,9 +375,12 @@ onMounted(async () => {
     // `signs-full` when filtering by sign ID. A single pyramid can't serve
     // both, so we swap the source by re-adding the layers when the mode
     // flips. Both carry the same attribution and `signs` source-layer name.
-    const ATTRIB = 'Traffic sign data © Transport Department, HKSAR'
+    // The road-rules overlay is the same publisher and licence (Road Network
+    // v2), so one attribution string covers all three archives.
+    const ATTRIB = 'Traffic sign & road network data © Transport Department, HKSAR'
     m.addSource(SOURCE_LOD, { type: 'vector', url: `pmtiles://${lodUrl}`, attribution: ATTRIB })
     m.addSource(SOURCE_FULL, { type: 'vector', url: `pmtiles://${fullUrl}`, attribution: ATTRIB })
+    m.addSource(RULE_SOURCE, { type: 'vector', url: `pmtiles://${rulesUrl}`, attribution: ATTRIB })
 
     const circlePaint = {
       // Smaller dots when zoomed out keep dense areas readable.
@@ -589,6 +640,41 @@ onMounted(async () => {
     const removeSignLayers = () => {
       for (const id of signLayerIds) if (m.getLayer(id)) m.removeLayer(id)
     }
+
+    // Rule lines go in BEFORE the sign layers, anchored on the same overlay
+    // (`sel-group-glow`): MapLibre inserts immediately before the anchor, so
+    // whatever is added later lands on top — the sign layers now, and again
+    // every time a filter-mode flip re-adds them. Roads stay under signs.
+    for (const layer of RULE_LAYERS) {
+      const common = { 'source': RULE_SOURCE, 'source-layer': layer, 'minzoom': RULE_MINZOOM[layer] } as const
+      m.addLayer({
+        id: ruleHitLayerId(layer),
+        type: 'line',
+        ...common,
+        paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 14 }
+      }, 'sel-group-glow')
+      m.addLayer({
+        id: ruleLayerId(layer),
+        type: 'line',
+        ...common,
+        layout: { 'line-cap': 'round', 'line-join': 'round', 'visibility': 'none' },
+        paint: { 'line-width': RULE_LINE_WIDTH, 'line-opacity': 0.75, ...RULE_PAINT[layer] }
+      }, 'sel-group-glow')
+    }
+    // Legend → layers: speed / bus lane by visibility; the one prohibition
+    // layer by a `kind` filter over the rows that are on (hidden when none).
+    const syncRuleLayers = () => {
+      for (const layer of RULE_LAYERS) {
+        const id = ruleLayerId(layer)
+        if (!m.getLayer(id)) continue
+        const kinds = enabledKinds.value
+        const on = layer === 'prohibition' ? kinds.length > 0 : !!rulesEnabled.value[layer]
+        m.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none')
+        if (layer === 'prohibition') m.setFilter(id, expr(['in', ['get', 'kind'], ['literal', kinds]]))
+      }
+    }
+    watch(rulesEnabled, syncRuleLayers, { immediate: true, deep: true })
+
     addSignLayers(sourceForMode(filterMode.value))
     // In sign-ID mode, fetch the companion-group index so the filter can grow
     // each matched sign into its whole signpost; `mapFilter` re-widens (and the
@@ -718,6 +804,39 @@ onMounted(async () => {
       }
     }
     watch(selectedSign, syncSelection)
+
+    // "Applies here": for a sign whose plate announces a rule the archive has
+    // an extent for (SIGN_RULE_LINKS), find the nearest matching rule feature
+    // within SIGN_RULE_RADIUS_M of the sign and hand it to the sign popup.
+    // querySourceFeatures reads the loaded tiles — resident at every zoom
+    // thanks to the always-on hit layers — so this is a local, synchronous
+    // lookup; a sign too far from any matching feature just shows no block.
+    const lookupGoverningRule = (s: SelectedSign | null) => {
+      const code = typeof s?.properties.SIGNID === 'string' ? s.properties.SIGNID : null
+      const link = code ? SIGN_RULE_LINKS[code] : undefined
+      if (!s || !link) {
+        governingRule.value = null
+        return
+      }
+      const filter = link.speed != null
+        ? expr(['==', ['get', 'speed'], link.speed])
+        : link.kind ? expr(['==', ['get', 'kind'], link.kind]) : undefined
+      let best: GeoJSONFeature | null = null
+      let bestD = SIGN_RULE_RADIUS_M
+      // `validate: false`: the filter is built from typed constants, so skip
+      // MapLibre's per-call style-spec validation of it.
+      for (const f of m.querySourceFeatures(RULE_SOURCE, { sourceLayer: link.layer, filter, validate: false })) {
+        const g = f.geometry
+        if (g.type !== 'LineString' && g.type !== 'MultiLineString') continue
+        const d = pointToLineMetres(s.lngLat.lng, s.lngLat.lat, g.coordinates)
+        if (d <= bestD) {
+          bestD = d
+          best = f
+        }
+      }
+      governingRule.value = best ? { layer: link.layer, properties: best.properties } : null
+    }
+    watch(selectedSign, lookupGoverningRule, { immediate: true })
   })
 
   // A click can land on several overlapping/collided signs. Collect them all
@@ -748,6 +867,22 @@ onMounted(async () => {
     if (!hits.length) {
       selectedSign.value = null
       cycleKey = ''
+      // No sign under the pointer: try the rule lines. Signs always win a
+      // contested click (a rule line runs under many signs), and only a row
+      // the legend has on is pickable — the transparent hit lines are always
+      // present, so an off overlay must not open a popup.
+      const rule = m.queryRenderedFeatures(box, { layers: ruleHitLayerIds.filter(id => m.getLayer(id)) })
+        .find(f => isRowEnabled(f.sourceLayer as RuleLayer, f.properties.kind as string | undefined))
+      selectedRule.value = rule
+        ? { layer: rule.sourceLayer as RuleLayer, properties: rule.properties, lngLat: e.lngLat }
+        : null
+      if (rule) {
+        track('rule_select', {
+          layer: rule.sourceLayer as string,
+          kind: typeof rule.properties.kind === 'string' ? rule.properties.kind : null,
+          zoom: Math.round(m.getZoom() * 10) / 10
+        })
+      }
       return
     }
     // Same set of hits as the previous click → cycle; otherwise restart.
@@ -758,6 +893,7 @@ onMounted(async () => {
     const f = hits[cycleIdx]
     if (!f) return
     const [lng, lat] = (f.geometry as unknown as { coordinates: [number, number] }).coordinates
+    selectedRule.value = null // a sign pick replaces a rule pick; one popup at a time
     selectedSign.value = {
       properties: f.properties,
       lngLat: new maplibregl.LngLat(lng, lat),
@@ -783,6 +919,22 @@ onMounted(async () => {
     m.on('mouseenter', id, () => (m.getCanvas().style.cursor = 'pointer'))
     m.on('mouseleave', id, () => (m.getCanvas().style.cursor = ''))
   }
+  // Rule lines: ONE delegated pair over all three hit layers (each
+  // layer-scoped listener is its own hit-test per mousemove). `mousemove`
+  // rather than `mouseenter`, because the enter latch would stick on a line
+  // whose row is off and never re-fire for an enabled line reached without
+  // leaving the hit layers. It only ever SETS the pointer — the lines run
+  // under nearly every sign, so clearing here would undo a sign's own cue.
+  // Leaving the lines clears it unless a sign is still under the pointer.
+  m.on('mousemove', ruleHitLayerIds, (e) => {
+    if (e.features?.some(f => isRowEnabled(f.sourceLayer as RuleLayer, f.properties.kind as string | undefined))) {
+      m.getCanvas().style.cursor = 'pointer'
+    }
+  })
+  m.on('mouseleave', ruleHitLayerIds, (e) => {
+    const layers = signLayerIds.filter(id => m.getLayer(id))
+    if (!m.queryRenderedFeatures(e.point, { layers }).length) m.getCanvas().style.cursor = ''
+  })
 
   m.on('error', e => console.error('[maplibre]', e.error?.message ?? e))
 

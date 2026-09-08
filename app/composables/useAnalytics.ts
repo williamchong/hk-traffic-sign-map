@@ -20,6 +20,8 @@ interface AnalyticsEvents {
   filter_signid_only: { sign_id: string }
   filter_signid_hide: { sign_id: string }
   filter_signid_unhide: { sign_id: string }
+  rule_layer_toggle: { layer: string, enabled: boolean }
+  rule_select: { layer: string, kind: string | null, zoom: number }
   locale_switch: { from: string, to: string }
   theme_change: { mode: ThemeMode }
   info_open: undefined

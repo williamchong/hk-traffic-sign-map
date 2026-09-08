@@ -20,17 +20,19 @@ export const SIGN_LAYERS = [
   // Sign locations live in the pole/abbreviation point classes above.
 ]
 
-// Build-time-only inputs: downloaded by fetch-data, consumed by
-// compute-bearings, but never tiled into PMTiles. `file` + `ext` name the
-// on-disk file in RAW_DIR; `url` overrides the default `DATA_BASE_URL/file.ext`
-// for a resource published elsewhere.
+// Build-time inputs beyond the sign layers: downloaded by fetch-data and read
+// by compute-bearings / build-road-rules. `file` + `ext` name the on-disk file
+// in RAW_DIR; `url` overrides the default `DATA_BASE_URL/file.ext` for a
+// resource published elsewhere.
 //
 // • Road Network v2 (TD's Intelligent Road Network Package) as one FGDB zip —
 //   17 MB for all 17 layers, where the per-layer GML of CENTERLINE alone is
 //   486 MB. Its CENTERLINE is *directed*: TRAVEL_DIRECTION 3 = travel only in
 //   the digitised direction, 1 = both ways. That direction is what makes a
-//   sign's face bearing absolute (see compute-bearings.mjs). GDAL reads the
-//   zip in place via /vsizip/.
+//   sign's face bearing absolute (see compute-bearings.mjs). The same package
+//   carries the rule-extent layers (RDNET_RULE_LAYERS below) that
+//   build-road-rules.mjs tiles into the road-rules overlay archive. GDAL
+//   reads the zip in place via /vsizip/.
 // • Road-marking lines (the densest road-geometry layer in the TAD set: lane
 //   lines, kerb edges) stay as the fallback host for signs no centreline
 //   reaches — they give a road tangent but no direction. Not tiled: ~155 MB
@@ -45,6 +47,24 @@ export const BUILD_TIME_DATA = [
 ]
 // Layer name inside the Road Network FGDB that carries the directed centrelines.
 export const RDNET_CENTERLINE_LAYER = 'CENTERLINE'
+
+// Rule-extent layers of the same FGDB, tiled by build-road-rules.mjs into the
+// road-rules overlay (tippecanoe source-layer name → FGDB layer). SPEED_LIMIT
+// and BUS_ONLY_LANE carry their own line geometry; PROHIBITION is a point AT
+// the sign that references the whole CENTERLINE route it governs by
+// ROAD_ROUTE_ID, so the builder joins it onto that route's line. The
+// no-stopping (NSR) and pedestrian-zone layers are deliberately not tiled yet.
+export const RDNET_RULE_LAYERS = {
+  speed: 'SPEED_LIMIT',
+  buslane: 'BUS_ONLY_LANE',
+  prohibition: 'PROHIBITION'
+}
+// Who a prohibition addresses, derived per row from INC_VEH_TYPE + the REMARKS
+// head token (`<who> Proh/ E <exceptions>`); one tile feature per row × kind so
+// the runtime legend rows are plain `kind` filters. `other` catches every row
+// the rules below don't classify, so nothing is silently dropped. Duplicated
+// in app/composables/useRoadRules.ts per the two-runtime rule.
+export const PROHIBITION_KINDS = ['plb', 'ld', 'gv', 'all', 'other']
 
 // Sign codes that address the driver coming the WRONG way — the "no entry"
 // family. Every other plate speaks to traffic already legally on the road and
@@ -73,6 +93,7 @@ export const RAW_DIR = 'data/raw'
 // See the long comment in build-tiles.mjs for why one pyramid can't do both.
 export const OUTPUT_PMTILES = 'public/data/traffic-signs.pmtiles'
 export const OUTPUT_PMTILES_FULL = 'public/data/traffic-signs-full.pmtiles'
+export const OUTPUT_PMTILES_RULES = 'public/data/road-rules.pmtiles'
 export const TILE_LAYER = 'signs'
 // The cache-buster hashes the app imports (`?v=<hash>` on each archive URL).
 // Both build-tiles and build-road-rules write their own key into it by

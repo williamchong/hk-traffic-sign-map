@@ -1,13 +1,30 @@
 <script setup lang="ts">
 import type { VisibleCategoryKey } from '~/composables/useSignCategories'
 import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
+import { SPEED_VALUES, SPEED_COLORS } from '~/composables/useRoadRules'
 
 const { categories, enabled, toggleAll, mapUnavailable, filterMode } = useTrafficLayers()
+const { rows: ruleRows, rulesEnabled, anyRuleOn } = useRoadRules()
 const localePath = useLocalePath()
 const { track } = useAnalytics()
 const { t } = useI18n()
 
 const allOn = computed(() => categories.every(c => enabled[c.key]))
+
+// The road-rules section is independent of the filter tabs (an overlay, not
+// a sign filter) and sits under both. Folded unless something is already on
+// — set after mount, since `rulesEnabled` is localStorage-backed (see the
+// hydration note on `tabMode` below; the section renders client-only for the
+// same reason).
+const rulesOpen = ref(false)
+onMounted(() => {
+  rulesOpen.value = anyRuleOn.value
+})
+
+function onRuleToggle(key: string, value: boolean) {
+  rulesEnabled.value[key] = value
+  track('rule_layer_toggle', { layer: key, enabled: value })
+}
 
 // Hydration-safe mirror of `filterMode` that the whole panel UI binds to.
 // `filterMode` is a module-scope useLocalStorage, so on the client it already
@@ -169,6 +186,70 @@ function onTabChange(value: string | number) {
              prerendered HTML free of search UI it can't use. -->
         <ClientOnly v-if="tabMode === 'sign-id'">
           <LazySignIdFilterPanel />
+        </ClientOnly>
+
+        <!-- Road-rules overlay legend: shown under BOTH tabs. Client-only
+             because its toggles read localStorage, which the prerendered
+             HTML can't know. -->
+        <ClientOnly>
+          <div class="border-t border-default pt-2">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-xs font-medium text-muted">
+                {{ $t('rules.title') }}
+              </p>
+              <button
+                type="button"
+                class="-m-1 shrink-0 cursor-pointer p-1 text-muted hover:text-default"
+                :aria-expanded="rulesOpen"
+                aria-controls="rules-body"
+                :aria-label="rulesOpen ? $t('rules.collapse') : $t('rules.expand')"
+                :title="rulesOpen ? $t('rules.collapse') : $t('rules.expand')"
+                @click="rulesOpen = !rulesOpen"
+              >
+                <UIcon
+                  :name="rulesOpen ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                  class="size-4"
+                />
+              </button>
+            </div>
+            <div
+              v-show="rulesOpen"
+              id="rules-body"
+              class="mt-2 space-y-2"
+            >
+              <p class="text-xs text-muted">
+                {{ $t('rules.hint') }}
+              </p>
+              <template
+                v-for="r in ruleRows"
+                :key="r.key"
+              >
+                <label class="flex cursor-pointer items-center gap-2 text-sm">
+                  <UCheckbox
+                    :model-value="!!rulesEnabled[r.key]"
+                    @update:model-value="v => onRuleToggle(r.key, !!v)"
+                  />
+                  <span
+                    class="h-1 w-4 shrink-0 rounded-full"
+                    :style="{ backgroundColor: r.color }"
+                  />
+                  <span class="truncate">{{ $t(`rules.rows.${r.key}`) }}</span>
+                </label>
+                <!-- Speed lines are coloured by value; show the scale while on. -->
+                <div
+                  v-if="r.key === 'speed' && rulesEnabled.speed"
+                  class="ml-6 flex flex-wrap gap-1"
+                >
+                  <span
+                    v-for="v in SPEED_VALUES"
+                    :key="v"
+                    class="rounded px-1 text-[10px] font-medium text-white"
+                    :style="{ backgroundColor: SPEED_COLORS[v] }"
+                  >{{ v }}</span>
+                </div>
+              </template>
+            </div>
+          </div>
         </ClientOnly>
       </div>
     </template>

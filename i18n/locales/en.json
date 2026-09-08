@@ -58,6 +58,69 @@
     "hide": "Hide this sign",
     "showAgain": "Show this sign"
   },
+  "rules": {
+    "title": "Road rules",
+    "hint": "Where a rule applies, from the Transport Department's road network data",
+    "collapse": "Collapse road rules",
+    "expand": "Expand road rules",
+    "rows": {
+      "speed": "Speed limits",
+      "buslane": "Bus-only lanes",
+      "proh-plb": "Public light buses prohibited",
+      "proh-ld": "Learner drivers prohibited",
+      "proh-gv": "Goods vehicles prohibited",
+      "proh-all": "All motor vehicles prohibited",
+      "proh-other": "Other prohibitions"
+    },
+    "popup": {
+      "speed": "Speed limit",
+      "buslane": "Bus-only lane",
+      "prohibition": "Prohibition"
+    },
+    "appliesHere": "Applies here",
+    "defaultSpeed": "50 km/h is the default limit; it is not drawn on the map.",
+    "speedValue": "{n} km/h",
+    "fields": {
+      "speed": "Limit",
+      "hours": "Hours",
+      "days": "Days",
+      "street": "Street",
+      "vehicles": "Applies to",
+      "except": "Except",
+      "when": "When",
+      "remarks": "Remarks"
+    },
+    "values": {
+      "partTime": "Part-time",
+      "notAllDays": "Not every day"
+    },
+    "veh": {
+      "ALL": "All motor vehicles",
+      "FB": "Franchised buses",
+      "GMB": "Green minibuses",
+      "GV": "Goods vehicles",
+      "NFB": "Non-franchised buses",
+      "OTH": "Other vehicles",
+      "PC": "Private cars",
+      "PLB": "Public light buses",
+      "RLB": "Private light buses",
+      "TX": "Taxis"
+    },
+    "days": {
+      "daily": "Every day",
+      "weekdays": "Mon–Fri",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun",
+      "ph": "Public holidays"
+    },
+    "source": "Road Network (2nd generation), Transport Department",
+    "close": "Close"
+  },
   "theme": {
     "light": "Light",
     "dark": "Dark",

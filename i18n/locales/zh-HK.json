@@ -58,6 +58,69 @@
     "hide": "隱藏此標誌",
     "showAgain": "顯示此標誌"
   },
+  "rules": {
+    "title": "道路規則",
+    "hint": "規則適用的路段，來自運輸署道路網絡數據",
+    "collapse": "收合道路規則",
+    "expand": "展開道路規則",
+    "rows": {
+      "speed": "車速限制",
+      "buslane": "巴士專線",
+      "proh-plb": "禁止公共小巴駛入",
+      "proh-ld": "禁止學習駕駛人士駛入",
+      "proh-gv": "禁止貨車駛入",
+      "proh-all": "禁止所有汽車駛入",
+      "proh-other": "其他禁止駛入限制"
+    },
+    "popup": {
+      "speed": "車速限制",
+      "buslane": "巴士專線",
+      "prohibition": "禁止駛入"
+    },
+    "appliesHere": "此處適用的規則",
+    "defaultSpeed": "每小時50公里為預設車速限制，地圖上不會繪出。",
+    "speedValue": "每小時{n}公里",
+    "fields": {
+      "speed": "限速",
+      "hours": "時段",
+      "days": "日子",
+      "street": "街道",
+      "vehicles": "適用車輛",
+      "except": "除外",
+      "when": "生效",
+      "remarks": "備註"
+    },
+    "values": {
+      "partTime": "部分時間",
+      "notAllDays": "非每日"
+    },
+    "veh": {
+      "ALL": "所有汽車",
+      "FB": "專營巴士",
+      "GMB": "綠色專線小巴",
+      "GV": "貨車",
+      "NFB": "非專營巴士",
+      "OTH": "其他車輛",
+      "PC": "私家車",
+      "PLB": "公共小巴",
+      "RLB": "私家小巴",
+      "TX": "的士"
+    },
+    "days": {
+      "daily": "每日",
+      "weekdays": "星期一至五",
+      "mon": "星期一",
+      "tue": "星期二",
+      "wed": "星期三",
+      "thu": "星期四",
+      "fri": "星期五",
+      "sat": "星期六",
+      "sun": "星期日",
+      "ph": "公眾假期"
+    },
+    "source": "運輸署道路網絡（第二代）",
+    "close": "關閉"
+  },
   "theme": {
     "light": "淺色",
     "dark": "深色",

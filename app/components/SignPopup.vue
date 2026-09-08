@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { signIconUrl, signDescription, categoryKeyOf } from '~/composables/useSignCatalogue'
 import { CATEGORY_FALLBACK_COLOR } from '~/composables/useSignCategories'
+import { ruleRows, DEFAULT_SPEED_CODES } from '~/composables/useRoadRules'
+import { str, formatLngLat } from '~/utils/format'
 
 const {
   selectedSign, selectedGroup, categories,
   filterMode, enabledSignIds, hiddenSignIds,
   filterToSign, hideSign, unhideSign
 } = useTrafficLayers()
+// The rule extent this sign announces, when TrafficMap found one nearby.
+const { governingRule } = useRoadRules()
 const { t, locale } = useI18n()
 const { track } = useAnalytics()
 
 const sign = computed(() => selectedSign.value)
-
-const str = (v: unknown) => (v == null || v === '' ? null : String(v))
 
 // Only `traffic-sign-abbreviation` features carry a SIGNID, so the filter
 // actions are gated on its presence — poles/text features can't resolve to a
@@ -119,10 +121,7 @@ const rows = computed(() => {
   ].filter(([, v]) => v) as [string, string][]
 })
 
-const coords = computed(() => {
-  const ll = sign.value?.lngLat
-  return ll ? `${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : ''
-})
+const coords = computed(() => sign.value ? formatLngLat(sign.value.lngLat) : '')
 
 // Shown when a click landed on several overlapping signs — but not for an
 // assembly, where the group strip is the better (and direct) way to navigate.
@@ -135,6 +134,14 @@ const cycleHint = computed(() => {
 
 // Pictogram a11y/hover label: its meaning, else the popup title.
 const signLabel = computed(() => description.value ?? title.value)
+
+// "Applies here": the governing rule's rows, formatted exactly as the rule
+// popup formats them. The 50 km/h plate is the territory default, which the
+// road-network data does not draw — say so instead of showing nothing.
+const appliesRows = computed(() =>
+  governingRule.value ? ruleRows(governingRule.value.layer, governingRule.value.properties, t, locale.value) : []
+)
+const isDefaultSpeed = computed(() => !!signId.value && DEFAULT_SPEED_CODES.has(signId.value))
 </script>
 
 <template>
@@ -188,6 +195,27 @@ const signLabel = computed(() => description.value ?? title.value)
     >
       {{ description }}
     </p>
+
+    <div
+      v-if="appliesRows.length || isDefaultSpeed"
+      class="rounded-md bg-elevated p-2"
+    >
+      <p class="text-xs font-medium text-muted">
+        {{ $t('rules.appliesHere') }}
+      </p>
+      <p
+        v-if="isDefaultSpeed"
+        class="mt-1 text-xs text-muted"
+      >
+        {{ $t('rules.defaultSpeed') }}
+      </p>
+      <KeyValueRows
+        v-else
+        :rows="appliesRows"
+        dense
+        class="mt-1"
+      />
+    </div>
 
     <div
       v-if="signId"
@@ -255,19 +283,10 @@ const signLabel = computed(() => description.value ?? title.value)
       </ul>
     </div>
 
-    <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-      <template
-        v-for="[label, value] in rows"
-        :key="label"
-      >
-        <dt class="text-muted">
-          {{ label }}
-        </dt>
-        <dd class="truncate text-right">
-          {{ value }}
-        </dd>
-      </template>
-    </dl>
+    <KeyValueRows
+      :rows="rows"
+      truncate
+    />
 
     <p class="text-xs text-muted">
       {{ coords }}
