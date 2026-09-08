@@ -1,102 +1,180 @@
 # HK Traffic Sign Map
 
-Interactive, high-performance viewer for Hong Kong traffic signs, built on
-[OpenStreetMap](https://www.openstreetmap.org) and the Transport Department's
+Interactive, high-performance viewer for every traffic sign the Hong Kong
+Transport Department has surveyed, built on
+[OpenStreetMap](https://www.openstreetmap.org) and the TD's
 [Traffic Aids Drawings (2nd generation) open data](https://data.gov.hk/en-data/dataset/hk-td-tis_16-traffic-aids-drawings-v2).
 
-Rendering uses [MapLibre GL JS](https://maplibre.org) with vector tiles packed
-into a single [PMTiles](https://docs.protomaps.com/pmtiles/) file, so the whole
-app deploys as a static site with no tile server or database.
+Rendering uses [MapLibre GL JS](https://maplibre.org) over vector tiles packed
+into [PMTiles](https://docs.protomaps.com/pmtiles/) archives, so the whole app
+deploys as a static site — no tile server, no database.
+
+## What it shows
+
+- **~179,000 installed signs**, each at its surveyed position. Signs are
+  grouped into their Index-Plan classes — Regulatory, Warning, Informatory,
+  Supplementary, Temporary, plus Tourist and (uncatalogued) Other — each
+  independently toggleable and colour-coded. Bare sign poles (no `SIGNID`, no
+  sign content) are not rendered.
+- **Real pictograms, not dots.** 1,217 sign plates extracted from the TD Index
+  Plan drawings cover **87.7 %** of installed sign features. They reveal by
+  complexity tier — simple iconic signs from z13, text-heavy ones from z16 —
+  and below that a colour-coded dot always stands in, so a sign is never
+  invisible.
+- **Which way each sign faces.** Every sign is turned to its real-world
+  facing, derived at build time from the directed Road Network centreline that
+  hosts its pole (absolute for 97.7 % of signs). The pictogram's top points
+  the way the plate looks — toward the drivers who read it.
+- **Signposts, not loose plates.** 34,836 posts carrying 79,201 signs are
+  drawn as rigid assemblies: members stack in a column in Index-Plan order
+  (main signs first, supplementary last) and 8,725 multi-face posts hang each
+  face's column in its own direction, so a back-to-back "Give way | No entry"
+  pole reads correctly on the map.
+- **Filter by class or by sign number**, with bilingual (English and
+  Traditional Chinese) descriptions. Matching one sign pulls in its whole
+  signpost.
 
 ## Prerequisites
 
-- Node.js + [pnpm](https://pnpm.io) (`corepack pnpm` works without a global install)
-- For the data pipeline (Phase 1):
-  - [GDAL](https://gdal.org) — `brew install gdal` (provides `ogr2ogr` for
-    reprojecting HK1980 Grid → WGS84)
-  - [tippecanoe](https://github.com/felixlaumon/tippecanoe) — `brew install tippecanoe`
-    (builds the vector tiles / PMTiles)
-- For the sign-pictogram catalogue (optional; the committed
-  `public/signs/` + `app/data/signCatalogue.json` are already built):
-  - [Poppler](https://poppler.freedesktop.org) — `brew install poppler`
-    (`pdftoppm` rasterises the Index Plan PDFs)
-  - [ImageMagick](https://imagemagick.org) — `brew install imagemagick`
-  - [Tesseract](https://github.com/tesseract-ocr/tesseract) — `brew install tesseract`
+Running the app needs only Node.js and [pnpm](https://pnpm.io) (`corepack pnpm`
+works without a global install). The build outputs are committed, so **you do
+not need any of the tools below to develop or deploy.**
+
+To re-run the tile pipeline:
+
+- [GDAL](https://gdal.org) — `brew install gdal` (`ogr2ogr` and
+  `gdaltransform` reproject HK1980 Grid → WGS84)
+- [tippecanoe](https://github.com/felt/tippecanoe) — `brew install tippecanoe`
+
+To re-run the sign-pictogram catalogue, additionally:
+
+- `brew install mupdf-tools librsvg imagemagick tesseract`
+  — `mutool` renders each Index Plan page to SVG and dumps its ruling-line
+  geometry, `rsvg-convert` rasterises it, `magick` crops and normalises the
+  plates, and `tesseract` reads the No. and Description columns. Tesseract's
+  bundled `snum` digits model is required as a second opinion; if it is
+  missing, `brew reinstall tesseract`.
+
+The extractor is fully deterministic — no API key, no model calls, $0 per run.
 
 ## Setup
 
 ```bash
-pnpm install
+corepack pnpm install
 ```
-
-## Data pipeline
-
-Download the TD sign data and build `public/data/traffic-signs.pmtiles`:
-
-```bash
-pnpm data:build
-```
-
-Source data is updated monthly; rerun to refresh. Raw downloads are cached in
-`data/raw/` (gitignored).
-
-Signs are grouped into their Index-Plan classes — Regulatory, Warning,
-Informatory, Supplementary, Temporary, plus Tourist and (uncatalogued) Other
-— each independently toggleable and colour-coded in the legend. Bare sign
-poles (no `SIGNID`, no sign content) are not rendered.
-
-### Sign pictograms
-
-From each sign-class's zoom threshold, catalogued signs render as their real
-pictogram instead of a coloured dot, sized by a complexity tier (simple iconic
-signs appear earlier and smaller; complex/text signs later and larger; size is
-constant within a tier so zooming in never collision-hides a visible sign).
-The pictograms and `app/data/signCatalogue.json` are committed, so this step
-is only needed to extend or refresh coverage:
-
-```bash
-pnpm data:catalogue
-```
-
-This rasterises the TD **Index Plan** PDFs, auto-detects the table grid (no
-hand-tuned pixel constants), and crops each cell to `public/signs/<CODE>.png`.
-Code and pictogram come from the *same cell*, so the binding is exact — we
-never equate the Cap 374G legal figure numbers with the TD `SIGNID` space
-(they diverge above the low regulatory range). A QA contact sheet is written to
-`/tmp/sign-catalogue-qa.png` — eyeball it before trusting new output.
-
-All 16 `TS` Index Plan sheets are seeded (~279 codes). The regular
-regulatory/2100-series sheets extract cleanly; the dense warning/informatory
-sheets are heterogeneous so the grid auto-detector only catches part of them —
-uncaught codes simply stay dots (no regression). **Adding/adjusting sheets:**
-edit the `SHEETS` array in `scripts/build-sign-catalogue.mjs` (PDF, prefix,
-numeric `range`, drawing-title `group`). The range guard discards any OCR
-misread outside that span (a missed sign degrades to a dot; a mislabelled sign
-must never ship).
 
 ## Development
 
 ```bash
-pnpm dev      # http://localhost:3000
-pnpm build    # production build
-pnpm preview  # preview the production build
+corepack pnpm dev        # http://localhost:3000
+corepack pnpm lint       # must pass before any commit
+corepack pnpm typecheck  # must pass before any commit
+corepack pnpm generate   # static build to .output/public — the final gate
 ```
+
+There is no test suite: verification is lint + typecheck + `generate` (which
+exercises the SSR/prerender path the dev server doesn't), plus a real-browser
+check when map behaviour changes — the map only runs client-side, with WebGL.
+
+## Data pipeline
+
+```bash
+corepack pnpm data:build
+```
+
+Downloads the TD sign data and builds both PMTiles archives. Raw downloads are
+cached in `data/raw/` (gitignored, resumable); TD publishes updates monthly, so
+rerun to refresh. The stages, each runnable on its own:
+
+| Step | Script | What it does |
+|---|---|---|
+| 1 | `data:fetch` | TD sign GML + Road Network v2 + road markings → `data/raw/` |
+| 2 | `data:bearings` | Derives each sign's absolute facing from the directed road centreline hosting its pole |
+| 3 | `data:stacks` | Groups signs into signposts and faces; bakes each member's column offset |
+| 4 | `data:stacked-icons` | Re-renders in-signpost pictograms to a common width |
+| 5 | `data:tiles` | Reprojects, injects facing/stack properties, packs both PMTiles archives |
+
+Two archives are built on purpose. `traffic-signs.pmtiles` (~25 MB) is thinned
+for the zoomed-out overview; `traffic-signs-full.pmtiles` (~45 MB) retains
+every feature so a sign-number filter finds all of them at any zoom. One
+pyramid cannot serve both, because tile thinning happens before the runtime
+filter is known.
+
+**Re-cropping a pictogram invalidates the tiles.** Column offsets are baked
+from each plate's pixel dimensions, so a catalogue change means re-running
+steps 3–5 (step 2 is pure road geometry and can be skipped).
+
+## Sign catalogue
+
+```bash
+corepack pnpm data:catalogue
+```
+
+Reads the 16 TD **Index Plan** sheets — tables of `[No. | Symbol |
+Description]` — and writes `public/signs/<CODE>.png` plus
+`app/data/signCatalogue.json`. The PDFs are vector (a MicroStation export with
+zero text operators), so the page is rendered *from its SVG* and the table grid
+is read straight from path geometry rather than hunted for in pixels.
+
+The governing rule is **"a missed sign degrades to a dot — a *mislabelled*
+sign must never ship."** Every code is bound to its plate by four independent
+checks: the printed No. and the pictogram are cropped from the *same* table
+row; a range gate rejects reads outside the sheet's printed span; the row's
+Description is OCR'd and matched against a reference list, so a description
+matching a *different* code exposes a digit misread and withholds the plate;
+and duplicate or out-of-order reads are flagged. Numbers are never equated
+with Cap 374G legal figure numbers — the two spaces diverge above the low
+regulatory range.
+
+Coverage is effectively complete at **87.7 % against an 87.8 % ceiling**: the
+remaining 12.2 % is `TSSEPA`, a separator marker with no pictogram to extract.
+
+Useful flags: `--sheet "<pattern>"` limits to matching sheets; `--propose`
+stages crops and a `verify.png` triage montage under `data/raw/sign-recovery`
+without touching the repo, and `--commit` promotes them (with `--reject`,
+`--variants` and `--rebind` as reviewer overrides).
+
+Descriptions ship in English only — the Index Plan's Description column has no
+Chinese. Hand-curated bilingual meanings live in
+`app/data/signDescriptions.json`, sourced from the TD Road Users' Code and
+edited independently of any pipeline run.
+
+### Quality audits
+
+Two on-demand oracles, outside both npm chains and read-only by default:
+
+```bash
+node scripts/audit-sign-images.mjs   # No. ↔ pictogram
+node scripts/audit-sign-names.mjs    # No. ↔ description
+```
+
+The first cross-checks each shipped plate against a second publisher's image
+for the same number, worst-first into a triage montage — the one bind no text
+check can make. The second replays the current verdict logic over the
+descriptions already in the catalogue, catching rows written by earlier
+extractor generations that an ordinary rebuild never revisits.
+
+## Repository layout
+
+`scripts/*.mjs` are Node build-time tools; `app/` ships to the browser. The two
+never import each other — shared constants are intentionally duplicated across
+the boundary. `app/data/` holds the generated artefacts the runtime reads.
+
+Deeper design notes, and the reasoning behind decisions that are easy to
+"fix" back into bugs, are in [`CLAUDE.md`](CLAUDE.md).
 
 ## Deployment
 
-Build a static site and host it on any static/CDN provider:
-
 ```bash
-pnpm data:build   # produce public/data/traffic-signs.pmtiles
-pnpm generate     # static output in .output/public
+corepack pnpm data:build   # only when refreshing the data
+corepack pnpm generate     # static output in .output/public
 ```
 
 **The host must support HTTP `Range` requests (`206 Partial Content`).**
-PMTiles reads the 18 MB archive in small byte-range slices — that is what
-keeps the map fast. GitHub Pages, Cloudflare Pages, Netlify, S3+CloudFront
-and nginx all do this by default. The Nuxt Node preview server does **not** (it returns
-the whole file with `200`), so use it for local checks only, not as a
-production host.
+PMTiles reads the archives in small byte-range slices — that is what keeps the
+map fast. GitHub Pages, Cloudflare Pages, Netlify, S3+CloudFront and nginx all
+do this by default. The Nuxt Node preview server does **not** (it returns the
+whole file with `200`), so use it for local checks only.
 
 ## Data attribution
 
@@ -105,3 +183,11 @@ SAR, available under the
 [data.gov.hk Terms and Conditions](https://data.gov.hk/en/terms-and-conditions).
 Basemap © OpenStreetMap contributors; dark basemap tiles ©
 [CARTO](https://carto.com/attributions).
+
+The build-time sign-name reference in `data/sign-names/` is a third-party
+transcription used only to validate OCR output; see the README there for its
+provenance and the limits on its use.
+
+## Licence
+
+[GPL-3.0](LICENSE).
