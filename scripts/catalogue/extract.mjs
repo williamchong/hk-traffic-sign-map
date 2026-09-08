@@ -58,6 +58,29 @@ export async function extractSheet(sheet, catalogue, opts) {
   const totalCells = groups.reduce((n, g) => n + g.cells.length, 0)
   console.log(`[${sheet.pdf}] grid: ${groups.length} groups, rows/group=[${groups.map(g => g.cells.length).join(',')}], ${totalCells} cells, ${greys.length} grey box(es)`)
 
+  // The sheets' bold CAD "7" reads as a "1": (TS 701 - 805) comes back as
+  // 101/102/103/…, (TS 2601 - 2717) turns 2707/2709/2712 into 2107/2109/2112.
+  // Every one lands OUTSIDE the sheet's printed range, so the range gate drops
+  // it and the row is lost silently — 83 unreadable rows on 701-805 alone, and
+  // the frozen old-extractor crops behind 22 of the image audit's conflicts.
+  //
+  // Undo it only where the answer is forced: substitute in an OUT-OF-RANGE read
+  // and accept solely when exactly ONE position yields an in-range code. "101"
+  // gives 701 (and 107, out of range) so it is unambiguous; a read that could be
+  // rescued two ways is left dropped. Every later defense still applies — dup,
+  // monotonicity, the name cross-check, the image audit — so this widens what is
+  // READ without widening what ships unchecked.
+  function rescueDigits(digits) {
+    const hits = new Set()
+    for (let i = 0; i < digits.length; i++) {
+      if (digits[i] !== '1') continue
+      const alt = digits.slice(0, i) + '7' + digits.slice(i + 1)
+      const n = +alt
+      if (n >= sheet.range[0] && n <= sheet.range[1]) hits.add(alt)
+    }
+    return hits.size === 1 ? [...hits][0] : null
+  }
+
   // Normalise a raw No.-column string to {code}, gated by this sheet's numeric
   // range. Returns null for blanks / out-of-range / malformed reads.
   function parseCode(raw0) {
@@ -66,7 +89,11 @@ export async function extractSheet(sheet, catalogue, opts) {
     const m = raw.match(/^(\d{2,4})([A-Z]?)$/)
     if (!m) return null
     const n = +m[1]
-    if (n < sheet.range[0] || n > sheet.range[1]) return null
+    if (n < sheet.range[0] || n > sheet.range[1]) {
+      const fixed = rescueDigits(m[1])
+      if (!fixed) return null
+      return { code: `${sheet.prefix}${fixed}${m[2]}`, n: +fixed, rescued: m[1] }
+    }
     return { code: `${sheet.prefix}${m[1]}${m[2]}`, n }
   }
 
@@ -75,7 +102,7 @@ export async function extractSheet(sheet, catalogue, opts) {
 
   const adds = []
   const seen = new Set()
-  const tally = { empty: 0, dup: 0, unreadable: 0, withheld: 0 }
+  const tally = { empty: 0, dup: 0, unreadable: 0, withheld: 0, rescued: 0 }
   const verdicts = {}
   const supersededDiff = []
   const ins = SYM_INSET_PT
@@ -96,6 +123,7 @@ export async function extractSheet(sheet, catalogue, opts) {
       // the corrected code. In particular the name check now scores this crop
       // against the REBOUND code's reference entry, so a mistaken rebind is
       // visible as `disagree`/`code-misread` instead of shipping quietly.
+      if (c.rescued) tally.rescued++
       const to = rebind.get(c.code)
       if (to) {
         console.warn(`[${sheet.pdf}] ↻ ${c.code} rebound to ${to} (reviewer override, group ${gi}, y≈${rtop.toFixed(0)})`)

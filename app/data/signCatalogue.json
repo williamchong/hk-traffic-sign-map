@@ -1186,42 +1186,42 @@
     }
   },
   "TS703": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "OVER 10 TONNES"
     }
   },
   "TS704": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "OVER 12 TONNES"
     }
   },
   "TS705": {
-    "tier": 0,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "EXCEPT GOODS VEHICLES"
+      "en": "EXCEPT GOODS VEHICLES MIDNIGHT - NOON"
     }
   },
   "TS706": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "EXCEPT BUSES AND SCHOOL PRIVATE LIGHT BUSES"
     }
   },
   "TS708": {
-    "tier": 0,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "EXCEPT FRANCHISED BUSES"
     }
   },
   "TS709": {
-    "tier": 0,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "EXCEPT PUBLIC LIGHT BUSES"
@@ -1239,8 +1239,9 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 7am - 8pm"
+    },
+    "superseded": true
   },
   "TS717": {
     "tier": 2,
@@ -1253,29 +1254,33 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 7am - 10pm"
+    },
+    "superseded": true
   },
   "TS719": {
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 7am - 11pm"
+    },
+    "superseded": true
   },
   "TS720": {
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 7am - Midnight"
+    },
+    "superseded": true
   },
   "TS721": {
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "AT ANY TIME"
-    }
+      "en": "TIME PLATE At any time"
+    },
+    "superseded": true
   },
   "TS727": {
     "tier": 2,
@@ -1288,8 +1293,9 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE YM-10M 4M-/7M"
-    }
+      "en": "TIME PLATE 7am - 10am 4pm - 7pm"
+    },
+    "superseded": true
   },
   "TS735": {
     "tier": 2,
@@ -1352,8 +1358,9 @@
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "SAFE SPEED 30"
-    }
+      "en": "SAFE SPEED 30 km/h"
+    },
+    "superseded": true
   },
   "TS764": {
     "tier": 0,
@@ -1367,7 +1374,7 @@
     "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "200M"
+      "en": "200m"
     }
   },
   "TS775": {
@@ -1381,56 +1388,53 @@
     "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "1KM"
+      "en": "1Km"
     }
   },
   "TS781": {
     "tier": 1,
-    "group": "supplementary",
-    "desc": {
-      "en": "2KM"
-    }
+    "group": "supplementary"
   },
   "TS785": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 2KM"
+      "en": "FOR 2km"
     }
   },
   "TS788": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 5KM"
+      "en": "FOR 5km"
     }
   },
   "TS789": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 50M"
+      "en": "FOR 50m"
     }
   },
   "TS791": {
-    "tier": 0,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 10KM"
+      "en": "FOR 10km"
     }
   },
   "TS794": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 15KM"
+      "en": "FOR 15km"
     }
   },
   "TS796": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "STOP 100M"
+      "en": "STOP 30m"
     }
   },
   "TS800": {
@@ -2752,25 +2756,23 @@
     }
   },
   "TS799": {
-    "tier": 0,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "LOW GEAR FOR 1KM"
+      "en": "GIVE WAY 100m"
     }
   },
   "TS726": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE 8-5PM EXCEPT GENERAL HOLIDAYS"
-    }
+      "en": "TIME PLATE 8am - 5pm EXCEPT GENERAL HOLIDAYS"
+    },
+    "superseded": true
   },
   "TS758": {
     "tier": 1,
-    "group": "supplementary",
-    "desc": {
-      "en": "WORKS ACCESS"
-    }
+    "group": "supplementary"
   },
   "TS812": {
     "tier": 0,
@@ -4051,14 +4053,14 @@
     }
   },
   "TS701": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "OVER 3 TONNES"
     }
   },
   "TS702": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "OVER 5.5 TONNES"
@@ -4086,7 +4088,7 @@
     }
   },
   "TS712": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
       "en": "EXCEPT WITH PERMIT"
@@ -4096,18 +4098,19 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 7am - 9pm"
+    },
+    "superseded": true
   },
   "TS746": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "BLASTING"
     }
   },
   "TS747": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "LAND SLIDE"
@@ -4121,31 +4124,31 @@
     }
   },
   "TS768": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "50M"
+      "en": "50m"
     }
   },
   "TS769": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "100M"
+      "en": "100m"
     }
   },
   "TS771": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "300M"
+      "en": "300m"
     }
   },
   "TS773": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "500M"
+      "en": "500m"
     }
   },
   "TS776": {
@@ -4163,10 +4166,10 @@
     }
   },
   "TS778": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "150M"
+      "en": "150m"
     }
   },
   "TS779": {
@@ -4180,7 +4183,7 @@
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 1KM"
+      "en": "FOR 1km"
     }
   },
   "TS806": {
@@ -4986,7 +4989,7 @@
     "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "400M"
+      "en": "400m"
     }
   },
   "TS774": {
@@ -5000,35 +5003,35 @@
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 4KM"
+      "en": "FOR 4km"
     }
   },
   "TS790": {
-    "tier": 0,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 100M"
+      "en": "FOR 100m"
     }
   },
   "TS792": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "FOR 200M"
+      "en": "FOR 200m"
     }
   },
   "TS797": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "GIVE WAY 50M"
+      "en": "STOP 100m"
     }
   },
   "TS798": {
     "tier": 0,
     "group": "supplementary",
     "desc": {
-      "en": "GIVE WAY 100M"
+      "en": "GIVE WAY 50m"
     }
   },
   "TS854": {
@@ -5207,7 +5210,7 @@
     }
   },
   "TS2712": {
-    "tier": 1,
+    "tier": 2,
     "group": "informatory",
     "desc": {
       "en": "GIVE WAY TO BUS"
@@ -5718,17 +5721,21 @@
   },
   "TS722": {
     "tier": 2,
-    "group": "supplementary"
+    "group": "supplementary",
+    "desc": {
+      "en": "PARKING DAY PLATE SUNDAYS AND PUBLIC HOLIDAYS"
+    }
   },
   "TS730": {
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 8pm - 8am"
+    },
+    "superseded": true
   },
   "TS731": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "EXCEPT CYCLES"
@@ -5742,14 +5749,14 @@
     }
   },
   "TS733": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "ARROW (RIGHT)"
     }
   },
   "TS734": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "ARROW (LEFT)"
@@ -5784,17 +5791,17 @@
     }
   },
   "TS741": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "PLAYGROUND"
     }
   },
   "TS742": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "EXCEPT TAXIS PRIVATE CARS AND MOTOR CYCLES"
+      "en": "EXCEPT TAXIS, PRIVATE CARS & MOTOR CYCLES"
     }
   },
   "TS891": {
@@ -8353,6 +8360,87 @@
     "group": "regulatory",
     "desc": {
       "en": "VEHICLES OF THE NORTH-WEST RAILWAY SPEED LIMIT 60km/h"
+    }
+  },
+  "TS2709": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "DIRECTION TO A&E"
+    }
+  },
+  "TS725": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": {
+      "en": "TIME PLATE 7am - 9am 5pm - 7pm"
+    },
+    "superseded": true
+  },
+  "TS729": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": {
+      "en": "TIME PLATE 8am - 10am 4:30pm - 6:30pm"
+    },
+    "superseded": true
+  },
+  "TS745": {
+    "tier": 2,
+    "group": "supplementary",
+    "desc": {
+      "en": "SMOKE"
+    }
+  },
+  "TS752": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "LINE PAINTING"
+    }
+  },
+  "TS753": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "TREE CUTTING"
+    }
+  },
+  "TS756": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "GULLY EMPTYING"
+    }
+  },
+  "TS757": {
+    "tier": 1,
+    "group": "supplementary",
+    "desc": {
+      "en": "SURFACING"
+    }
+  },
+  "TS762": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": {
+      "en": "SAFE SPEED 40 km/h"
+    },
+    "superseded": true
+  },
+  "TS763": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": {
+      "en": "SAFE SPEED 50 km/h"
+    },
+    "superseded": true
+  },
+  "TS786": {
+    "tier": 0,
+    "group": "supplementary",
+    "desc": {
+      "en": "FOR 3km"
     }
   }
 }
