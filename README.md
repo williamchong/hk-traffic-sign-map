@@ -29,9 +29,10 @@ deploys as a static site — no tile server, no database.
   (main signs first, supplementary last) and 8,725 multi-face posts hang each
   face's column in its own direction, so a back-to-back "Give way | No entry"
   pole reads correctly on the map.
-- **Filter by class or by sign number**, with bilingual (English and
-  Traditional Chinese) descriptions. Matching one sign pulls in its whole
-  signpost.
+- **Filter by class or by sign number**, with descriptions in English for
+  85.9 % of installed sign features and Traditional Chinese for 34.6 %
+  (English shows through where no Chinese exists). Matching one sign pulls in
+  its whole signpost.
 
 ## Prerequisites
 
@@ -133,10 +134,35 @@ stages crops and a `verify.png` triage montage under `data/raw/sign-recovery`
 without touching the repo, and `--commit` promotes them (with `--reject`,
 `--variants` and `--rebind` as reviewer overrides).
 
-Descriptions ship in English only — the Index Plan's Description column has no
-Chinese. Hand-curated bilingual meanings live in
-`app/data/signDescriptions.json`, sourced from the TD Road Users' Code and
-edited independently of any pipeline run.
+The extracted descriptions are English only — the Index Plan's Description
+column has no Chinese on any sheet. Bilingual meanings live separately in
+`app/data/signDescriptions.json`, which the runtime prefers over the extracted
+text and which is edited independently of any pipeline run.
+
+### Chinese descriptions
+
+```bash
+node scripts/fetch-ruc-names.mjs   # vendor the bilingual name list
+node scripts/bind-ruc-names.mjs    # propose SIGNID binds for review
+```
+
+The TD **Road Users' Code**, chapter 8, prints each sign as a picture with a
+name, in English and Traditional Chinese editions of the same page — the one
+public source that gives these signs Chinese. It carries no sign numbers, so a
+name has to be *bound* to a `SIGNID` rather than looked up, and the binder earns
+that bind from the picture: the Code's image is compared against our own crop of
+the Index Plan, the same oracle the image audit runs against Road Sign Factory.
+
+The English caption is corroboration only, never the bind, because it is
+demonstrably unreliable on exactly the rows that matter. The two editions share
+71 image files and caption several of them with two different signs — TD's
+`102c3_n.gif` is a variable speed limit, correctly named 「可變速度限制」 and
+wrongly named "except for access if no alternative route". Two further guards
+withhold on the Code's own row slips: one Chinese name claimed by two codes, or
+one code claimed by two names, means a caption has drifted and neither ships.
+
+As with the catalogue, `--commit` is a human confirming a `verify.png` review
+sheet. Chinese now covers **34.6 % of installed sign features**, up from 17.4 %.
 
 ### Quality audits
 
