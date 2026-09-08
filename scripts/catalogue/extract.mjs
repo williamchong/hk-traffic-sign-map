@@ -1,12 +1,12 @@
 // Per-sheet extraction: grid → OCR bind → pictogram, with the name cross-check.
 
-import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { columnModel, greyAt, greyBoxes, groupRows, median } from './grid.mjs'
 import { magick, identify } from './proc.mjs'
-import { classifyTier, normalizeSign } from './normalize.mjs'
-import { descriptionText, ocrCode, ocrDescription } from './ocr.mjs'
+import { classifyTier, normalizeSign, pageColor, shaveRowBleed } from './normalize.mjs'
+import { descriptionText, ocrCode, ocrCodeSecondOpinion, ocrDescription } from './ocr.mjs'
 import { cleanSheetScratch, renderPage, traceSegments } from './render.mjs'
 import { splitPlates } from './variants.mjs'
 import { isDoubleSided, isListedSuperseded, verdictFor } from './names.mjs'
@@ -17,6 +17,9 @@ import {
 const sheetTag = s => `${s.prefix}${s.range[0]}-${s.range[1]}`
 
 // A staged half keeps a provisional name until a human confirms which face it is.
+// A verdict strong enough to stand as evidence for the number it was read under.
+const backed = r => r.verdict === 'agree' || r.verdict === 'fill'
+
 const halfFile = (code, half) => `${code}__${half}.png`
 
 // Which suffix does each half get? `--variants` always wins. The measured taper
@@ -101,8 +104,10 @@ export async function extractSheet(sheet, catalogue, opts) {
   await mkdir(outDir, { recursive: true })
 
   const adds = []
-  const seen = new Set()
-  const tally = { empty: 0, dup: 0, unreadable: 0, withheld: 0, rescued: 0 }
+  // code → what was staged under it (its add, the No. cell it was read from and
+  // its description), so a later collision can re-examine the FIRST row.
+  const seen = new Map()
+  const tally = { empty: 0, dup: 0, unreadable: 0, withheld: 0, rescued: 0, arbitrated: 0 }
   const verdicts = {}
   const supersededDiff = []
   const ins = SYM_INSET_PT
@@ -128,6 +133,56 @@ export async function extractSheet(sheet, catalogue, opts) {
       if (to) {
         console.warn(`[${sheet.pdf}] ↻ ${c.code} rebound to ${to} (reviewer override, group ${gi}, y≈${rtop.toFixed(0)})`)
         c = { code: to, n: parseInt(to.replace(/^\D+/, ''), 10) }
+      }
+      // The second bind, read up front: does the row's Description name THIS
+      // sign? It has to come before the dup check because it also arbitrates
+      // the read itself (below).
+      const name = descriptionText(ocrDescription(png, PX(grp.desc[0]), PX(rtop), PX(grp.desc[1] - grp.desc[0]), PX(rowH)))
+      let v = verdictFor(names, c.code, name)
+      // A read the Description does not back — or one that collides with a row
+      // already read — gets a second opinion from the digits model (ocr.mjs,
+      // recipe C). eng and snum fail on DIFFERENT digits: on (TS 806 - 900) eng
+      // turns 832 into 852 and 835 into 834 (each then dying as a dup or a
+      // code-misread withhold, so the row is simply "unreadable"), and snum
+      // reads both right. The bar for taking the second read is the same one
+      // every shipped code already meets — a number read off the No. cell that
+      // the Description column corroborates — and the image audit still runs
+      // after. A reviewer's --rebind is a correction, not a read, so it is
+      // never second-guessed.
+      const noCell = [PX(grp.no[0]), PX(rtop), PX(grp.no[1] - grp.no[0]), PX(rowH)]
+      if (!to && name && (seen.has(c.code) || !backed(v))) {
+        const alt = ocrCodeSecondOpinion(png, ...noCell)
+        const c2 = alt ? parseCode(alt) : null
+        const v2 = c2 && c2.code !== c.code && !seen.has(c2.code) ? verdictFor(names, c2.code, name) : null
+        if (v2 && backed(v2)) {
+          console.warn(`[${sheet.pdf}] ↻ ${c.code} read as ${c2.code} by the digits model, and the description backs it (${v2.verdict}) — taking ${c2.code}`)
+          tally.arbitrated++
+          c = c2
+          v = v2
+        }
+      }
+      // A collision can also mean the FIRST row was the misread one: on
+      // (TS 206 - 310) eng reads row 243 as 245, which the Description backs
+      // (the whole LIGHT SIGNAL family shares one text), so it ships — and the
+      // real 245 then dies here as a dup. Re-read that first row with the digits
+      // model; its number is taken when it is new, restores the column's order
+      // (it must sit before this row's number), and the first row's description
+      // backs it — `shift-suspect` counts here, because the reference is known
+      // to slip rows (2629-2634 are listed one number late) and a slipped entry
+      // is exactly what a correct read looks like against it. Three independent
+      // signals on top of the second row's identical read.
+      const first = seen.get(c.code)
+      if (first && first.name && !to) {
+        const alt = ocrCodeSecondOpinion(png, ...first.noCell)
+        const cY = alt ? parseCode(alt) : null
+        const vY = cY && cY.code !== c.code && !seen.has(cY.code) && cY.n < c.n ? verdictFor(names, cY.code, first.name) : null
+        if (vY && (backed(vY) || vY.verdict === 'shift-suspect')) {
+          console.warn(`[${sheet.pdf}] ↻ ${c.code} read twice — the digits model reads the first row as ${cY.code}, in order and backed by its description (${vY.verdict}); re-filing that row as ${cY.code}`)
+          await relabelAdd(first.add, cY.code, vY, outDir)
+          seen.delete(c.code)
+          seen.set(cY.code, first)
+          tally.arbitrated++
+        }
       }
       // The No. column is sorted within a group — flag (don't drop) an OCR read
       // that breaks it, so a digit misread is visible in the log.
@@ -160,19 +215,26 @@ export async function extractSheet(sheet, catalogue, opts) {
       const symRaw = join(SCRATCH, `${c.code}__raw.png`)
       magick([png, '-crop', `${PX(sx1 - sx0 - 2 * ins)}x${PX(rowH - 2 * ins)}+${PX(sx0 + ins)}+${PX(rtop + ins)}`,
         '+repage', '-fuzz', '8%', '-trim', '+repage', symRaw])
-      const [sw, sh] = identify(symRaw)
-      if (!sw || sw < 24 || sh < 24) {
+      // The shave hands back the size it settled on: the tier is classified from
+      // that box, and a neighbour's bleed inflates it as much as the pictogram does.
+      const [sw, sh] = shaveRowBleed(symRaw, pageColor(grey?.rgb ?? null))
+      // A blank cell trims to 1×1; the floor only has to clear that and stray
+      // marks — TS215's traffic cylinder is a real sign at 20 px (2.5 pt) wide.
+      if (!sw || sw < 12 || sh < 12) {
+        // A blank row (reserved number: no description, no symbol) is normal;
+        // a NAMED row with nothing in its symbol cell is worth a look.
+        if (name) console.warn(`[${sheet.pdf}] ⚠ ${c.code}: symbol cell empty after trim (${sw}x${sh}) but the description reads "${name.slice(0, 40)}" — no pictogram`)
         tally.empty++
         await rm(symRaw, { force: true })
         continue
       }
 
-      // The second bind: does the row's Description name THIS sign?
-      const name = descriptionText(ocrDescription(png, PX(grp.desc[0]), PX(rtop), PX(grp.desc[1] - grp.desc[0]), PX(rowH)))
-      const v = verdictFor(names, c.code, name)
       verdicts[v.verdict] = (verdicts[v.verdict] ?? 0) + 1
       if (v.withhold) {
-        console.warn(`[${sheet.pdf}] ⚠ ${c.code}: description reads as ${v.altKey} (sim ${v.sim.toFixed(2)}) — pictogram withheld, likely a digit misread`)
+        // Both models misread the same way sometimes (854 → 894 / 554); the
+        // reviewer's override is spelled out so the fix is one flag away.
+        const hint = /^\d+[A-Z]?$/.test(v.altKey) ? ` — if the plate is right, --rebind ${c.code}=${sheet.prefix}${v.altKey}` : ''
+        console.warn(`[${sheet.pdf}] ⚠ ${c.code}: description reads as ${v.altKey} (sim ${v.sim.toFixed(2)}) — pictogram withheld, likely a digit misread${hint}`)
         tally.withheld++
         await rm(symRaw, { force: true })
         continue
@@ -202,10 +264,9 @@ export async function extractSheet(sheet, catalogue, opts) {
       }
       await rm(symRaw, { force: true })
 
-      seen.add(c.code)
       // src = the source row box (No.-cell left → symbol-cell right) for a
       // ground-truth [printed number | pictogram] crop at review time.
-      adds.push({
+      const add = {
         code: c.code,
         ...entry,
         verdict: v.verdict,
@@ -213,12 +274,14 @@ export async function extractSheet(sheet, catalogue, opts) {
         ...(v.listText ? { list: v.listText } : {}),
         ...(split ? { split: split.map(h => ({ half: h.half, dir: h.dir, tier: h.tier })), doubleSided } : {}),
         src: { x: grp.no[0], y: rtop, w: sx1 - grp.no[0], h: rowH }
-      })
+      }
+      adds.push(add)
+      seen.set(c.code, { add, noCell, name })
     }
   }
 
   const summary = Object.entries(verdicts).map(([k, n]) => `${k}=${n}`).join(' ')
-  console.log(`[${sheet.pdf}] added=${adds.length} ${summary} | empty=${tally.empty} dup=${tally.dup} unreadable=${tally.unreadable} withheld=${tally.withheld}`)
+  console.log(`[${sheet.pdf}] added=${adds.length} ${summary} | empty=${tally.empty} dup=${tally.dup} unreadable=${tally.unreadable} withheld=${tally.withheld} rescued=${tally.rescued} arbitrated=${tally.arbitrated}`)
   // `+` = we saw grey shading the vendored list doesn't have, `-` = the reverse.
   if (supersededDiff.length) console.warn(`[${sheet.pdf}] ⚠ superseded shading differs from the vendored list on ${supersededDiff.length}: ${supersededDiff.join(' ')}`)
 
@@ -234,6 +297,20 @@ export async function extractSheet(sheet, catalogue, opts) {
   }
   await cleanSheetScratch(tag)
   return adds.length
+}
+
+// Move a staged row to another code: its files and its manifest entry, with the
+// description re-checked against the new code's reference entry.
+async function relabelAdd(add, code, v, outDir) {
+  const from = add.code
+  await rename(join(outDir, `${from}.png`), join(outDir, `${code}.png`))
+  for (const h of add.split ?? []) await rename(join(outDir, halfFile(from, h.half)), join(outDir, halfFile(code, h.half)))
+  add.code = code
+  add.verdict = v.verdict
+  if (v.ship) add.desc = { en: v.ship }
+  else delete add.desc
+  if (v.listText) add.list = v.listText
+  else delete add.list
 }
 
 // Catalogue entries for one add: the base sign plus, for a double-sided row,

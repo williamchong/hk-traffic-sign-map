@@ -1247,8 +1247,9 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 10am - 9pm"
+    },
+    "superseded": true
   },
   "TS718": {
     "tier": 2,
@@ -1286,8 +1287,9 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE 7230M-930M 5M-7PM"
-    }
+      "en": "TIME PLATE 7:30am - 9:30am 5pm - 7pm"
+    },
+    "superseded": true
   },
   "TS728": {
     "tier": 2,
@@ -1319,7 +1321,7 @@
     }
   },
   "TS750": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
       "en": "FALLEN TREE"
@@ -1381,7 +1383,7 @@
     "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "700M"
+      "en": "700m"
     }
   },
   "TS780": {
@@ -1417,7 +1419,7 @@
     }
   },
   "TS791": {
-    "tier": 2,
+    "tier": 0,
     "group": "supplementary",
     "desc": {
       "en": "FOR 10km"
@@ -1592,10 +1594,10 @@
     }
   },
   "TS879": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "EXCEPT BUSES AND PUBLIC LIGHT BUSES (SCHEDULED SERVICES)"
+      "en": "EXCEPT BUSES AND PUBLIC LIGHT BUSES SCHEDULED SERVICE)"
     }
   },
   "TS887": {
@@ -2108,7 +2110,7 @@
     }
   },
   "TS2174": {
-    "tier": 2,
+    "tier": 1,
     "group": "regulatory",
     "desc": {
       "en": "BUS LANE 7am MIDNIGHT"
@@ -2143,7 +2145,7 @@
     }
   },
   "TS2179": {
-    "tier": 2,
+    "tier": 1,
     "group": "regulatory",
     "desc": {
       "en": "BUS LANE 7am MIDNIGHT"
@@ -2667,7 +2669,7 @@
     }
   },
   "TS245": {
-    "tier": 0,
+    "tier": 2,
     "group": "regulatory",
     "desc": {
       "en": "LIGHT SIGNAL"
@@ -2973,10 +2975,7 @@
   },
   "TS2634": {
     "tier": 0,
-    "group": "informatory",
-    "desc": {
-      "en": "ROUTE/I CONFIRMATION"
-    }
+    "group": "informatory"
   },
   "TS2637": {
     "tier": 2,
@@ -2996,14 +2995,14 @@
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "EMERGENCY LAY-BY 2 KM"
+      "en": "EMERGENCY LAY-BY 2km"
     }
   },
   "TS2641": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "MERGING AHEAD SIGN ON MAIN LINE LANE GAIN ROADS OTHER THAN EXPRESSWAYS"
+      "en": "MERGING AHEAD SIGN ON MAIN LINE LANE GAIN ROADS OTHER THAN EXPRESSWAYS."
     }
   },
   "TS2642": {
@@ -3141,8 +3140,9 @@
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
-    }
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    },
+    "superseded": true
   },
   "TS2676": {
     "tier": 2,
@@ -3164,8 +3164,9 @@
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
-    }
+      "en": "DIRECTION TO KOWLOON CANTON RAILWAY"
+    },
+    "superseded": true
   },
   "TS2680": {
     "tier": 2,
@@ -4152,17 +4153,17 @@
     }
   },
   "TS776": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "800M"
+      "en": "800m"
     }
   },
   "TS777": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "900M"
+      "en": "900m"
     }
   },
   "TS778": {
@@ -4173,10 +4174,10 @@
     }
   },
   "TS779": {
-    "tier": 0,
+    "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "250M"
+      "en": "250m"
     }
   },
   "TS784": {
@@ -4286,7 +4287,7 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "LENGTH OVER 8M"
+      "en": "VEHICLE LENGTH OVER 8m"
     }
   },
   "TS834": {
@@ -4300,7 +4301,7 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "LENGTH OVER 11M"
+      "en": "VEHICLE LENGTH OVER 11m"
     }
   },
   "TS836": {
@@ -4432,7 +4433,7 @@
     "tier": 1,
     "group": "regulatory",
     "desc": {
-      "en": "PLB \"NO STOPPING\" ZONE 7am - MIDNIGHT"
+      "en": "PLB NO STOPPING ZONE 7am MIDNIGHT"
     }
   },
   "TS2165": {
@@ -4485,15 +4486,12 @@
     }
   },
   "TS2632": {
-    "tier": 2,
+    "tier": 0,
     "group": "informatory"
   },
   "TS2633": {
     "tier": 2,
-    "group": "informatory",
-    "desc": {
-      "en": "LANE DIRECTIONS"
-    }
+    "group": "informatory"
   },
   "TS3601": {
     "tier": 2,
@@ -4503,7 +4501,7 @@
     }
   },
   "TS3602": {
-    "tier": 2,
+    "tier": 0,
     "group": "informatory",
     "desc": {
       "en": "MERGING AHEAD SIGN ON SLIP ROAD LANE GAIN SOVDDOCCWAVS"
@@ -4996,7 +4994,7 @@
     "tier": 1,
     "group": "supplementary",
     "desc": {
-      "en": "600M"
+      "en": "600m"
     }
   },
   "TS787": {
@@ -5035,10 +5033,10 @@
     }
   },
   "TS854": {
-    "tier": 1,
+    "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
+      "en": "GMB ROUTE PLATE (SCHEDULED SFRVICES)"
     }
   },
   "TS860": {
@@ -5133,7 +5131,7 @@
     }
   },
   "TS2657": {
-    "tier": 2,
+    "tier": 1,
     "group": "informatory",
     "desc": {
       "en": "MERGING AHEAD SIGN ON SLIP ROAD LANE GAIN & SHADOW ISLAND ROADS OTHER"
@@ -5210,7 +5208,7 @@
     }
   },
   "TS2712": {
-    "tier": 2,
+    "tier": 0,
     "group": "informatory",
     "desc": {
       "en": "GIVE WAY TO BUS"
@@ -5424,7 +5422,7 @@
     "tier": 0,
     "group": "regulatory",
     "desc": {
-      "en": "DANGEROUS CYCLING PROHIBITED"
+      "en": "DANGEROUS GOODS PROHIBITED"
     }
   },
   "TS229": {
@@ -5438,7 +5436,7 @@
     "tier": 2,
     "group": "regulatory",
     "desc": {
-      "en": "TUNNEL AREA TUNNEL REGULATIONS APPLY"
+      "en": "START OF TUNNEL AREA SIGN"
     }
   },
   "TS293": {
@@ -5466,14 +5464,14 @@
     "tier": 1,
     "group": "regulatory",
     "desc": {
-      "en": "EXACT PAYMENT"
+      "en": "EXACT PAYMENT $5 (7FOLL SIGN)"
     }
   },
   "TS279": {
     "tier": 2,
     "group": "regulatory",
     "desc": {
-      "en": "EXACT PAYMENT"
+      "en": "EXACT PAYMENT $5 (TOLL SIGN) (AT GANTRY)"
     }
   },
   "TS280": {
@@ -5864,7 +5862,10 @@
   },
   "TS215": {
     "tier": 2,
-    "group": "regulatory"
+    "group": "regulatory",
+    "desc": {
+      "en": "COLLAPSIBLE/ SELF-ERECTABLE TRAFFIC CYLINDER"
+    }
   },
   "TS396": {
     "tier": 0,
@@ -5916,7 +5917,7 @@
     }
   },
   "TS3616": {
-    "tier": 2,
+    "tier": 1,
     "group": "informatory",
     "desc": {
       "en": "MERGING AHEAD SIGN ON SLIP ROAD SOVDBECCWAVES )"
@@ -5989,14 +5990,14 @@
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 1 NON-EXPRESSWAYS )"
+      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 1 NON-EXPRESSWAYS.,"
     }
   },
   "TS3675": {
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 2 NON-EXPRESSWAYS )"
+      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 2 NON-EXPRESSWAYS ."
     }
   },
   "TS3676": {
@@ -6010,21 +6011,21 @@
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 4 NON-EXPRESSWAYS )"
+      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 4 NON-EXPRESSWAYS."
     }
   },
   "TS3678": {
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "END OF STRATEGIC ROAD NETWORK - ROUTE 5 NON-EXPRESSWAYS"
+      "en": "END OF STRATEGIC ROAD NETWORK - ROUTE 5 NON-EXPRESSWAYS."
     }
   },
   "TS3679": {
     "tier": 2,
     "group": "informatory",
     "desc": {
-      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 7 NON-EXPRESSWAYS )"
+      "en": "END OF STRATEGIC ROAD NETWORK ROUTE 7 NON-EXPRESSWAYS.,"
     }
   },
   "TS3705": {
@@ -6188,13 +6189,6 @@
       "en": "LANE SIGNAL"
     }
   },
-  "TS249": {
-    "tier": 2,
-    "group": "regulatory",
-    "desc": {
-      "en": "EXACT PAYMENT $5 (TOLL SIGN) (AT GANTRY)"
-    }
-  },
   "TS2183": {
     "tier": 0,
     "group": "regulatory",
@@ -6277,13 +6271,6 @@
     "group": "informatory",
     "desc": {
       "en": "EMERGENCY LAY-BY 3km"
-    }
-  },
-  "TS2694": {
-    "tier": 2,
-    "group": "informatory",
-    "desc": {
-      "en": "MERGING AHEAD SIGN ON SLIP ROAD DIRECT OR SHADOW ISLAND ROADS OTHER THAME EYBRECSWAYS"
     }
   },
   "TS2685": {
@@ -6466,28 +6453,28 @@
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG S/B OF ROUTE 1 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG S/B OF ROUTE 1 NON-EXPRESSWAYS."
     }
   },
   "TS3682": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG S/B OF ROUTE 2 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG S/B OF ROUTE 2 NON-EXPRESSWAYS."
     }
   },
   "TS3683": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG S/B OF ROUTE 3 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG S/B OF ROUTE 3 NON-EXPRESSWAYS.,"
     }
   },
   "TS3684": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG N/B OF ROUTE 1 NON-EXPRESSWAYS"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG N/B OF ROUTE 1 NON-EXPRESSWAYS."
     }
   },
   "TS3685": {
@@ -6501,7 +6488,7 @@
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG N/B OF ROUTE 3 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG N/B OF ROUTE 3 NON-EXPRESSWAYS,"
     }
   },
   "TS3687": {
@@ -6550,42 +6537,42 @@
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 4 NON-EXPRESSWAYS)"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 4 NON-EXPRESSWAYS.,"
     }
   },
   "TS3694": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 5 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 5 NON-EXPRESSWAYS."
     }
   },
   "TS3695": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 7 NON-EXPRESSWAYS)"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 7 NON-EXPRESSWAYS.,"
     }
   },
   "TS3696": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 8 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG E/B OF ROUTE 8 NON-EXPRESSWAYS."
     }
   },
   "TS3697": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG W/B OF ROUTE 4 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG W/B OF ROUTE 4 NON-EXPRESSWAYS,"
     }
   },
   "TS3698": {
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG W/B OF ROUTE 5 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG W/B OF ROUTE 5 NON-EXPRESSWAYS,"
     }
   },
   "TS3699": {
@@ -6599,7 +6586,7 @@
     "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG W/B OF ROUTE 8 NON-EXPRESSWAYS )"
+      "en": "CHAINAGE MARKER PER 100m INTERVAL ALONG W/B OF ROUTE 8 NON-EXPRESSWAYS.,"
     }
   },
   "TS3702": {
@@ -8441,6 +8428,63 @@
     "group": "supplementary",
     "desc": {
       "en": "FOR 3km"
+    }
+  },
+  "TS243": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "LIGHT SIGNAL"
+    }
+  },
+  "TS253": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "AUTOTOLL ONLY"
+    }
+  },
+  "TS276": {
+    "tier": 1,
+    "group": "regulatory",
+    "desc": {
+      "en": "EXACT PAYMENT $6 (TOLL SIGN)"
+    }
+  },
+  "TS277": {
+    "tier": 2,
+    "group": "regulatory",
+    "desc": {
+      "en": "EXACT PAYMENT $6 (TOLL SIGN) (AT GANTRY)"
+    }
+  },
+  "TS3650R": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS3650L": {
+    "tier": 1,
+    "group": "informatory"
+  },
+  "TS3651R": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI PICK UP AND DROP OFF (FOR 2 CLASSES OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
+  },
+  "TS3651L": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI PICK UP AND DROP OFF (FOR 2 CLASSES OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
+  },
+  "TS2654": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD DIRECT OR SHADOW ISLAND ROADS OTHER THAME EYBRECSWAYS"
     }
   }
 }

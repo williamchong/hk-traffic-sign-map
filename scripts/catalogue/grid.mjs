@@ -32,11 +32,21 @@ export function columnModel(Vs) {
   // early after a few rows), long enough to be a real divider not a glyph stroke.
   // Requiring full height instead would drop the short ragged groups entirely.
   const xs = Vs.filter(v => v.y0 <= top + 10 && v.y1 - v.y0 > 40).map(v => v.x).sort((a, b) => a - b)
-  const cb = []
+  // A group separator is a DOUBLET (two rules ~3 pt apart). Its centre `x` is
+  // the lattice position, but a cell's edge is the doublet's INNER rule: a
+  // No. cell cropped from the centre still holds the inner rule 1.4 pt in,
+  // past the 0.8 pt OCR inset, and tesseract reads it as "(" or "{" or "f".
+  const clusters = []
   for (const x of xs) {
-    if (cb.length && x - cb[cb.length - 1] < CB_MERGE) cb[cb.length - 1] = (cb[cb.length - 1] + x) / 2
-    else cb.push(x)
+    const c = clusters[clusters.length - 1]
+    if (c && x - c.hi < CB_MERGE) {
+      c.hi = x
+      c.x = (c.lo + c.hi) / 2
+    } else {
+      clusters.push({ x, lo: x, hi: x })
+    }
   }
+  const cb = clusters.map(c => c.x)
   const tableL = cb[0], tableR = cb[cb.length - 1]
   // No-cells = consecutive boundary pairs the width of the narrow No. column,
   // excluding the outer frame's left edge. noIdx[k] is the cb index of a No-left.
@@ -64,9 +74,9 @@ export function columnModel(Vs) {
     // Symbol|Description divider); otherwise synthesise from measured widths.
     const hit = noIdx.find(i => Math.abs(cb[i] - gl) <= pitch * 0.35)
     if (hit !== undefined) {
-      const nL = cb[hit], nR = cb[hit + 1], sR = cb[hit + 2]
-      const symRight = (sR && sR - nR > SYM_W[0] && sR - nR < SYM_W[1]) ? sR : nR + symW
-      groups.push({ gl, no: [nL, nR], sym: [nR, symRight] })
+      const nL = clusters[hit].hi, nR = clusters[hit + 1].lo, sL = clusters[hit + 1].hi, sR = clusters[hit + 2]?.lo
+      const symRight = (sR && sR - sL > SYM_W[0] && sR - sL < SYM_W[1]) ? sR : sL + symW
+      groups.push({ gl, no: [nL, nR], sym: [sL, symRight] })
     } else {
       groups.push({ gl, no: [gl, gl + noW], sym: [gl + noW, gl + noW + symW] })
     }
@@ -79,8 +89,8 @@ export function columnModel(Vs) {
   // divider was interrupted can't run on into the notes block to the right.
   for (const g of groups) {
     const latticeEnd = g.gl + pitch
-    const nextRule = cb.find(x => x > g.sym[1] + 1)
-    const right = nextRule !== undefined && nextRule <= latticeEnd + pitch * 0.15 ? nextRule : latticeEnd
+    const nextRule = clusters.find(c => c.lo > g.sym[1] + 1)
+    const right = nextRule !== undefined && nextRule.x <= latticeEnd + pitch * 0.15 ? nextRule.lo : latticeEnd
     g.desc = [g.sym[1], Math.max(right, g.sym[1] + 1)]
   }
   return { groups, top, bot, pitch }

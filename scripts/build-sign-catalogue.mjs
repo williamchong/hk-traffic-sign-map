@@ -41,6 +41,8 @@
 // compute-sign-shapes.mjs; --propose writes nothing, so it skips both.
 //
 // Tools: brew install librsvg mupdf-tools imagemagick tesseract
+//        (the No. column is read with tesseract's `eng` AND the bundled digits
+//        model `snum` — see ocr.mjs; preflight checks both are installed)
 
 import { spawnSync } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'

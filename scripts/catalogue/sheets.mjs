@@ -40,6 +40,13 @@ export const RULE_JOIN = 1 // join collinear rule segments this far apart (a row
 export const NO_TRIM_INSET_PT = 2.0
 export const NO_INSET_PT = 0.8
 export const SYM_INSET_PT = 1.5
+// A neighbouring row's plate overflowing into this row's symbol crop (see
+// shaveRowBleed in normalize.mjs): a bleed sits within this far of the crop's
+// top/bottom edge and is at most this thick. A plate's own border is thicker
+// than 2.5 pt only on the largest signs, and those never sit at the crop edge
+// behind a clear row.
+export const BLEED_ZONE_PT = 4
+export const BLEED_MAX_PT = 2.5
 // Height of the OCR band taken from the top of the No. cell's ink. Two printed
 // lines (the code and a smaller "(TC …)" reference) sit further apart than this.
 export const NO_BAND_PT = 18

@@ -93,7 +93,7 @@ export function traceSegments(pdf, tag) {
 // they just pile up (266 MB observed). Bounded per sheet by the tag, but any
 // one-off tag accumulates forever, so sweep explicitly.
 export async function cleanSheetScratch(tag) {
-  const intermediate = /-(trim|sil|top|bottom)\.png$/
+  const intermediate = /-(trim|sil|ink|top|bottom)\.png$/
   for (const f of await readdir(SCRATCH).catch(() => [])) {
     if (f.startsWith(`page-${tag}.`) || f.startsWith(`trace-${tag}.`) || intermediate.test(f)) {
       await rm(join(SCRATCH, f), { force: true })

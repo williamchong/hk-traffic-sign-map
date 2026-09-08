@@ -2,7 +2,7 @@
 
 import { parseArgs } from 'node:util'
 
-import { requireTool, resolveFont } from './proc.mjs'
+import { requireModel, requireTool, resolveFont } from './proc.mjs'
 import { SHEETS } from './sheets.mjs'
 
 export function preflight() {
@@ -10,6 +10,7 @@ export function preflight() {
   requireTool('rsvg-convert', 'brew install librsvg') // SVG → crisp page raster
   requireTool('magick', 'brew install imagemagick') // crops / normalisation / montages
   requireTool('tesseract', 'brew install tesseract') // No.-column + Description OCR
+  requireModel('snum', 'brew reinstall tesseract') // the digits model, bundled with the formula
   return resolveFont()
 }
 

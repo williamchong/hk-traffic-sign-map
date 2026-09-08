@@ -18,13 +18,18 @@
 import { join } from 'node:path'
 
 import { identify, magick } from './proc.mjs'
-import { silhouetteProfile, silhouetteOf } from './normalize.mjs'
+import { inkMask, pageColor, silhouetteProfile, silhouetteOf, trimToPage } from './normalize.mjs'
 import { SCRATCH, SIGN_SUFFIXES } from './sheets.mjs'
 
 const EDGE_FRAC = 0.08 // outer slice of a plate compared for taper
 const GAP_MAX = 0.05 // silhouette coverage a row must be under to count as gap
 const GAP_MIN_FRAC = 0.025 // a real gap between plates spans at least this much
 const GAP_MIN_PX = 6 // …and at least this many rows, however short the cell
+// A gap FLANKED by two rows that each span the width — one plate's bottom border
+// facing the next plate's top border — is a pair however narrow it is. TS3650
+// and TS3651 sit 5 px (0.6 pt) apart, half of GAP_MIN, between two 99 % rows.
+const GAP_FLANK_COV = 0.9
+const GAP_FLANKED_MIN_PX = 2
 
 // Which way does this plate point? `null` when the two edges are too close to
 // call, so the reviewer isn't handed a confident guess that is really a coin flip.
@@ -44,28 +49,48 @@ function pointing(silhouette) {
 // doesn't actually hold two separated shapes (so a merely tall row — a title
 // block, a two-line description — is never split).
 export function splitPlates(symRaw, tag, bgRgb = null) {
-  const { trimmed, silhouette } = silhouetteOf(symRaw, tag, bgRgb)
+  const { trimmed, silhouette, solid } = silhouetteOf(symRaw, tag, bgRgb)
   const [w, h] = identify(silhouette)
   if (!w || h < 48) return null
-  const rows = silhouetteProfile(silhouette, 'y', h)
-  // longest interior run of near-empty rows = the gap between the two plates
-  let best = null, start = -1
-  for (let i = 0; i < h; i++) {
-    const empty = rows[i] < GAP_MAX
+  // When the flood collapsed to a solid rectangle (a plate whose outline it
+  // leaked through — TS3650's is open at the corners) the silhouette has no gap
+  // to find; the drawing's own ink still does. Same trimmed image, so the cut
+  // measured here lands on the same rows.
+  let profile = silhouette
+  if (solid) {
+    profile = join(SCRATCH, `${tag}-ink.png`)
+    inkMask(trimmed, profile)
+  }
+  const rows = silhouetteProfile(profile, 'y', h)
+  // every interior run of near-empty rows
+  const runs = []
+  let start = -1
+  for (let i = 0; i <= h; i++) {
+    const empty = i < h && rows[i] < GAP_MAX
     if (empty && start < 0) start = i
-    if ((!empty || i === h - 1) && start >= 0) {
-      const end = empty ? i : i - 1
-      if (start > 0 && end < h - 1 && (!best || end - start > best.end - best.start)) best = { start, end }
+    if (!empty && start >= 0) {
+      if (start > 0 && i < h) runs.push({ start, end: i - 1 })
       start = -1
     }
   }
-  if (!best || best.end - best.start < Math.max(GAP_MIN_PX, h * GAP_MIN_FRAC)) return null
+  const balanced = (r) => {
+    const c = (r.start + r.end) / 2
+    return c >= h * 0.25 && c <= h * 0.75
+  }
+  // A flanked gap wins outright — the one nearest the middle if there are
+  // several — else the longest run has to be a real gap on its own.
+  const flanked = runs.filter(r => r.end - r.start + 1 >= GAP_FLANKED_MIN_PX && rows[r.start - 1] >= GAP_FLANK_COV && rows[r.end + 1] >= GAP_FLANK_COV && balanced(r))
+  let best = flanked.sort((a, b) => Math.abs((a.start + a.end) / 2 - h / 2) - Math.abs((b.start + b.end) / 2 - h / 2))[0] ?? null
+  if (!best) {
+    best = runs.reduce((b, r) => (!b || r.end - r.start > b.end - b.start ? r : b), null)
+    if (!best || best.end - best.start < Math.max(GAP_MIN_PX, h * GAP_MIN_FRAC)) return null
+    if (!balanced(best)) return null // not a balanced pair
+  }
   const cut = Math.round((best.start + best.end) / 2)
-  if (cut < h * 0.25 || cut > h * 0.75) return null // not a balanced pair
   const halves = []
   for (const [half, y, hh] of [['top', 0, cut], ['bottom', cut, h - cut]]) {
     const file = join(SCRATCH, `${tag}-${half}.png`)
-    magick([trimmed, '-crop', `${w}x${hh}+0+${y}`, '+repage', '-fuzz', '6%', '-trim', '+repage', file])
+    magick([trimmed, '-crop', `${w}x${hh}+0+${y}`, '+repage', ...trimToPage(pageColor(bgRgb)), file])
     const { silhouette: sil } = silhouetteOf(file, `${tag}-${half}`, bgRgb)
     halves.push({ half, file, dir: pointing(sil) })
   }

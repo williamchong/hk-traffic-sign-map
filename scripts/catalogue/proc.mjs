@@ -30,6 +30,16 @@ export function requireTool(cmd, hint) {
   }
 }
 
+// A tesseract language/model must be installed in its tessdata dir; the No.
+// column is read with both `eng` and the digits model `snum` (see ocr.mjs).
+export function requireModel(lang, hint) {
+  const r = spawnSync('tesseract', ['--list-langs'], { encoding: 'utf8' })
+  if (!new RegExp(`^${lang}$`, 'm').test(`${r.stdout ?? ''}\n${r.stderr ?? ''}`)) {
+    console.error(`tesseract has no \`${lang}\` model (tesseract --list-langs). Install it: ${hint}`)
+    process.exit(1)
+  }
+}
+
 // ImageMagick registers no fonts in this environment (`magick -list font` is
 // empty), so `montage` — used for the review / verify sheets — can't render even
 // an empty label without an explicit -font. Resolve one system TTF up front.
