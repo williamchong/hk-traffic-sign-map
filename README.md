@@ -11,11 +11,10 @@ deploys as a static site — no tile server, no database.
 
 ## What it shows
 
-- **~179,000 installed signs**, each at its surveyed position. Signs are
-  grouped into their Index-Plan classes — Regulatory, Warning, Informatory,
-  Supplementary, Temporary, plus Tourist and (uncatalogued) Other — each
-  independently toggleable and colour-coded. Bare sign poles (no `SIGNID`, no
-  sign content) are not rendered.
+- **~179,000 installed signs**, grouped into their Index-Plan classes —
+  Regulatory, Warning, Informatory, Supplementary, Temporary, plus Tourist and
+  (uncatalogued) Other — each independently toggleable and colour-coded. Bare
+  sign poles (no `SIGNID`, no sign content) are not rendered.
 - **Real pictograms, not dots.** 1,217 sign plates extracted from the TD Index
   Plan drawings cover **87.7 %** of installed sign features. They reveal by
   complexity tier — simple iconic signs from z13, text-heavy ones from z16 —
@@ -141,7 +140,9 @@ edited independently of any pipeline run.
 
 ### Quality audits
 
-Two on-demand oracles, outside both npm chains and read-only by default:
+Two on-demand oracles, outside both npm chains. Neither modifies a tracked
+file unless asked — the image audit writes only into gitignored `data/raw/`,
+and the name audit reports unless given `--write`:
 
 ```bash
 node scripts/audit-sign-images.mjs   # No. ↔ pictogram
