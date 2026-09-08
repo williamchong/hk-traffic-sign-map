@@ -3,11 +3,54 @@
 // only — app/ never imports from scripts/ (see CLAUDE.md, "Two runtimes").
 
 import { createReadStream } from 'node:fs'
-import { spawn } from 'node:child_process'
+import { readFile, writeFile } from 'node:fs/promises'
+import { spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
 import { createInterface } from 'node:readline'
 
-import { SOURCE_SRS, TARGET_SRS } from './sign-layers.mjs'
+import { SOURCE_SRS, TARGET_SRS, TILES_VERSION_FILE } from './sign-layers.mjs'
+
+// Abort early with an install hint when a shelled-out tool is missing.
+export function requireTool(cmd, hint) {
+  if (spawnSync(cmd, ['--version']).error) {
+    console.error(`Missing \`${cmd}\`. Install it: ${hint}`)
+    process.exit(1)
+  }
+}
+
+// Stream one ogr2ogr layer as parsed GeoJSON features (`-f GeoJSONSeq` to
+// stdout, one record per line; `args` is everything after that — source,
+// layer, SRS, -select …). Throws after the stream drains if ogr2ogr exits
+// non-zero, so the caller chooses between skip-and-warn (build-tiles) and
+// abort (build-road-rules). stderr passes through live under a label so a
+// GDAL warning is still visible mid-stream.
+export async function* streamOgrGeoJSON(label, args) {
+  const ogr = spawn('ogr2ogr', ['-f', 'GeoJSONSeq', '/vsistdout/', ...args, '-lco', 'RS=NO'])
+  ogr.stderr.on('data', d => process.stderr.write(`[ogr2ogr ${label}] ${d}`))
+  const closed = once(ogr, 'close')
+  const rl = createInterface({ input: ogr.stdout, crlfDelay: Infinity })
+  for await (const line of rl) {
+    // GeoJSONSeq may prefix records with the RFC 8142 record separator
+    // (0x1E); `-lco RS=NO` suppresses it but strip defensively.
+    const trimmed = (line.charCodeAt(0) === 0x1e ? line.slice(1) : line).trim()
+    if (trimmed) yield JSON.parse(trimmed)
+  }
+  const [code] = await closed
+  if (code !== 0) throw new Error(`ogr2ogr failed for ${label} (exit ${code}) — is GDAL installed? (brew install gdal)`)
+}
+
+// Merge `patch` (e.g. `{ version }` or `{ rulesVersion }`) into the committed
+// tilesVersion.json the app imports, keeping every other key — the sign
+// archives and the road-rules archive are rebuilt by different scripts.
+export async function mergeTilesVersion(patch) {
+  let current = {}
+  try {
+    current = JSON.parse(await readFile(TILES_VERSION_FILE, 'utf8'))
+  } catch {
+    // first build, or an unreadable file — start fresh
+  }
+  await writeFile(TILES_VERSION_FILE, JSON.stringify({ ...current, ...patch }, null, 2) + '\n')
+}
 
 // TD's CityGML: one <core:cityObjectMember> per feature, generic attributes as
 // <gen:{kind}Attribute name="…"><gen:value>…</gen:value>, a point as <gml:pos>.

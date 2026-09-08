@@ -74,3 +74,7 @@ export const RAW_DIR = 'data/raw'
 export const OUTPUT_PMTILES = 'public/data/traffic-signs.pmtiles'
 export const OUTPUT_PMTILES_FULL = 'public/data/traffic-signs-full.pmtiles'
 export const TILE_LAYER = 'signs'
+// The cache-buster hashes the app imports (`?v=<hash>` on each archive URL).
+// Both build-tiles and build-road-rules write their own key into it by
+// read-merge-write (mergeTilesVersion in geo.mjs), so neither clobbers the other.
+export const TILES_VERSION_FILE = 'app/data/tilesVersion.json'

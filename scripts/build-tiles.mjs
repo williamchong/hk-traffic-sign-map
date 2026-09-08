@@ -3,18 +3,18 @@
 // PMTiles archive via tippecanoe. The browser never touches the ~430 MB of raw
 // GML — only the compact tiled output.
 
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm } from 'node:fs/promises'
 import { createWriteStream, existsSync } from 'node:fs'
-import { spawn, spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { createHash } from 'node:crypto'
-import { createInterface } from 'node:readline'
 import { dirname, join } from 'node:path'
 
 import {
   SIGN_LAYERS, RAW_DIR, OUTPUT_PMTILES, OUTPUT_PMTILES_FULL,
   TILE_LAYER, SOURCE_SRS, TARGET_SRS, AGAINST_TRAFFIC_CODES
 } from './sign-layers.mjs'
+import { requireTool, mergeTilesVersion, streamOgrGeoJSON } from './geo.mjs'
 
 const COMBINED = join(RAW_DIR, '_combined.geojsonl')
 // A second combined stream for the overview archive. Stacked assemblies are
@@ -66,29 +66,19 @@ const signStacks = existsSync(SIGN_STACKS)
   : null
 if (!signStacks) console.warn(`No ${SIGN_STACKS} — signs won't stack into signposts. Run \`node scripts/compute-stacks.mjs\` first.`)
 
-function requireTool(cmd, hint) {
-  if (spawnSync(cmd, ['--version']).error) {
-    console.error(`Missing \`${cmd}\`. Install it: ${hint}`)
-    process.exit(1)
-  }
-}
-
 // ogr2ogr streams the layer as newline-delimited GeoJSON to stdout; we inject
 // `category` per feature and append to both combined files tippecanoe reads —
 // `out` (full archive) and `outLod` (overview, with the per-assembly LOD zoom
 // hints applied in the write block below).
 async function convertLayer({ file, category }, out, outLod) {
-  const src = join(RAW_DIR, `${file}.gml`)
-  const ogr = spawn('ogr2ogr', [
-    '-f', 'GeoJSONSeq', '/vsistdout/', src,
+  const features = streamOgrGeoJSON(file, [
+    join(RAW_DIR, `${file}.gml`),
     '-s_srs', SOURCE_SRS, '-t_srs', TARGET_SRS,
-    '-lco', 'RS=NO',
     // Don't let a handful of malformed GML geometries abort an otherwise
     // good layer — skip the bad features and keep going.
     '-skipfailures',
     '--config', 'GML_SKIP_CORRUPTED_FEATURES', 'YES'
   ])
-  ogr.stderr.on('data', d => process.stderr.write(`[ogr2ogr ${file}] ${d}`))
 
   // Only ABV_PT features carry FACE_BEARING / stack order / a pole; checked once here.
   const isAbv = category === 'traffic-sign-abbreviation'
@@ -96,13 +86,7 @@ async function convertLayer({ file, category }, out, outLod) {
   const injectPole = poleAnchors && isAbv
   const injectStack = signStacks && isAbv
   let count = 0, bearingsApplied = 0, stacksApplied = 0, polesApplied = 0
-  const rl = createInterface({ input: ogr.stdout, crlfDelay: Infinity })
-  for await (const line of rl) {
-    // GeoJSONSeq may prefix records with the RFC 8142 record separator
-    // (0x1E); we pass `-lco RS=NO` to suppress it but strip defensively.
-    const trimmed = (line.charCodeAt(0) === 0x1e ? line.slice(1) : line).trim()
-    if (!trimmed) continue
-    const feature = JSON.parse(trimmed)
+  for await (const feature of features) {
     feature.properties = { ...feature.properties, category }
     // FEATUREID is keyed as a string in both lookup JSONs; GeoJSON properties
     // may surface it as number or string. Coerce once and reuse.
@@ -181,9 +165,6 @@ async function convertLayer({ file, category }, out, outLod) {
   if (injectBearing) console.log(`    + FACE_BEARING on ${bearingsApplied} / ${count} (${(bearingsApplied / count * 100).toFixed(1)}%)`)
   if (injectPole) console.log(`    + ${polesApplied} / ${count} drawn at their pole`)
   if (injectStack) console.log(`    + STACK order on ${stacksApplied} / ${count} (${(stacksApplied / count * 100).toFixed(1)}%)`)
-
-  const [code] = await once(ogr, 'close')
-  if (code !== 0) throw new Error(`ogr2ogr failed for ${file} (exit ${code})`)
   console.log(`  ${category}: ${count} features`)
   return count
 }
@@ -282,11 +263,13 @@ await rm(COMBINED_LOD, { force: true })
 // browser would stitch cached chunks of the old archive together with newly
 // fetched chunks of the new one. Both archives always rebuild together, so a
 // single combined hash (changes if either file's bytes change) is enough.
+// The road-rules archive has its own key (`rulesVersion`, written by
+// build-road-rules.mjs) — it rebuilds on its own cadence, so it must not bust
+// the sign cache; the merge keeps that key intact.
 const hash = createHash('sha256')
 hash.update(await readFile(OUTPUT_PMTILES))
 hash.update(await readFile(OUTPUT_PMTILES_FULL))
 const version = hash.digest('hex').slice(0, 12)
-const VERSION_FILE = join('app', 'data', 'tilesVersion.json')
-await writeFile(VERSION_FILE, JSON.stringify({ version }, null, 2) + '\n')
+await mergeTilesVersion({ version })
 
 console.log(`\nDone → ${OUTPUT_PMTILES} + ${OUTPUT_PMTILES_FULL} (v${version})`)

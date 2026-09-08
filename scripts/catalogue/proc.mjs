@@ -23,12 +23,9 @@ export function identify(file) {
   return (r.stdout ?? '').trim().split(/\s+/).map(Number)
 }
 
-export function requireTool(cmd, hint) {
-  if (spawnSync(cmd, ['--version']).error) {
-    console.error(`Missing \`${cmd}\`. Install it: ${hint}`)
-    process.exit(1)
-  }
-}
+// The tool check lives in geo.mjs (shared with the tile builders); re-exported
+// here so the extractor's callers keep their import.
+export { requireTool } from '../geo.mjs'
 
 // A tesseract language/model must be installed in its tessdata dir; the No.
 // column is read with both `eng` and the digits model `snum` (see ocr.mjs).
