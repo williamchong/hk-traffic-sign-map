@@ -130,8 +130,15 @@ function bestOtherMatch(norm, ownKey, a) {
   for (const [k, v] of norm) {
     if (k === ownKey || !v) continue
     const s = sim(a, v)
-    if (!best || s > best.sim) best = { key: k, sim: s }
+    if (!best || s > best.sim) best = { key: k, sim: s, text: v }
   }
+  // A match only names a code if the wording belongs to ONE code. 546 of the
+  // reference's 1,329 keys share their text with another (whole families read
+  // "LIGHT SIGNAL" or "DIRECTION TO MASS TRANSIT RAILWAY"), so a perfect score
+  // against a shared string says nothing about WHICH code we read — treating it
+  // as proof of a misread withholds correct plates for defined-but-unlisted
+  // signs, which the catalogue legitimately carries.
+  if (best) best.unique = [...norm.values()].filter(v => v === best.text).length === 1
   return best
 }
 
@@ -140,9 +147,27 @@ function bestOtherMatch(norm, ownKey, a) {
 // all — the code itself is in doubt.
 export function verdictFor({ names, norm }, code, ocrName) {
   const hit = lookupName(names, code)
-  // Nothing to check this row against, so our read is all there is — tidied,
-  // since no reference will correct it later.
-  if (!hit) return { verdict: 'no-list', ship: shippable(ocrName) || null }
+  // A code the reference has never heard of is the case MOST likely to be a
+  // misread, not the one to skip the misread check on. The catalogue really is
+  // a superset of the list (defined-but-uninstalled signs are legitimate), so
+  // an unlisted code is not itself suspicious — but an unlisted code whose
+  // description is another code's description is a digit misread, and returning
+  // early here shipped exactly that: (TS 206 - 310) reads the bold 5 in 252,
+  // 255 and 256 as a 9, and 292/296/299 are all inside the sheet's printed
+  // range, so the range gate passes them too. TS296 shipped row 256's TOLL AREA
+  // plate and wording; nothing else in the pipeline looks at the number again.
+  if (!hit) {
+    const a = normalise(ocrName)
+    const alt = a ? bestOtherMatch(norm, null, a) : null
+    // Same ±1 exemption as the listed branch below: the reference is a hand
+    // transcription that slips rows, so a neighbour match is its typo, not ours.
+    if (alt?.unique && alt.sim >= 0.85 && Math.abs(parseInt(alt.key, 10) - parseInt(String(code).replace(/^TS/, ''), 10)) > 1) {
+      return { verdict: 'code-misread', ship: null, withhold: true, altKey: alt.key, sim: alt.sim }
+    }
+    // Nothing to check this row against, so our read is all there is — tidied,
+    // since no reference will correct it later.
+    return { verdict: 'no-list', ship: shippable(ocrName) || null }
+  }
   const a = normalise(ocrName)
   const b = norm.get(hit.key)
   if (!a) return { verdict: 'no-ocr', ship: hit.text, listKey: hit.key }
