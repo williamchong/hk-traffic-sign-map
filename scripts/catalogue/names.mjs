@@ -18,9 +18,26 @@ export function loadNames() {
   const names = JSON.parse(readFileSync(join(NAMES_DIR, 'descriptions.json'), 'utf8'))
   const superseded = new Set(JSON.parse(readFileSync(join(NAMES_DIR, 'superseded.json'), 'utf8')))
   const norm = new Map()
-  for (const [k, v] of Object.entries(names)) norm.set(k, normalise(v))
-  return { names, superseded, norm }
+  // Every word the reference corpus uses anywhere — the debris test below asks
+  // whether a word we read survives repair without appearing in ANY of the
+  // 1,329 descriptions. Road-sign English is a closed vocabulary of a few
+  // hundred words, so a word outside all of it is OCR noise, not a rare term.
+  const vocab = new Set()
+  for (const [k, v] of Object.entries(names)) {
+    norm.set(k, normalise(v))
+    for (const w of String(v).split(/\s+/)) {
+      const core = wordCore(w)
+      if (core) vocab.add(core)
+    }
+  }
+  return { names, superseded, norm, vocab }
 }
+
+// The sheets set their ranges with an en/em dash and tesseract reads one back.
+// Both the comparison fold (`normalise`) and the shipping fold (`shippable`)
+// have to collapse them to ASCII "-", and they have to agree: when only
+// `normalise` folded, a row scored `agree` on a dash the shipped text had lost.
+const DASHES = /[‐-―−]/g
 
 // Compare on meaning, not typography: case, the sub-note parentheticals, dash
 // and quote variants, and the ½ glyph all differ between our OCR and the list
@@ -33,7 +50,7 @@ function normalise(s) {
     // reduce to the same "STOP" the reference's "STOP (MANUAL)" does, or the two
     // read as different signs over a stray glyph.
     .replace(/\([^)]*\)?/g, ' ')
-    .replace(/[‐-―−]/g, '-')
+    .replace(DASHES, '-')
     .replace(/["'‘’“”]/g, '')
     .replace(/½/g, '1/2')
     .replace(/[.,;:]/g, ' ')
@@ -62,6 +79,14 @@ function digitsSubsumed(ours, theirs) {
   return i === ours.length
 }
 
+// Allocating: a fresh row array per character. Word repair calls this ~52k times
+// per full pass (once per token pair in every alignment cell) and that
+// allocation IS the cost — module-scoped scratch buffers with `charCodeAt`
+// measured 16.2 → 3.5 ms over those 52k calls. Left as it is on purpose: the
+// whole repair pass is 20 ms against a single `tesseract` spawn's 62 ms, in a
+// pipeline that spawns two per row over ~1,150 rows, and a shared fixed buffer
+// would need a length guard on an unbounded OCR read to buy a fifth of one OCR
+// call. If this ever shows up in a profile, the buffers are the lever.
 function levenshtein(a, b) {
   if (a === b) return 0
   if (!a.length || !b.length) return Math.max(a.length, b.length)
@@ -89,7 +114,144 @@ const keyDist = (a, b) => Math.abs(parseInt(a, 10) - parseInt(b, 10))
 // Our own read, tidied for shipping. The Description cell is English-only, so
 // anything outside this alphabet came from the OCR guessing at a glyph (the
 // sheets' Chinese sub-notes render as noise under `eng`) and is dropped.
-const shippable = s => String(s).replace(/[^\w &()'./,:%$-]+/g, ' ').replace(/\s+/g, ' ').trim()
+//
+// The dash fold has to happen FIRST, and it is not cosmetic: the filter below
+// keeps only ASCII "-", so "7am — 7pm" shipped as "7am 7pm", losing the range on
+// 45 of 1,143 rows (every time plate, and the "MAIN LINE - LANE GAIN" family).
+const shippable = s => String(s).replace(DASHES, '-').replace(/[^\w &()'./,:%$-]+/g, ' ').replace(/\s+/g, ' ').trim()
+
+// A word reduced to what OCR can be judged on: letters and digits, case-folded.
+// Punctuation is excluded because it is exactly what the sheets' thin rules and
+// the OCR's bracket guesses corrupt — `(EXPRESSWAYS` and `EXPRESSWAYS)` are the
+// same word read twice.
+function wordCore(w) {
+  return String(w).toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
+// How far a word may be from the reference's before repair stops calling it the
+// same word. Two edits covers the whole observed range of single-word OCR damage
+// on these sheets — SFRVICES, MODIFLED, QUT, NOQ., (7FOLL, MIR) — while three
+// already reaches genuinely different words.
+const MAX_REPAIR_EDITS = 2
+
+// Line our words up with the reference's, allowing for words either side dropped
+// or added. Needleman-Wunsch, with substitution priced by normalised character
+// distance so a near-identical word costs almost nothing to pair and an unrelated
+// one costs about as much as dropping it. POSITIONAL alignment is the point: a
+// nearest-word-anywhere match would happily "repair" ROUTE 3 into ROUTE 5, which
+// is precisely the digit swap the rest of this file exists to prevent.
+function alignWords(ours, theirs) {
+  const n = ours.length, m = theirs.length
+  const sub = (i, j) => {
+    const a = ours[i], b = theirs[j]
+    return a === b ? 0 : 1 - sim(a.toUpperCase(), b.toUpperCase())
+  }
+  const d = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0))
+  for (let i = 1; i <= n; i++) d[i][0] = i
+  for (let j = 1; j <= m; j++) d[0][j] = j
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + sub(i - 1, j - 1))
+    }
+  }
+  const pairs = []
+  let i = n, j = m
+  const near = (x, y) => Math.abs(x - y) < 1e-9
+  while (i > 0 && j > 0) {
+    if (near(d[i][j], d[i - 1][j - 1] + sub(i - 1, j - 1))) {
+      pairs.push([i - 1, j - 1])
+      i--
+      j--
+    } else if (near(d[i][j], d[i - 1][j] + 1)) {
+      pairs.push([i - 1, null])
+      i--
+    } else {
+      pairs.push([null, j - 1])
+      j--
+    }
+  }
+  while (i > 0) {
+    i--
+    pairs.push([i, null])
+  }
+  while (j > 0) {
+    j--
+    pairs.push([null, j])
+  }
+  return pairs.reverse()
+}
+
+// `agree` ships OUR wording, and the check that earns it is blind in two places:
+// `normalise` DELETES every parenthetical before comparing (so "(SCHEDULED
+// SFRVICES)" and "(SCHEDULED SERVICES)" are the same string to it), and the
+// containment arm tolerates up to half our read being text the reference has no
+// word for. Both are deliberate — the parenthetical strip is what lets a sub-note
+// the OCR mangled still match, and containment is what keeps our fuller END OF
+// PLB "NO STOPPING" ZONE over the reference's abbreviated one. But together they
+// mean letter garble ships: 102 of the catalogue's 1,071 agree rows differed from
+// the reference, and about a third carried debris a reader can see.
+//
+// So repair rather than re-decide. Word by word, against the word the reference
+// has in that position: within MAX_REPAIR_EDITS it is the same word spelled badly
+// and the reference's spelling wins; beyond it, it is OUR word and the sheet's
+// phrasing stands. Nothing the reference has and we did not read is inserted —
+// that is `fill`'s job, not this one, and our read being SHORTER is not an error
+// (TS3613 reads "MERGING AHEAD SIGN ON MAIN LINE" where the reference adds
+// "(EXPRESSWAYS)").
+//
+// Two guards on the swap:
+//   - digits are meaning (the doctrine `digit-conflict` enforces), so a word is
+//     never repaired into one with different digits.
+//   - a difference of case ALONE is the reference's house style, not our error —
+//     it transcribes "PUBLiC" — so ours stands, EXCEPT where the word carries a
+//     digit, which is the unit case ("1Km", "2KM", "11M" against the reference's
+//     "1km", "2km", "11m") and there the reference's SI casing is right.
+// A word of ours with no counterpart at all is kept, unless it holds no letter or
+// digit: a lone ")" left over once the word before it absorbed its bracket is
+// never the sheet's phrasing.
+function repairRead(ourText, refText) {
+  const ours = String(ourText).split(/\s+/).filter(Boolean)
+  const theirs = String(refText).split(/\s+/).filter(Boolean)
+  const out = []
+  const kept = []
+  for (const [oi, ti] of alignWords(ours, theirs)) {
+    if (oi === null) continue
+    const a = ours[oi]
+    if (ti === null) {
+      if (wordCore(a)) {
+        out.push(a)
+        kept.push(a)
+      }
+      continue
+    }
+    const b = theirs[ti]
+    if (a === b) {
+      out.push(a)
+      continue
+    }
+    const caseOnly = a.toUpperCase() === b.toUpperCase()
+    const swappable = levenshtein(a, b) <= MAX_REPAIR_EDITS
+      && digitsOf(a) === digitsOf(b)
+      && (!caseOnly || /\d/.test(a))
+    if (swappable) {
+      out.push(b)
+      continue
+    }
+    out.push(a)
+    if (wordCore(a) && wordCore(a) !== wordCore(b)) kept.push(a)
+  }
+  return { text: out.join(' '), kept }
+}
+
+// What repair could not account for. A word we kept — because the reference had
+// no word close to it — that appears NOWHERE in the reference corpus is not the
+// sheet's phrasing, it is noise: CVDOECOMWAVS, SOVDBECCWAVES, BTeuUT,
+// NIDOCTIANES, CDORILITON:. On a full pass this fires on 34 of 1,071 agree rows
+// and every one is genuine debris, because road-sign English reuses a small
+// vocabulary — a word outside all 1,329 descriptions is a word nobody wrote.
+function debrisIn(vocab, kept) {
+  return kept.filter(w => wordCore(w) && !vocab.has(wordCore(w)))
+}
 
 // TD installs `TS2701U`/`N`/`L` for the URBAN / NEW TERRITORIES / LANTAU variants
 // of one Index Plan row; the list keys those as `2701-URBAN` etc.
@@ -168,7 +330,7 @@ function bestOtherMatch(norm, ownKey, a) {
 // Verdict for one row. `ship` is the English name to write (null = ship the
 // pictogram with no description); `withhold` means don't ship the pictogram at
 // all — the code itself is in doubt.
-export function verdictFor({ names, norm }, code, ocrName) {
+export function verdictFor({ names, norm, vocab }, code, ocrName) {
   const hit = lookupName(names, code)
   // A code the reference has never heard of is the case MOST likely to be a
   // misread, not the one to skip the misread check on. The catalogue really is
@@ -224,7 +386,18 @@ export function verdictFor({ names, norm }, code, ocrName) {
   // corroboration; the longer one is the fuller name. The half-length floor
   // stops a short reference ("GO") from validating a noisy read of it.
   const contains = (x, y) => x.includes(y) && y.length >= x.length * 0.5
-  if (a === b || contains(a, b)) return { verdict: 'agree', ship: shippable(ocrName), sim: s, listText: hit.text }
+  if (a === b || contains(a, b)) {
+    const { text, kept } = repairRead(shippable(ocrName), hit.text)
+    // Repair could not place every word: what is left is noise the two blind
+    // spots above let through, and our wording cannot be trusted as a whole.
+    // The row is still BACKED — the description matched its own code, which is
+    // all the misread check ever claimed — so this is not a withhold; it just
+    // falls back to the reference's clean wording the way `fill` does, under its
+    // own label so the per-sheet summary says how often our read was that noisy.
+    const debris = debrisIn(vocab, kept)
+    if (debris.length) return { verdict: 'ocr-debris', ship: hit.text, sim: s, listKey: hit.key, debris }
+    return { verdict: 'agree', ship: text, sim: s, listText: hit.text }
+  }
   if (contains(b, a) || s >= 0.6) return { verdict: 'fill', ship: hit.text, sim: s, listKey: hit.key }
   // A description that names a DIFFERENT code exposes a digit misread — the one
   // failure the cardinal rule forbids, since a misread number still yields a

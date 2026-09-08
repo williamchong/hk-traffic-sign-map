@@ -18,7 +18,12 @@ const sheetTag = s => `${s.prefix}${s.range[0]}-${s.range[1]}`
 
 // A staged half keeps a provisional name until a human confirms which face it is.
 // A verdict strong enough to stand as evidence for the number it was read under.
-const backed = r => r.verdict === 'agree' || r.verdict === 'fill'
+// `ocr-debris` counts: the description matched this code — only our transcription
+// of it was too noisy to ship — and that match is the whole of the evidence.
+// Omitting it would also be expensive: `backed` gates `ocrCodeSecondOpinion`, a
+// second tesseract spawn (~62 ms), so the ~34 rows a run verdicts `ocr-debris`
+// would each re-OCR their No. cell for nothing — ~2 s per full run.
+const backed = r => r.verdict === 'agree' || r.verdict === 'fill' || r.verdict === 'ocr-debris'
 
 const halfFile = (code, half) => `${code}__${half}.png`
 
