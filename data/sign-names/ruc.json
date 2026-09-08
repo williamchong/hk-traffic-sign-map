@@ -1,0 +1,1576 @@
+[
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a1.gif",
+    "en": "give way",
+    "zh": "讓路標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a2.gif",
+    "en": "Stop and give way",
+    "zh": "停車及讓路標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a3.gif",
+    "en": "ahead only",
+    "zh": "只淮向前駛標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a4.gif",
+    "en": "keep left",
+    "zh": "靠左行駛標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a5.gif",
+    "en": "turn left",
+    "zh": "左轉標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a6.gif",
+    "en": "turn left at junction ahead",
+    "zh": "前面路口左轉標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a7.gif",
+    "en": "no stopping",
+    "zh": "不准停車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a8.gif",
+    "en": "no parking",
+    "zh": "不准泊車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a9.gif",
+    "en": "no entry for all vehicles",
+    "zh": "所有車輛不准駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101a10.gif",
+    "en": "one way traffic",
+    "zh": "單程行車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b1.gif",
+    "en": "vehicles must stop at the sign",
+    "zh": "停車標誌--警方使用"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b2.gif",
+    "en": "new sign to replace Sign 13",
+    "zh": "停車新標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b4.gif",
+    "en": "No lane changing",
+    "zh": "不准換綫標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b5.gif",
+    "en": "route for bicycles, tricycles and pedestrians",
+    "zh": "行人徑及單車徑標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b6.gif",
+    "en": "route to be used by bicycles, tricycles",
+    "zh": "單車通行標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b7.gif",
+    "en": "route for multicycles and pedestrians",
+    "zh": "行人徑及多輪車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b8.gif",
+    "en": "cycle ground and route to be used by multicycles",
+    "zh": "供多輪車使用標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b9.gif",
+    "en": "cycling restriction",
+    "zh": "騎單車者必須下車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101b10.gif",
+    "en": "end of cycling restriction",
+    "zh": "限制騎單車區的終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c1.gif",
+    "en": "light rail transit vehicles or trams only",
+    "zh": "輕鐵標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c2.gif",
+    "en": "dual carriageway ahead",
+    "zh": "分隔車路標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c3.gif",
+    "en": "direction in which prohibition applies",
+    "zh": "限制方向標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c4.gif",
+    "en": "prohibition applies in both directions",
+    "zh": "左右方向限制標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c5.gif",
+    "en": "prohibition applies to goods vehicles",
+    "zh": "限制車類別標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c6.gif",
+    "en": "one way ahead",
+    "zh": "單程路標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c7_n.gif",
+    "en": "no stopping during times shown",
+    "zh": "禁止在所示時間內停車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c8_n.gif",
+    "en": "end of stopping restriction",
+    "zh": "「不准停車區」終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c9_n.gif",
+    "en": "no stopping for mini-buses during times shown",
+    "zh": "禁止小巴在所示時段內停車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c10_n.gif",
+    "en": "end of minibus stopping restriction",
+    "zh": "「禁止小巴停車區」終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/101c10_1_n.gif",
+    "en": "end of minibus stopping restriction",
+    "zh": "限制上落客標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a1.gif",
+    "en": "pedestrian priority zone",
+    "zh": "行人優先使用區標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a2.gif",
+    "en": "all vehicles prohibited except permitted vehicles",
+    "zh": "禁止一切車輛駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a3.gif",
+    "en": "no motor vehicles",
+    "zh": "禁止汽車駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a4.gif",
+    "en": "no motor vehicles except motorcycles and motor tricycles",
+    "zh": "禁止汽車駛入，電單車及機動三輪車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a5.gif",
+    "en": "no motorcycles and motor tricycles",
+    "zh": "禁止電單車駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a6.gif",
+    "en": "no buses or coaches",
+    "zh": "禁止巴士駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a7.gif",
+    "en": "no mini-buses",
+    "zh": "禁止公共小巴駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a8.gif",
+    "en": "no goods vehicles",
+    "zh": "禁止貨車駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a9.gif",
+    "en": "no learner drivers",
+    "zh": "禁止學習駕駛者駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102a10.gif",
+    "en": "no left turn",
+    "zh": "不准左轉標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b1.gif",
+    "en": "no U-turn",
+    "zh": "不准掉頭標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b2.gif",
+    "en": "no pedestrians",
+    "zh": "行人止步標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b3.gif",
+    "en": "no ped-estrians and cyclists",
+    "zh": "禁止行人、單車進入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b4.gif",
+    "en": "no cyclists",
+    "zh": "禁止單車或三輛車進入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b5.gif",
+    "en": "no use of horn",
+    "zh": "禁止響號標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b6.gif",
+    "en": "no over-taking",
+    "zh": "不准超車標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b7.gif",
+    "en": "no vehicles over width shown",
+    "zh": "禁止超過所示闊度的車輛駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b8.gif",
+    "en": "no vehicles or combinations of vehicles over length shown",
+    "zh": "禁止超過所示長度的車輛駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b9.gif",
+    "en": "no vehicles over height shown",
+    "zh": "禁止超過所示高度的車輛駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102b10.gif",
+    "en": "no vehicles over gross vehicle weight shown",
+    "zh": "禁止超過所示總重量的車輛駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102c1.gif",
+    "en": "no vehicles over gross vehicle weight shown",
+    "zh": "禁止超過所示車軸重量的車輛駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102c2.gif",
+    "en": "maximum speed",
+    "zh": "速度限制標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102c3_n.gif",
+    "en": "except for access if no alternative route",
+    "zh": "可變速度限制"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102c4_n.gif",
+    "en": "except for access",
+    "zh": "禁止並前往此道"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102c5_1_n.gif",
+    "en": "length over 10 m",
+    "zh": "禁止過長車輛"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/102c4.gif",
+    "en": "over 12 tonnes",
+    "zh": "車輛總重量限制標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a1_n.gif",
+    "en": "except bus",
+    "zh": "巴士例外"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a2_n.gif",
+    "en": "Time plate",
+    "zh": "適用時間"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a3_n.gif",
+    "en": "Day plate",
+    "zh": "適用日子"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a4_1_n.gif",
+    "en": "Time and day plate",
+    "zh": "適用日子及時間"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a1.gif",
+    "en": "distance of prohibition",
+    "zh": "限制生效距離標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a2.gif",
+    "en": "end of prohibition",
+    "zh": "限制終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a7_n.gif",
+    "en": "Left lane shows bus lane",
+    "zh": "只准專營巴士駛入"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a8_n.gif",
+    "en": "Left lane shows bus lane",
+    "zh": "只准專營巴士及其他巴士駛入"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a5.gif",
+    "en": "contraflow bus lane for franchised buses only",
+    "zh": "反向巴士綫標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a6.gif",
+    "en": "end of bus lane",
+    "zh": "巴士綫終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a7.gif",
+    "en": "end of tram only lane",
+    "zh": "電車專綫終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103a8.gif",
+    "en": "end of rail only lane",
+    "zh": "輕鐵專綫終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103b1.gif",
+    "en": "no wind susceptible vehicles",
+    "zh": "受風車輛不准駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103b2_n.gif",
+    "en": "sign marking start of 'Tunnel area'",
+    "zh": "「隧道區域」開始標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103b3.gif",
+    "en": "sign marking end of 'Tunnel area'",
+    "zh": "「隧道區域」終止標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103b4.gif",
+    "en": "no vehicles carrying dangerous goods",
+    "zh": "禁止載有危險物品的車輛駛入標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103b5.gif",
+    "en": "dangerous goods categories",
+    "zh": "危險物品類別標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103b6_n.gif",
+    "en": "parking for specified vehicles shown on sign only",
+    "zh": "指定類別車輛泊車處標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c1.gif",
+    "en": "parking for cars, minibuses and light goods vehicles",
+    "zh": "輕型貨車泊車處標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c2.gif",
+    "en": "parking for goods vehicles only",
+    "zh": "貨車泊車處標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c3.gif",
+    "en": "parking for buses and coaches only",
+    "zh": "巴士泊車處標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c8_1_n.gif",
+    "en": "motor cycles",
+    "zh": "電單車停泊處標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c9_1_n.gif",
+    "en": "pedal cycles",
+    "zh": "單車停泊處標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c4.gif",
+    "en": "start of an expressway",
+    "zh": "快速公路的起點及延續部分標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c5.gif",
+    "en": "end of an expressway",
+    "zh": "快速公路終點標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/103c8.gif",
+    "en": "taxi stand",
+    "zh": "的士站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a4_n.gif",
+    "en": "end of Lantau taxis operating area",
+    "zh": "市區的士站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a1_n.gif",
+    "en": "urban taxi stand",
+    "zh": "新界的士站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a2_n.gif",
+    "en": "lantau taxi stand",
+    "zh": "大嶼山的士站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a7_1_n.gif",
+    "en": "Cross-harbour taxi",
+    "zh": "過海的士站"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a3.gif",
+    "en": "end of New Territories taxis operating area",
+    "zh": "新界的士營業範圍終止界綫標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a4.gif",
+    "en": "end of Lantau taxis operating area",
+    "zh": "大嶼山的士營業範圍終止界綫標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a5.gif",
+    "en": "green minibus stop",
+    "zh": "綠色小巴中途站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a6.gif",
+    "en": "green minibus stand",
+    "zh": "綠色小巴終站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a7.gif",
+    "en": "red minibus stop",
+    "zh": "紅色小巴中途站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a8.gif",
+    "en": "red minibus stand",
+    "zh": "紅色小巴終站標誌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104a9.gif",
+    "en": "use left-hand lane except when overtaking",
+    "zh": "除超車外須使用最左線行駛"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b6_n.gif",
+    "en": "way in for vehicles",
+    "zh": "的士站時間字牌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b7_n.gif",
+    "en": "no way in for vehicles",
+    "zh": "公共小型巴士站時間字牌"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b1.gif",
+    "en": "hard shoulder -- do not use except in an emergency",
+    "zh": "路肩"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b2.gif",
+    "en": "layby, do not use except in an emergency",
+    "zh": "避車處"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b3.gif",
+    "en": "cyclists must dismount and use crossing to cross the road",
+    "zh": "騎單車者必須下車"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b4.gif",
+    "en": "way out for vehicles",
+    "zh": "車輛出口處"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b5.gif",
+    "en": "no way out for vehicles",
+    "zh": "不准車輛駛出"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b6.gif",
+    "en": "way in for vehicles",
+    "zh": "車輛入口處"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b7.gif",
+    "en": "no way in for vehicles",
+    "zh": "不准車輛駛入"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b8_n.gif",
+    "en": "Autotoll booth",
+    "zh": "自動收費亭"
+  },
+  {
+    "section": "signs_giving_orders_",
+    "src": "/filemanager/en/content_366/104b9_n.gif",
+    "en": "Autotoll traffic lane",
+    "zh": "行車線供自動繳費車輛行駛"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a1.gif",
+    "en": "stop or give way ahead",
+    "zh": "前面有「停車」或「讓路」標誌的告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a2.gif",
+    "en": "distance to 'Give way' line",
+    "zh": "離「讓路」綫的距離告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a3.gif",
+    "en": "distance to 'Stop' line",
+    "zh": "離「停車」綫的距離告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a4.gif",
+    "en": "bend to left ahead",
+    "zh": "前面左彎告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a5_n.gif",
+    "en": "double bend ahead first to right",
+    "zh": "前面先右轉的連續彎路"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a5.gif",
+    "en": "double bend ahead first to right",
+    "zh": "前面先右轉的連續彎路"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a6.gif",
+    "en": "dual carriageway ends ahead",
+    "zh": "分隔車路綫終止告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a7.gif",
+    "en": "round-about ahead",
+    "zh": "迴旋處在前告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a8.gif",
+    "en": "road narrows ahead on right",
+    "zh": "前面道路右邊收窄告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a9.gif",
+    "en": "road narrows on both sides ahead",
+    "zh": "前面道路兩邊收窄告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106a10.gif",
+    "en": "reduce speed now",
+    "zh": "開始減速告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b1.gif",
+    "en": "lowering of speed limit ahead",
+    "zh": "前面降低速度限制告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b2_n.gif",
+    "en": "sharp deviation of route",
+    "zh": "道路向左急轉告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b10.gif",
+    "en": "traffic lights ahead",
+    "zh": "各方向均為單排行車告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b5.gif",
+    "en": "steep hill upwards ahead",
+    "zh": "前面有向上斜路告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b6.gif",
+    "en": "steep hill down-wards ahead",
+    "zh": "前面有向下斜路告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b7.gif",
+    "en": "use low gear",
+    "zh": "前面低波行車告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b8.gif",
+    "en": "use low gear for distance shown",
+    "zh": "在距離內用低波行車告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b9.gif",
+    "en": "keep in low gear",
+    "zh": "繼續用低波行車告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106b10_n.gif",
+    "en": "traffic lights ahead",
+    "zh": "單排行車"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106c1.gif",
+    "en": "advice for cyclists",
+    "zh": "給騎單車者的指示告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106c2.gif",
+    "en": "advice for cyclists on steep hills",
+    "zh": "給在斜路上的騎單車者的指示告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106c3.gif",
+    "en": "traffic accident blackspot ahead",
+    "zh": "交通意外黑點告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106c4_n.gif",
+    "en": "pedestrian accidents",
+    "zh": "小心行人告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106c5.gif",
+    "en": "cross roads ahead",
+    "zh": "十字路口在前告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106c6.gif",
+    "en": "staggered junction",
+    "zh": "交錯路口在前告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/106c7.gif",
+    "en": "side road ahead",
+    "zh": "小路在前告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a1.gif",
+    "en": "T-junc-tion ahead",
+    "zh": "T 型路口在前告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a2.gif",
+    "en": "traffic merges from left",
+    "zh": "左方車輛併入告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a3.gif",
+    "en": "merging into traffic on right",
+    "zh": "與右方車輛匯合告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a4.gif",
+    "en": "traffic merging from left",
+    "zh": "左方車輛併入告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a5.gif",
+    "en": "merging into main traffic on right",
+    "zh": "與右方車輛匯合告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a6.gif",
+    "en": "over-head electric cable ahead",
+    "zh": "前面有架空電纜告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a7.gif",
+    "en": "disabled persons ahead",
+    "zh": "前面有傷殘人士告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107a8.gif",
+    "en": "railway crossing ahead with gate or barrier",
+    "zh": "前面有火車橫過告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b1.gif",
+    "en": "quay-side or river bank ahead",
+    "zh": "前面岸邊或河邊告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b2.gif",
+    "en": "restricted headroom ahead",
+    "zh": "前面有高度限制告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b3.gif",
+    "en": "pedestrian crossing ahead",
+    "zh": "前面有行人過路處告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b4.gif",
+    "en": "children ahead",
+    "zh": "小心兒童告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b5.gif",
+    "en": "risk of falling or fallen rocks ahead",
+    "zh": "前面有石塊下墜的危險告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b6.gif",
+    "en": "horses on road ahead",
+    "zh": "前面路上有馬匹告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b7_n.gif",
+    "en": "warning sign for hazard ahead (wording may be varied)",
+    "zh": "前面危險告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b7.gif",
+    "en": "warning sign for hazard ahead (wording may be varied)",
+    "zh": "前面危險告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b8.gif",
+    "en": "franchised buses bus lane ahead",
+    "zh": "專營巴士前面有巴士綫告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b9.gif",
+    "en": "all buses",
+    "zh": "所有巴士告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107b10.gif",
+    "en": "franchised buses bus lane on major road ahead",
+    "zh": "專營巴士前面大路有巴士綫告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c1.gif",
+    "en": "bus lane on major road ahead",
+    "zh": "所有巴士前面大路有巴士綫告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c2.gif",
+    "en": "warning to pedestrians crossing road",
+    "zh": "警告過路行人的告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c3.gif",
+    "en": "vehicles of the light rail or trams ahead",
+    "zh": "前面有輕鐵列車或電車過路口告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c4.gif",
+    "en": "light rail vehicle lane ahead",
+    "zh": "前面有西北鐵路或電車專綫告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c5.gif",
+    "en": "light rail vehicle lane on major road ahead",
+    "zh": "前面主路有西北鐵路車輛告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c9.gif",
+    "en": "Pedestrians on road ahead",
+    "zh": "前面有行人在行車道上告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c7.gif",
+    "en": "cycles ahead",
+    "zh": "前面有單車告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c9_n.gif",
+    "en": "Pedestrians on road ahead",
+    "zh": "前面有行人在行車道上告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c8.gif",
+    "en": "uneven road ahead",
+    "zh": "前面路面不平告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108a1_n.gif",
+    "en": "red light/speed camera ahead",
+    "zh": "前面有超速攝影機告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108a2_n.gif",
+    "en": "red light camera control zone",
+    "zh": "偵察衝紅燈攝影機管制區告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/107c10.gif",
+    "en": "two-way traffic straight ahead",
+    "zh": "雙程行車告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108a1.gif",
+    "en": "red light/speed camera ahead",
+    "zh": "前面有超速攝影機告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108a2.gif",
+    "en": "red light camera control zone",
+    "zh": "偵察衝紅燈攝影機管制區告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108a3.gif",
+    "en": "plate used to state the safe height of Sign 33",
+    "zh": "安全高度告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108a5.gif",
+    "en": "children going to or from school, plate used with Sign 39",
+    "zh": "前面有兒童前往學校或放學告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108a6.gif",
+    "en": "children's playground near roadside",
+    "zh": "附近有兒童遊樂場告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108b2.gif",
+    "en": "distance to hazard",
+    "zh": "離危險處的距離告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108b3.gif",
+    "en": "right-hand roadside",
+    "zh": "右方路邊告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108b4.gif",
+    "en": "central reservation",
+    "zh": "分隔車路的路中央分隔帶告示牌"
+  },
+  {
+    "section": "signs_giving_warning_",
+    "src": "/filemanager/en/content_368/108b5.gif",
+    "en": "central reservation",
+    "zh": "分隔車路的路中央分隔帶告示牌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112a1_n.gif",
+    "en": "signs placed on gantries above the road",
+    "zh": "選定目的地，並進入正確行車綫的標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112a2_n.gif",
+    "en": "Sign for the three-cross harbour tunnels",
+    "zh": "選定目的地，並進入正確行車綫的標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112b1_n.gif",
+    "en": "Chainage marker",
+    "zh": "指示轉彎可往所述地方的標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112b2_n.gif",
+    "en": "Direction sign showing exit number along strategic route",
+    "zh": "往快速公路的方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112b3_n.gif",
+    "en": "Direction sign showing destination",
+    "zh": "臨時行車路綫的方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112b4_n.gif",
+    "en": "Direction sign to expressway",
+    "zh": "往快速公路的方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c1_n.gif",
+    "en": "Direction sign for local destination",
+    "zh": "泊車處方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112b1.gif",
+    "en": "Pointed direction sign",
+    "zh": "指示轉彎可往所述地方的標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c3_n.gif",
+    "en": "Route number",
+    "zh": "機場方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c4_n.gif",
+    "en": "Continuation of expressway",
+    "zh": "地下鐵路車站入口方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c4_1_n.gif",
+    "en": "Urban taxi pick up and drop off only",
+    "zh": "市區的士上落客處"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c4_2_n.gif",
+    "en": "New Territories taxi pick up and drop off only",
+    "zh": "新界的士上落客處"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c4_3_n.gif",
+    "en": "Lantau taxi pick up and drop off only",
+    "zh": "大嶼山的士上落客處"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113a3_n.gif",
+    "en": "Give way to buses",
+    "zh": "請讓巴士駛出"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c1.gif",
+    "en": "Direction to parking place",
+    "zh": "泊車處方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/112c3.gif",
+    "en": "Direction to airport",
+    "zh": "機場方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b1_n.gif",
+    "en": "Direction to nearby hospital",
+    "zh": "往附近設有急症服務的醫院方向"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113a1.gif",
+    "en": "Route for cyclists",
+    "zh": "單車方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113a2.gif",
+    "en": "Route for pedestrians",
+    "zh": "行人路方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b4_n.gif",
+    "en": "Direction to hillside escalators",
+    "zh": "往登山電梯方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b4_1_n.gif",
+    "en": "Direction to Mass Transit Railway (MTR) Station",
+    "zh": "往港鐵站方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113a3.gif",
+    "en": "Direction to subway",
+    "zh": "往行人隧道方向標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b6_n2.jpg",
+    "en": "An international symbol",
+    "zh": "指示前往適合行動不便人士使用設施的路線或入口標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c1_n.gif",
+    "en": "Carriageway narrows on right",
+    "zh": "右邊道路收窄標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b2.gif",
+    "en": "No through road",
+    "zh": "此路不通標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b3.gif",
+    "en": "No through road on left",
+    "zh": "左邊道路不通標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b4.gif",
+    "en": "No through road on right",
+    "zh": "右邊道路不通標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b6.gif",
+    "en": "300m",
+    "zh": "倒數300米標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b7.gif",
+    "en": "200m",
+    "zh": "倒數200米標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b8.gif",
+    "en": "100m",
+    "zh": "倒數100米標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c8_n.gif",
+    "en": "Sign showing lane indication arrows for each lane or temporary lane closure at junction ahead",
+    "zh": "前面路口各行車綫的去向標記"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b9.gif",
+    "en": "Dual carriageway ahead",
+    "zh": "前面分隔車路標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c1.gif",
+    "en": "Passing place",
+    "zh": "讓車處標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c2.gif",
+    "en": "Single track road with passing place",
+    "zh": "道路闊度僅可讓單行車輛通過標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c3_n.gif",
+    "en": "Private road",
+    "zh": "私家路標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c3.gif",
+    "en": "Accident Police",
+    "zh": "發生交通意外標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c4.gif",
+    "en": "Police roadblock",
+    "zh": "在看到停車信號時停車標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b8_n.gif",
+    "en": "Stop at Census point",
+    "zh": "「交通調查站」停車標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113c7.gif",
+    "en": "Census point",
+    "zh": "交通調查站位置標誌"
+  },
+  {
+    "section": "signs_giving_information_",
+    "src": "/filemanager/en/content_371/113b8_1_n.gif",
+    "en": "Get in lane",
+    "zh": "選定行車線標誌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a1.gif",
+    "en": "right-hand lane closed ahead",
+    "zh": "前面右邊行車綫封閉告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a2.gif",
+    "en": "right-hand lane closed ahead",
+    "zh": "前面右邊行車綫封閉告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a3.gif",
+    "en": "left-hand lane only ahead",
+    "zh": "前面只能使用左邊行車綫告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a4.gif",
+    "en": "left-hand lane only ahead",
+    "zh": "前面只能使用左邊行車綫告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a5.gif",
+    "en": "road works ahead",
+    "zh": "前面有道路工程告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a6.gif",
+    "en": "change to opposite carriageway ahead (direction may be        reversed )",
+    "zh": "前面改入另一行車道告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a7.gif",
+    "en": "keep right ( Keep left if symbol reversed )",
+    "zh": "靠右行駛告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109a8.gif",
+    "en": "vehicles may pass either side to reach same destination",
+    "zh": "車輛可取道任何一邊到達同一目的地告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b1.gif",
+    "en": "road narrows ahead on left",
+    "zh": "前面道路左邊收窄告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b2.gif",
+    "en": "end of road works",
+    "zh": "道路工程範圍終止告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b3.gif",
+    "en": "line painting works ahead",
+    "zh": "前面路面髹綫工程告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b4.gif",
+    "en": "lane or road temporary closure",
+    "zh": "行車綫或道路臨時封閉告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b5.gif",
+    "en": "sharp temporary deviation to left",
+    "zh": "向左急轉的臨時措施告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b6.gif",
+    "en": "manually operated 'Stop/Go' sign ahead",
+    "zh": "前面有人手操作的臨時「停／去」字告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b7.gif",
+    "en": "manually operated temporary 'Stop' sign",
+    "zh": "人手操作的「停」字告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109b8.gif",
+    "en": "manually operated temporary 'Go' sign",
+    "zh": "人手操作的「去」字告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109c2_n.gif",
+    "en": "new sign to replace Sign 18",
+    "zh": "前面有路面起伏新告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109c4.gif",
+    "en": "ramp or change of level",
+    "zh": "路面起伏告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109c5.gif",
+    "en": "temporary traffic cone",
+    "zh": "錐形臨時路標告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109c6.gif",
+    "en": "temporary traffic post",
+    "zh": "杆柱形臨時路標告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109c7.gif",
+    "en": "temporary 'No parking' sign",
+    "zh": "暫時禁止泊車告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/109c8.gif",
+    "en": "traffic lights ahead",
+    "zh": "前面有交通燈告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110a1.gif",
+    "en": "road ahead closed to vehicles",
+    "zh": "前面道路已封閉告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110a2.gif",
+    "en": "road closed to vehicles",
+    "zh": "道路封閉告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110a3.gif",
+    "en": "temporary route for vehicles",
+    "zh": "臨時行車路綫告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110a4.gif",
+    "en": "temporary route for pedestrians",
+    "zh": "行人過路綫臨時封閉告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110b1.gif",
+    "en": "Temporary traffic lights. Vehicles must stop at the sign when red light shows",
+    "zh": "臨時交通燈告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110b2.gif",
+    "en": "temporary pedestrian crossing closure",
+    "zh": "行人過路綫臨時封閉告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110b3.gif",
+    "en": "diversion ahead for all vehicles",
+    "zh": "在前面改道行駛告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110b4.gif",
+    "en": "temporary route for all vehicles",
+    "zh": "臨時行車路綫告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110b3_n.gif",
+    "tcSrc": "/filemanager/tc/content_369/110b5.gif",
+    "en": "diversion ahead for all vehicles",
+    "zh": "交通改道的臨時行車路綫新告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110b4_n.gif",
+    "tcSrc": "/filemanager/tc/content_369/110b7.gif",
+    "en": "temporary route for all vehicles",
+    "zh": "改道終止，使用原來路綫告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c1.gif",
+    "en": "slippery road ahead",
+    "zh": "前面路滑告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c2.gif",
+    "en": "loose chippings ahead",
+    "zh": "前面有鬆脫碎石告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c3.gif",
+    "en": "uneven road ahead",
+    "zh": "前面有路面不平告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c4.gif",
+    "en": "sign used by police in an emergency",
+    "zh": "慢駛告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c5.gif",
+    "en": "worded warning sign (wording may be varied)",
+    "zh": "文字警告標誌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c7.gif",
+    "en": "other danger ahead",
+    "zh": "前面有其他危險告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c8.gif",
+    "en": "plate used with 'Other danger' sign",
+    "zh": "發生意外告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c5_n.gif",
+    "en": "worded warning sign (wording may be varied)",
+    "zh": "文字警告標誌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c6_n.gif",
+    "en": "irregular road surface",
+    "zh": "路面凹凸不平告示牌"
+  },
+  {
+    "section": "temporary_signs_",
+    "src": "/filemanager/en/content_369/110c7_n.gif",
+    "en": "other danger ahead",
+    "zh": "前面有其他危險告示牌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111a1.gif",
+    "en": "A simple direction sign",
+    "zh": "簡單預告方向標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111a2.gif",
+    "en": "The advance direction sign shows map of junction",
+    "zh": "畫有路口簡單圖形的預告方向標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111a3_n.gif",
+    "en": "The advance direction sign shows map of junction",
+    "zh": "畫有路口簡單圖形的預告方向標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111b1_n.gif",
+    "en": "advance direction sign for a roundabout",
+    "zh": "畫有迴旋處的預告方向標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111b2.gif",
+    "en": "direction sign at multi-level junctions on roads",
+    "zh": "預告方向標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111b3.gif",
+    "en": "direction sign at multi-level junctions on roads",
+    "zh": "預告方向標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111c1.gif",
+    "en": "advance direction signs",
+    "zh": "預先警告前面有某種禁制或危險的方向標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111c2.gif",
+    "en": "lane information",
+    "zh": "說明各行車綫資料的標誌"
+  },
+  {
+    "section": "direction_signs_",
+    "src": "/filemanager/en/content_370/111c3.gif",
+    "en": "lane information",
+    "zh": "說明各行車綫資料的標誌"
+  }
+]
