@@ -42,3 +42,32 @@ a match one number away withhold a pictogram (`shift-suspect` rather than
 number↔sign bind, and this file is only a cross-check.
 
 To refresh: re-download both files and update the date above.
+
+## The same site also publishes per-sign PLATES — used as an image oracle only
+
+`https://roadsignfactory.hk/data/signs.json` lists 1,176 per-sign SVGs
+(`{ filename: "TS_3643L.svg", signNumber: "3643L" }`). They are **not** served at
+`/data/svgs/` — that 404s; the site proxies them, and
+`https://roadsignfactory.hk/api/proxy?asset=%2Fdata%2Fsvgs%2F<filename>` is the
+only public route. `scripts/audit-sign-images.mjs` reads them, and **nothing
+else does**: they are never cached in the repo, never served, never copied into
+`public/signs/`. The no-licence position above applies with full force — unlike
+the wording, which can reach the browser on a `fill` verdict, **no pixel of
+theirs may ever ship**.
+
+Why bother: `names.mjs` binds `No.`↔`Description`; nothing bound
+`No.`↔`Pictogram`. A crop taken from the wrong row ships under a corroborated
+description with every text defense satisfied. A 39-code sample caught TS256
+(described "TOLL AREA", pictogram a "P" + lorry), TS776 (described "800M",
+pictogram "STOP 100 m"), and TS2632 (right sign, but the crop bled the row's
+ruling lines out either side) — all three with a passing name verdict.
+
+Treat their plates as a **cross-check, never an authority**: they are redrawn in
+the site's own editor rather than traced from the Index Plan, so a disagreement
+means "read the printed sheet". Their key convention matches `descriptions.json`
+— a "(DOUBLE SIDES)" row has no bare key, only `<n>L`/`<n>R`, so our bare base
+compares against that pair — and the row slip documented above affects the
+numbering of both files equally, though **not** the plates themselves: RSF's
+`TS_2631.svg` is correctly "Passing Place Ahead" where its `descriptions.json`
+entry for 2631 is the escalator sign. That independence is precisely what makes
+the images worth checking against.
