@@ -126,7 +126,7 @@
     }
   },
   "TS121": {
-    "tier": 0,
+    "tier": 2,
     "group": "regulatory",
     "desc": {
       "en": "FRANCHISED BUS LANE"
@@ -372,10 +372,7 @@
   },
   "TS163": {
     "tier": 0,
-    "group": "regulatory",
-    "desc": {
-      "en": "WIDTH LIMIT 2.5M"
-    }
+    "group": "regulatory"
   },
   "TS164": {
     "tier": 0,
@@ -1234,8 +1231,9 @@
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "TIME PLATE"
-    }
+      "en": "TIME PLATE 7am - 7pm"
+    },
+    "superseded": true
   },
   "TS715": {
     "tier": 2,
@@ -1509,7 +1507,10 @@
   },
   "TS846": {
     "tier": 2,
-    "group": "supplementary"
+    "group": "supplementary",
+    "desc": {
+      "en": "PARKING TIME PLATE SUNDAYS AND PUBLIC HOLIDAYS 4pm - 7pm"
+    }
   },
   "TS847": {
     "tier": 2,
@@ -1761,7 +1762,7 @@
     "tier": 2,
     "group": "regulatory",
     "desc": {
-      "en": "1-HOUR METERS CARD-OPERATED"
+      "en": "1-HOUR METERS ( CARD-OPERATED ) 8am - 8pm"
     }
   },
   "TS2122": {
@@ -1900,10 +1901,10 @@
     }
   },
   "TS2142": {
-    "tier": 2,
+    "tier": 1,
     "group": "regulatory",
     "desc": {
-      "en": "PLS NO STOPPING ZONE"
+      "en": "PLB \"NO STOPPING\" ZONE 7am - 7pm"
     }
   },
   "TS2143": {
@@ -2043,7 +2044,7 @@
     "tier": 1,
     "group": "regulatory",
     "desc": {
-      "en": "BUS NO STOPPING ZONE"
+      "en": "BUS \"NO STOPPING\" ZONE 7am - 10am 4pm - 7pm"
     }
   },
   "TS2164": {
@@ -2169,7 +2170,7 @@
     "tier": 1,
     "group": "regulatory",
     "desc": {
-      "en": "BUS LANE"
+      "en": "BUS LANE 7am - 7pm"
     }
   },
   "TS2185": {
@@ -2292,10 +2293,10 @@
     }
   },
   "TS2205": {
-    "tier": 1,
+    "tier": 2,
     "group": "regulatory",
     "desc": {
-      "en": "1-HOUR METERS CARD-OPERATED"
+      "en": "1-HOUR METER ( CARD-OPERATED ) 8am - MIDNIGHT DAILY EXCEPT GENERAL HOLIDAY & GENERAL HOLIDAY 10am - 10pm"
     }
   },
   "TS2230": {
@@ -3818,7 +3819,7 @@
     "tier": 2,
     "group": "warning",
     "desc": {
-      "en": "CYCLISTS DISMOUNT"
+      "en": "BARRICADE"
     }
   },
   "TS505": {
@@ -4366,10 +4367,7 @@
   },
   "TS862": {
     "tier": 2,
-    "group": "supplementary",
-    "desc": {
-      "en": "PARKING TIME PLATE 7:30am - 7:30pm EXCEPT SUNDAYS AND PUBLIC HOLIDAYS"
-    }
+    "group": "supplementary"
   },
   "TS871": {
     "tier": 2,
@@ -4734,10 +4732,10 @@
     }
   },
   "TS639": {
-    "tier": 2,
+    "tier": 1,
     "group": "informatory",
     "desc": {
-      "en": "DIRECTION TO MASS TRANSIT RAILWAY"
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY (DOUBLE SIDES)"
     }
   },
   "TS691": {
@@ -6307,7 +6305,10 @@
   },
   "TS2694": {
     "tier": 2,
-    "group": "informatory"
+    "group": "informatory",
+    "desc": {
+      "en": "MERGING AHEAD SIGN ON SLIP ROAD DIRECT OR SHADOW ISLAND ROADS OTHER THAME EYBRECSWAYS"
+    }
   },
   "TS2685": {
     "tier": 2,
@@ -7511,13 +7512,16 @@
   "TS842": {
     "tier": 2,
     "group": "supplementary",
+    "desc": {
+      "en": "TIME PLATE Noon - 1:30pm 4pm - 9am"
+    },
     "superseded": true
   },
   "TS845": {
     "tier": 2,
     "group": "supplementary",
     "desc": {
-      "en": "PARKING TIME PLATE SUNDAYS AND PUBLIC HOLIDAYS 9am - 2pm"
+      "en": "PARKING TIME PLATE SUNDAYS AND PUBLIC HOLIDAYS 9am 2pm"
     }
   },
   "TS894": {
@@ -7981,7 +7985,7 @@
     "superseded": true
   },
   "TS2684": {
-    "tier": 2,
+    "tier": 1,
     "group": "informatory"
   },
   "TS2691": {
@@ -8006,8 +8010,11 @@
     }
   },
   "TS3649": {
-    "tier": 2,
-    "group": "informatory"
+    "tier": 1,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI DROP OFF ONLY (FOR 1 CLASS OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
   },
   "TS3650": {
     "tier": 1,
@@ -8112,14 +8119,14 @@
     }
   },
   "TS660R": {
-    "tier": 0,
+    "tier": 1,
     "group": "informatory",
     "desc": {
       "en": "DIRECTION FOR PEDESTRIANS (DOUBLE SIDES)"
     }
   },
   "TS660L": {
-    "tier": 0,
+    "tier": 1,
     "group": "informatory",
     "desc": {
       "en": "DIRECTION FOR PEDESTRIANS (DOUBLE SIDES)"
@@ -8177,12 +8184,16 @@
   "TS639L": {
     "tier": 2,
     "group": "informatory",
-    "alias": "TS639"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY (DOUBLE SIDES)"
+    }
   },
   "TS639R": {
     "tier": 2,
     "group": "informatory",
-    "alias": "TS639"
+    "desc": {
+      "en": "DIRECTION TO MASS TRANSIT RAILWAY (DOUBLE SIDES)"
+    }
   },
   "TS2701N": {
     "tier": 2,
@@ -8241,8 +8252,7 @@
   },
   "TS2684R": {
     "tier": 2,
-    "group": "informatory",
-    "alias": "TS2684"
+    "group": "informatory"
   },
   "TS660T": {
     "tier": 1,
@@ -8256,8 +8266,7 @@
   },
   "TS2684L": {
     "tier": 2,
-    "group": "informatory",
-    "alias": "TS2684"
+    "group": "informatory"
   },
   "TS652T": {
     "tier": 2,
@@ -8268,5 +8277,106 @@
     "tier": 1,
     "group": "informatory",
     "alias": "TS651"
+  },
+  "TS142": {
+    "tier": 0,
+    "group": "regulatory",
+    "desc": {
+      "en": "WIDTH LIMIT 2.5m"
+    }
+  },
+  "TS3621": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "CONTINUATION OF EXPRESSWAY AND ROUTE(2) CONFIRMATION"
+    }
+  },
+  "TS3643": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI PICK UP AND DROP OFF (FOR 1 CLASS OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
+  },
+  "TS3643R": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI PICK UP AND DROP OFF (FOR 1 CLASS OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
+  },
+  "TS3643L": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI PICK UP AND DROP OFF (FOR 1 CLASS OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
+  },
+  "TS3649R": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI DROP OFF ONLY (FOR 1 CLASS OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
+  },
+  "TS3649L": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "TAXI DROP OFF ONLY (FOR 1 CLASS OF TAXI) URBAN : RED NT : GREEN LANTAU : LIGHT BLUE (DOUBLE SIDES)"
+    }
+  },
+  "TS3680": {
+    "tier": 2,
+    "group": "informatory",
+    "desc": {
+      "en": "END OF STRATEGIC ROAD NETWORK - ROUTE 9 (NON-EXPRESSWAY)"
+    }
+  },
+  "TS3701": {
+    "tier": 1,
+    "group": "informatory",
+    "desc": {
+      "en": "END OF STRATEGIC ROAD NETWORK - ROUTE 10 (EXPRESSWAYS)"
+    }
+  },
+  "TS3957": {
+    "tier": 0,
+    "group": "warning",
+    "desc": {
+      "en": "ANY 2 LANES CLOSED AHEAD AT 5-LANE DUAL CARRIAGEWAY"
+    }
+  },
+  "TS559": {
+    "tier": 2,
+    "group": "warning",
+    "desc": {
+      "en": "HORIZONTAL BARRIER WITH FLASHING AMBER SIGNALS"
+    }
+  },
+  "TS560": {
+    "tier": 2,
+    "group": "warning",
+    "desc": {
+      "en": "BARRIER AT TOLL BOOTHS WITH STEADY AMBER LIGHT"
+    }
+  },
+  "TS942": {
+    "tier": 0,
+    "group": "temporary",
+    "desc": {
+      "en": "AHEAD ONLY"
+    }
+  },
+  "TS3643B": {
+    "tier": 1,
+    "group": "informatory",
+    "alias": "TS3643"
+  },
+  "TS3643F": {
+    "tier": 1,
+    "group": "informatory",
+    "alias": "TS3643"
   }
 }
