@@ -37,9 +37,14 @@
 //   ... --wipe --commit                                    # REPLACE repo with staged
 //   ... --commit --variants TS2663=RL,TS639=LR             # confirm double-sided faces
 //
+// Any mode that WRITES (--commit, or a bare rebuild) then re-runs aliases.mjs +
+// compute-sign-shapes.mjs; --propose writes nothing, so it skips both.
+//
 // Tools: brew install librsvg mupdf-tools imagemagick tesseract
 
+import { spawnSync } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
 
 import { parseCli, preflight } from './catalogue/cli.mjs'
 import { extractSheet } from './catalogue/extract.mjs'
@@ -48,12 +53,31 @@ import { parseVariantOverrides } from './catalogue/variants.mjs'
 import { clearSignsDir, commitStaged, readCatalogue, writeCatalogue } from './catalogue/store.mjs'
 import { SIGNS_DIR, STAGING } from './catalogue/sheets.mjs'
 
+// Derived artefacts that must not drift from a catalogue write: suffix aliases
+// point every installed TS<n><L|R|…> with no plate of its own at its base's
+// pictogram, and the plate/roundel classification drives the runtime's size
+// factor. Chained HERE rather than in the npm script because npm appends a
+// command line's extra args to the LAST command of a `&&` chain — so
+// `pnpm data:catalogue --propose --sheet "…"` handed those flags to
+// compute-sign-shapes.mjs and silently ran a full unfiltered rebuild instead.
+// Running them from inside also fixes a direct `--commit` leaving both stale.
+function runDerived() {
+  for (const rel of ['./catalogue/aliases.mjs', './compute-sign-shapes.mjs']) {
+    const r = spawnSync(process.execPath, [fileURLToPath(new URL(rel, import.meta.url))], { stdio: 'inherit' })
+    if (r.status !== 0) {
+      console.error(`\n${rel} failed (${r.status === null ? `signal ${r.signal}` : `exit ${r.status}`}) — the catalogue is written but derived data is stale`)
+      process.exit(r.status || 1)
+    }
+  }
+}
+
 const font = preflight()
 const opts = parseCli()
 const overrides = parseVariantOverrides(opts.variants)
 
 if (opts.commit) {
   await commitStaged({ wipe: opts.wipe, sheet: opts.sheet, reject: opts.reject, overrides })
+  runDerived()
   process.exit(0)
 }
 
@@ -82,4 +106,5 @@ if (opts.propose) {
 } else {
   await writeCatalogue(catalogue)
   console.log(`\nfinal catalogue: ${Object.keys(catalogue).length} codes (+${totalAdded})`)
+  runDerived()
 }
