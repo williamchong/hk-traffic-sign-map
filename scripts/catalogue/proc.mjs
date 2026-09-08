@@ -43,6 +43,25 @@ export function requireModel(lang, hint) {
 // ImageMagick registers no fonts in this environment (`magick -list font` is
 // empty), so `montage` — used for the review / verify sheets — can't render even
 // an empty label without an explicit -font. Resolve one system TTF up front.
+// The Road Users' Code review sheet labels each row with its Chinese name, and
+// Arial has no CJK coverage — every glyph renders as tofu, which is worse than
+// no label because it looks like a rendering bug rather than a missing font.
+// Arial Unicode is the one face shipped with macOS that ImageMagick loads
+// directly (PingFang and the other system faces are `.ttc` collections that
+// FreeType refuses through magick's `-font`).
+export function resolveCjkFont() {
+  const font = [
+    '/System/Library/Fonts/Supplemental/Arial Unicode.ttf',
+    '/System/Library/Fonts/Supplemental/Songti.ttc',
+    '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
+  ].find(f => existsSync(f))
+  if (!font) {
+    console.error('No CJK-capable TTF found for `magick` labels — add one to resolveCjkFont() in scripts/catalogue/proc.mjs')
+    process.exit(1)
+  }
+  return font
+}
+
 export function resolveFont() {
   const font = [
     '/System/Library/Fonts/Supplemental/Arial.ttf',

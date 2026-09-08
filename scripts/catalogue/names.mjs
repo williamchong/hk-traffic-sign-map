@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { NAMES_DIR, SUFFIX_ALIAS } from './sheets.mjs'
+import { DASHES, digitsOf, levenshtein, normalise, sim } from '../text-similarity.mjs'
 
 export function loadNames() {
   const names = JSON.parse(readFileSync(join(NAMES_DIR, 'descriptions.json'), 'utf8'))
@@ -34,38 +35,6 @@ export function loadNames() {
 }
 
 // The sheets set their ranges with an en/em dash and tesseract reads one back.
-// Both the comparison fold (`normalise`) and the shipping fold (`shippable`)
-// have to collapse them to ASCII "-", and they have to agree: when only
-// `normalise` folded, a row scored `agree` on a dash the shipped text had lost.
-const DASHES = /[‐-―−]/g
-
-// Compare on meaning, not typography: case, the sub-note parentheticals, dash
-// and quote variants, and the ½ glyph all differ between our OCR and the list
-// without either being wrong.
-function normalise(s) {
-  return String(s ?? '')
-    .toUpperCase()
-    .replace(/[[{]/g, '(').replace(/[\]}]/g, ')')
-    // Sub-notes go, tolerating a bracket the OCR broke — "STOP (MANUAL }" has to
-    // reduce to the same "STOP" the reference's "STOP (MANUAL)" does, or the two
-    // read as different signs over a stray glyph.
-    .replace(/\([^)]*\)?/g, ' ')
-    .replace(DASHES, '-')
-    .replace(/["'‘’“”]/g, '')
-    .replace(/½/g, '1/2')
-    .replace(/[.,;:]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-// Every digit, in order. Two names that differ only in their digits are two
-// DIFFERENT signs — "WEIGHT LIMIT 4 TONNES" vs "… 5.5 TONNES", "10am-8pm" vs
-// "10am-9pm" — and on the time-plate and limit families the digits ARE the
-// meaning. Levenshtein similarity barely notices a one-digit change (those two
-// time plates score ~0.97), so digits get their own comparison. Compared as
-// characters, not runs, because OCR splits and joins runs freely ("70" read as
-// "7O0" is the same two digits).
-const digitsOf = s => (String(s).match(/\d/g) ?? []).join('')
 const lettersOf = s => String(s).replace(/[^A-Z]/g, '')
 
 // Did our read merely LOSE digits the reference has, rather than contradict
@@ -77,33 +46,6 @@ function digitsSubsumed(ours, theirs) {
   let i = 0
   for (const ch of theirs) if (ch === ours[i]) i++
   return i === ours.length
-}
-
-// Allocating: a fresh row array per character. Word repair calls this ~52k times
-// per full pass (once per token pair in every alignment cell) and that
-// allocation IS the cost — module-scoped scratch buffers with `charCodeAt`
-// measured 16.2 → 3.5 ms over those 52k calls. Left as it is on purpose: the
-// whole repair pass is 20 ms against a single `tesseract` spawn's 62 ms, in a
-// pipeline that spawns two per row over ~1,150 rows, and a shared fixed buffer
-// would need a length guard on an unbounded OCR read to buy a fifth of one OCR
-// call. If this ever shows up in a profile, the buffers are the lever.
-function levenshtein(a, b) {
-  if (a === b) return 0
-  if (!a.length || !b.length) return Math.max(a.length, b.length)
-  let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i]
-    for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
-    }
-    prev = cur
-  }
-  return prev[b.length]
-}
-
-function sim(a, b) {
-  const n = Math.max(a.length, b.length)
-  return n ? 1 - levenshtein(a, b) / n : 1
 }
 
 // Distance between two reference keys, as printed numbers. Adjacency is what

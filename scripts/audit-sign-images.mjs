@@ -38,11 +38,12 @@
 
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { copyFile, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { identify, magick, requireTool, resolveFont } from './catalogue/proc.mjs'
+import { cacheWrite, makePacer } from './fetch-cache.mjs'
 import { readCatalogue } from './catalogue/store.mjs'
 import { SIGNS_DIR, STAGING, SUFFIX_ALIAS } from './catalogue/sheets.mjs'
 
@@ -96,27 +97,7 @@ requireTool('rsvg-convert', 'brew install librsvg')
 requireTool('magick', 'brew install imagemagick')
 const font = resolveFont()
 
-const sleep = ms => new Promise(r => setTimeout(r, ms))
-
-// FETCH_DELAY_MS is a minimum INTERVAL between requests, not a nap taken after
-// each one: measuring from the last request lets the render/compare work for the
-// previous code fill the gap rather than extend it, and the request rate still
-// never exceeds the declared floor.
-let lastFetchAt = 0
-async function paceFetch() {
-  const wait = FETCH_DELAY_MS - (Date.now() - lastFetchAt)
-  if (wait > 0) await sleep(wait)
-  lastFetchAt = Date.now()
-}
-
-// writeFile is not atomic. An interrupted run would otherwise leave a truncated
-// SVG in the cache that looks valid forever, with only --refresh (a full
-// re-fetch of all ~1,200) to escape it.
-async function cacheWrite(dst, data) {
-  const tmp = `${dst}.part`
-  await writeFile(tmp, data)
-  await rename(tmp, dst)
-}
+const paceFetch = makePacer(FETCH_DELAY_MS)
 
 // RSF keys an Index Plan number without the `TS`, and spells the TS2701 variants
 // out in full. It has NO bare key for a "(DOUBLE SIDES)" row — only <n>L/<n>R —
