@@ -45,8 +45,14 @@
   "TS256": {
     "en": "Toll area (non-expressways)"
   },
+  "TS548": {
+    "en": "Advanced warning of middle lane (for franchised buses)"
+  },
   "TS862": {
     "en": "Parking time plate 7:30am - 7:30pm except Sundays and public holidays"
+  },
+  "TS888": {
+    "en": "Parking time plate Mon - Fri 7am - 7pm, Sat 7am - 4pm, except Sundays and public holidays"
   },
   "TS2712": {
     "en": "Give way to bus"
