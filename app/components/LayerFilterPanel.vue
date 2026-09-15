@@ -50,7 +50,10 @@ const activeRowKey = computed(() =>
   ruleRows.find(r => ROW_SIGN_CODES[r.key]!.length && isOnlySigns(ROW_SIGN_CODES[r.key]!))?.key
 )
 
+// Also turns the row's lines on — the signs without the extent they announce
+// would read as a filter for nothing.
 function onRowShowSigns(key: string) {
+  if (!rulesEnabled.value[key]) onRuleToggle(key, true)
   if (activeRowKey.value === key) return
   const codes = ROW_SIGN_CODES[key]!
   filterToSigns(codes)
