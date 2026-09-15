@@ -47,11 +47,12 @@ const scratch = key => join(RAW_DIR, `_rules_${key}.geojsonl`)
 // but NSR is a *measured* (XYM) geometry and tippecanoe would otherwise read
 // the M as elevation. `-select` keeps the tiles lean — every property is bytes
 // in every tile the feature touches.
-const readLayer = (layer, select) => streamOgrGeoJSON(layer, [
+const readLayer = (layer, select, extra = []) => streamOgrGeoJSON(layer, [
   `/vsizip/${RDNET_ZIP}`, layer,
   '-t_srs', TARGET_SRS,
   '-dim', 'XY',
-  '-select', select
+  '-select', select,
+  ...extra
 ])
 
 const text = v => (v == null || v === '' || v === 'NA' ? null : String(v).trim())
@@ -111,29 +112,44 @@ const pedRows = []
 for await (const f of readLayer(RDNET_RULE_LAYERS.pedzone, 'ROAD_ROUTE_ID,TIME_ZONE,EFFECTIVE_DAY,REMARKS')) pedRows.push(f)
 console.log(`  ${RDNET_RULE_LAYERS.speed}: ${speedRows.length}  ${RDNET_RULE_LAYERS.buslane}: ${busRows.length}  ${RDNET_RULE_LAYERS.prohibition}: ${prohRows.length}  ${RDNET_RULE_LAYERS.pedzone}: ${pedRows.length}`)
 
-// 2. One CENTERLINE pass, serving two different joins:
+// 2. CENTERLINE, serving two different joins:
 //    • by ROUTE_ID, for the layers that reference a route — street names for
 //      all of them, plus the line geometry for prohibitions (points only).
 //    • by ST_CODE, for NSR, which carries no route id. This one is built
-//      UNFILTERED and before the `wanted` skip below: NSR hasn't been read yet
-//      (it streams later), so its street codes aren't knowable here — and at
-//      ~5.8k distinct codes holding names for every street costs nothing.
+//      UNFILTERED: NSR hasn't been read yet (it streams later), so its street
+//      codes aren't knowable here — and at ~5.8k distinct codes holding names
+//      for every street costs nothing.
+//    Names and geometry are two separate reads, run concurrently. CENTERLINE's
+//    arcs arrive pre-stroked (~12M vertices), and a single read decoded,
+//    reprojected and serialised all 36k routes' geometry (~400 MB of JSON,
+//    ~10 s) to keep the 2.2k prohibitions need. Names alone go through the
+//    SQLite dialect, whose SELECT never touches the geometry column (0.4 s —
+//    OGR SQL and `-nlt NONE` both still decode it); geometry is fetched with
+//    an OGR `-where` on just those route ids (2 s, byte-identical). Never put
+//    that IN list through `-dialect SQLite`: it took 272 s.
 const wanted = new Set([...speedRows, ...busRows, ...prohRows, ...pedRows].map(f => f.properties.ROAD_ROUTE_ID))
 const needGeometry = new Set(prohRows.map(f => f.properties.ROAD_ROUTE_ID))
 const routes = new Map()
 const streetsByCode = new Map()
-for await (const f of readLayer(RDNET_CENTERLINE_LAYER, 'ROUTE_ID,ST_CODE,STREET_ENAME,STREET_CNAME')) {
-  const names = {
-    st_en: street(f.properties.STREET_ENAME),
-    st_zh: street(f.properties.STREET_CNAME)
-  }
-  const stCode = f.properties.ST_CODE
-  if (stCode != null && !streetsByCode.has(stCode)) streetsByCode.set(stCode, names)
-  const id = f.properties.ROUTE_ID
-  if (!wanted.has(id)) continue
-  routes.set(id, { ...names, geometry: needGeometry.has(id) ? f.geometry : null })
-}
-console.log(`  ${RDNET_CENTERLINE_LAYER}: ${routes.size} of ${wanted.size} referenced routes found, ${streetsByCode.size} street codes named`)
+const geometries = new Map()
+await Promise.all([
+  (async () => {
+    const sql = `SELECT ROUTE_ID, ST_CODE, STREET_ENAME, STREET_CNAME FROM ${RDNET_CENTERLINE_LAYER}`
+    for await (const { properties: p } of streamOgrGeoJSON(RDNET_CENTERLINE_LAYER, [`/vsizip/${RDNET_ZIP}`, '-dialect', 'SQLite', '-sql', sql])) {
+      const names = { st_en: street(p.STREET_ENAME), st_zh: street(p.STREET_CNAME) }
+      if (p.ST_CODE != null && !streetsByCode.has(p.ST_CODE)) streetsByCode.set(p.ST_CODE, names)
+      if (wanted.has(p.ROUTE_ID)) routes.set(p.ROUTE_ID, names)
+    }
+  })(),
+  (async () => {
+    if (!needGeometry.size) return
+    for await (const f of readLayer(RDNET_CENTERLINE_LAYER, 'ROUTE_ID', ['-where', `ROUTE_ID IN (${[...needGeometry].join(',')})`])) {
+      geometries.set(f.properties.ROUTE_ID, f.geometry)
+    }
+  })()
+])
+for (const [id, geometry] of geometries) if (routes.has(id)) routes.get(id).geometry = geometry
+console.log(`  ${RDNET_CENTERLINE_LAYER}: ${routes.size} of ${wanted.size} referenced routes found, ${geometries.size} geometries, ${streetsByCode.size} street codes named`)
 
 // A miss yields undefineds that `compact` drops.
 const namesFrom = (map, key) => {
