@@ -6,8 +6,8 @@ import { str, formatLngLat } from '~/utils/format'
 
 const {
   selectedSign, selectedGroup, categories,
-  filterMode, enabledSignIds, hiddenSignIds,
-  filterToSign, hideSign, unhideSign
+  hiddenSignIds,
+  filterToSign, isOnlySigns, hideSign, unhideSign
 } = useTrafficLayers()
 // The rule extent this sign announces, when TrafficMap found one nearby.
 const { governingRule } = useRoadRules()
@@ -23,9 +23,7 @@ const signId = computed(() => str(sign.value?.properties.SIGNID))
 
 // Already the sole sign-id pick — the "show only this" action is a no-op, so
 // the button reflects it rather than inviting a redundant click.
-const isOnlyThis = computed(() =>
-  filterMode.value === 'sign-id' && enabledSignIds.size === 1 && !!signId.value && enabledSignIds.has(signId.value)
-)
+const isOnlyThis = computed(() => !!signId.value && isOnlySigns([signId.value]))
 const isHidden = computed(() => !!signId.value && hiddenSignIds.has(signId.value))
 
 function onFilterToThis() {

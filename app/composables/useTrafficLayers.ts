@@ -137,6 +137,12 @@ function filterToSigns(ids: string[]) {
   filterMode.value = 'sign-id'
 }
 const filterToSign = (id: string) => filterToSigns([id])
+// Is the map already showing exactly these codes? Lets a "show these" button
+// reflect that it is the active filter.
+const isOnlySigns = (ids: string[]) =>
+  filterMode.value === 'sign-id'
+  && enabledSignIds.size === ids.length
+  && ids.every(id => enabledSignIds.has(id))
 
 // "Hide this sign": add to the denylist and drop it from the allowlist if it
 // was a pick. Deliberately does NOT switch modes — the subtraction works in
@@ -167,6 +173,7 @@ export function useTrafficLayers() {
     selectSign,
     filterToSign,
     filterToSigns,
+    isOnlySigns,
     hideSign,
     unhideSign,
     toggleAll(value: boolean) {

@@ -196,6 +196,14 @@ function ruleLinkMatches(link: SignRuleLink, layer: RuleLayer, p: Record<string,
 // unlinked prohibition kinds and no-stopping bands).
 export const linkedSignCodes = (layer: RuleLayer, p: Record<string, unknown>) =>
   Object.entries(SIGN_RULE_LINKS).filter(([, link]) => ruleLinkMatches(link, layer, p)).map(([code]) => code)
+// The same, per legend row key: every code linked to any rule the row draws
+// (all speed values, every no-stopping band). Unlinked rows map to [].
+export const ROW_SIGN_CODES: Record<string, string[]> = Object.fromEntries(RULE_ROWS.map(r => [
+  r.key,
+  Object.entries(SIGN_RULE_LINKS)
+    .filter(([, link]) => rowKeyFor(link.layer, link.layer === 'prohibition' ? link.kind : null) === r.key)
+    .map(([code]) => code)
+]))
 // The 50 km/h plate: the default limit, which TD's data does not draw.
 export const DEFAULT_SPEED_CODES = new Set(['TS174'])
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { VisibleCategoryKey } from '~/composables/useSignCategories'
 import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
-import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS } from '~/composables/useRoadRules'
+import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES } from '~/composables/useRoadRules'
 
-const { categories, enabled, toggleAll, mapUnavailable, filterMode } = useTrafficLayers()
+const { categories, enabled, toggleAll, mapUnavailable, filterMode, filterToSigns, isOnlySigns } = useTrafficLayers()
 const { rows: ruleRows, rulesEnabled, anyRuleOn } = useRoadRules()
 const localePath = useLocalePath()
 const { track } = useAnalytics()
@@ -40,6 +40,21 @@ const ruleChips = computed<Record<string, { label: string, color: string }[]>>((
 function onRuleToggle(key: string, value: boolean) {
   rulesEnabled.value[key] = value
   track('rule_layer_toggle', { layer: key, enabled: value })
+}
+
+// The legend twin of RulePopup's "Show signs for this rule": every plate
+// linked to any rule the row draws. Rows no plate is linked to get no button.
+// The active row is one computed (a primitive) so a sign pick elsewhere only
+// re-renders the panel when it changes which row's filter is the live one.
+const activeRowKey = computed(() =>
+  ruleRows.find(r => ROW_SIGN_CODES[r.key]!.length && isOnlySigns(ROW_SIGN_CODES[r.key]!))?.key
+)
+
+function onRowShowSigns(key: string) {
+  if (activeRowKey.value === key) return
+  const codes = ROW_SIGN_CODES[key]!
+  filterToSigns(codes)
+  track('filter_rule_signs', { layer: key, count: codes.length, from: 'legend' })
 }
 
 // Hydration-safe mirror of `filterMode` that the whole panel UI binds to.
@@ -234,17 +249,30 @@ function onTabChange(value: string | number) {
                 v-for="r in ruleRows"
                 :key="r.key"
               >
-                <label class="flex cursor-pointer items-center gap-2 text-sm">
-                  <UCheckbox
-                    :model-value="!!rulesEnabled[r.key]"
-                    @update:model-value="v => onRuleToggle(r.key, !!v)"
+                <div class="flex items-center gap-1">
+                  <label class="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-sm">
+                    <UCheckbox
+                      :model-value="!!rulesEnabled[r.key]"
+                      @update:model-value="v => onRuleToggle(r.key, !!v)"
+                    />
+                    <span
+                      class="h-1 w-4 shrink-0 rounded-full"
+                      :style="{ backgroundColor: r.color }"
+                    />
+                    <span class="truncate">{{ $t(`rules.rows.${r.key}`) }}</span>
+                  </label>
+                  <UButton
+                    v-if="ROW_SIGN_CODES[r.key]?.length"
+                    class="-my-1"
+                    size="xs"
+                    :color="activeRowKey === r.key ? 'primary' : 'neutral'"
+                    :variant="activeRowKey === r.key ? 'soft' : 'ghost'"
+                    icon="i-lucide-filter"
+                    :aria-label="$t('rules.showRowSigns', { rule: $t(`rules.rows.${r.key}`) })"
+                    :title="$t('rules.showRowSigns', { rule: $t(`rules.rows.${r.key}`) })"
+                    @click="onRowShowSigns(r.key)"
                   />
-                  <span
-                    class="h-1 w-4 shrink-0 rounded-full"
-                    :style="{ backgroundColor: r.color }"
-                  />
-                  <span class="truncate">{{ $t(`rules.rows.${r.key}`) }}</span>
-                </label>
+                </div>
                 <!-- A row whose lines are coloured by value shows its scale while on. -->
                 <div
                   v-if="ruleChips[r.key] && rulesEnabled[r.key]"

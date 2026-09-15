@@ -6,7 +6,7 @@ import { formatLngLat } from '~/utils/format'
 // prohibition / no stopping / pedestrian zone). Same slot as SignPopup — TrafficMap keeps at most one of
 // `selectedSign` / `selectedRule` set, so the two never overlap.
 const { selectedRule } = useRoadRules()
-const { filterMode, enabledSignIds, filterToSigns } = useTrafficLayers()
+const { filterToSigns, isOnlySigns } = useTrafficLayers()
 const { t, locale } = useI18n()
 const { track } = useAnalytics()
 
@@ -39,16 +39,12 @@ const coords = computed(() => rule.value ? formatLngLat(rule.value.lngLat) : '')
 // No button when no plate is linked to the rule.
 const signCodes = computed(() => rule.value ? linkedSignCodes(rule.value.layer, rule.value.properties) : [])
 // Already exactly those picks — the button reflects it, as SignPopup's does.
-const isOnlyThese = computed(() =>
-  filterMode.value === 'sign-id'
-  && enabledSignIds.size === signCodes.value.length
-  && signCodes.value.every(c => enabledSignIds.has(c))
-)
+const isOnlyThese = computed(() => isOnlySigns(signCodes.value))
 
 function onShowSigns() {
-  if (!rule.value || !signCodes.value.length) return
+  if (!rule.value || !signCodes.value.length || isOnlyThese.value) return
   filterToSigns(signCodes.value)
-  track('filter_rule_signs', { layer: rule.value.layer, count: signCodes.value.length })
+  track('filter_rule_signs', { layer: rule.value.layer, count: signCodes.value.length, from: 'popup' })
 }
 </script>
 

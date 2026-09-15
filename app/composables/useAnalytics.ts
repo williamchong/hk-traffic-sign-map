@@ -22,7 +22,7 @@ interface AnalyticsEvents {
   filter_signid_unhide: { sign_id: string }
   rule_layer_toggle: { layer: string, enabled: boolean }
   rule_select: { layer: string, kind: string | null, zoom: number }
-  filter_rule_signs: { layer: string, count: number }
+  filter_rule_signs: { layer: string, count: number, from: 'popup' | 'legend' }
   locale_switch: { from: string, to: string }
   theme_change: { mode: ThemeMode }
   info_open: undefined
