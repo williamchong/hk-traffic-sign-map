@@ -82,6 +82,7 @@
       "pedzone": "行人專用區"
     },
     "appliesHere": "此處適用的規則",
+    "showSigns": "只顯示此規則的標誌",
     "defaultSpeed": "每小時50公里為預設車速限制，地圖上不會繪出。",
     "speedValue": "每小時{n}公里",
     "fields": {

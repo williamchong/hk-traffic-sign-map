@@ -127,14 +127,16 @@ function selectSign(id: string) {
   hiddenSignIds.delete(id)
 }
 
-// "Show only this sign": replace the allowlist with this one code and switch to
+// "Show only these signs": replace the allowlist with these codes and switch to
 // sign-id mode. Switching modes is wanted here — sign-id mode is exactly the
-// "show only these abbreviation signs" view.
-function filterToSign(id: string) {
+// "show only these abbreviation signs" view (and reads the retain-all archive,
+// so the codes are complete at every zoom).
+function filterToSigns(ids: string[]) {
   enabledSignIds.clear()
-  selectSign(id)
+  ids.forEach(selectSign)
   filterMode.value = 'sign-id'
 }
+const filterToSign = (id: string) => filterToSigns([id])
 
 // "Hide this sign": add to the denylist and drop it from the allowlist if it
 // was a pick. Deliberately does NOT switch modes — the subtraction works in
@@ -164,6 +166,7 @@ export function useTrafficLayers() {
     loadGroupIndex,
     selectSign,
     filterToSign,
+    filterToSigns,
     hideSign,
     unhideSign,
     toggleAll(value: boolean) {

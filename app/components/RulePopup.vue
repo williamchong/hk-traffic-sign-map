@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ruleRows, ruleTitleKey, rowKeyFor, RULE_ROWS, SPEED_COLORS, NSR_VEH_COLORS, type NsrVehicle } from '~/composables/useRoadRules'
+import { ruleRows, ruleTitleKey, rowKeyFor, linkedSignCodes, RULE_ROWS, SPEED_COLORS, NSR_VEH_COLORS, type NsrVehicle } from '~/composables/useRoadRules'
 import { formatLngLat } from '~/utils/format'
 
 // Detail card for a clicked rule line (speed limit / bus-only lane /
 // prohibition / no stopping / pedestrian zone). Same slot as SignPopup — TrafficMap keeps at most one of
 // `selectedSign` / `selectedRule` set, so the two never overlap.
 const { selectedRule } = useRoadRules()
+const { filterMode, enabledSignIds, filterToSigns } = useTrafficLayers()
 const { t, locale } = useI18n()
+const { track } = useAnalytics()
 
 const rule = computed(() => selectedRule.value)
 
@@ -30,6 +32,24 @@ const rows = computed(() =>
 )
 
 const coords = computed(() => rule.value ? formatLngLat(rule.value.lngLat) : '')
+
+// "Show signs for this rule": the plates that announce it, as a sign-ID
+// filter — the retain-all archive, so they are complete at every zoom (a
+// category-mode emphasis would only reach the thinned overview's survivors).
+// No button when no plate is linked to the rule.
+const signCodes = computed(() => rule.value ? linkedSignCodes(rule.value.layer, rule.value.properties) : [])
+// Already exactly those picks — the button reflects it, as SignPopup's does.
+const isOnlyThese = computed(() =>
+  filterMode.value === 'sign-id'
+  && enabledSignIds.size === signCodes.value.length
+  && signCodes.value.every(c => enabledSignIds.has(c))
+)
+
+function onShowSigns() {
+  if (!rule.value || !signCodes.value.length) return
+  filterToSigns(signCodes.value)
+  track('filter_rule_signs', { layer: rule.value.layer, count: signCodes.value.length })
+}
 </script>
 
 <template>
@@ -64,6 +84,17 @@ const coords = computed(() => rule.value ? formatLngLat(rule.value.lngLat) : '')
     </div>
 
     <KeyValueRows :rows="rows" />
+
+    <UButton
+      v-if="signCodes.length"
+      size="xs"
+      :variant="isOnlyThese ? 'soft' : 'solid'"
+      color="primary"
+      block
+      icon="i-lucide-filter"
+      :label="t('rules.showSigns')"
+      @click="onShowSigns"
+    />
 
     <p class="text-xs text-muted">
       {{ coords }}

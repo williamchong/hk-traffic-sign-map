@@ -178,6 +178,24 @@ export const SIGN_RULE_LINKS: Record<string, SignRuleLink> = {
   TS2165: { layer: 'nsr', veh: 'OTH', tz: '24h' }
 }
 export const SIGN_RULE_RADIUS_M = 15
+
+// Does this rule feature carry what the link matches on? JS twin of
+// TrafficMap's `ruleLinkFilter` (a MapLibre expression) — keep the two in step.
+function ruleLinkMatches(link: SignRuleLink, layer: RuleLayer, p: Record<string, unknown>): boolean {
+  if (link.layer !== layer) return false
+  switch (link.layer) {
+    case 'speed': return Number(p.speed) === link.speed
+    case 'prohibition': return p.kind === link.kind
+    case 'nsr': return p.veh === link.veh && p.tz === link.tz
+    case 'buslane': return true
+  }
+}
+
+// The reverse of SIGN_RULE_LINKS: every sign code that announces a rule like
+// this one. Empty for a rule no plate is linked to (pedestrian zones, the
+// unlinked prohibition kinds and no-stopping bands).
+export const linkedSignCodes = (layer: RuleLayer, p: Record<string, unknown>) =>
+  Object.entries(SIGN_RULE_LINKS).filter(([, link]) => ruleLinkMatches(link, layer, p)).map(([code]) => code)
 // The 50 km/h plate: the default limit, which TD's data does not draw.
 export const DEFAULT_SPEED_CODES = new Set(['TS174'])
 

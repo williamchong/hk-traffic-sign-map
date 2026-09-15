@@ -82,6 +82,7 @@
       "pedzone": "Pedestrian zone"
     },
     "appliesHere": "Applies here",
+    "showSigns": "Show signs for this rule",
     "defaultSpeed": "50 km/h is the default limit; it is not drawn on the map.",
     "speedValue": "{n} km/h",
     "fields": {
