@@ -67,6 +67,7 @@
       "speed": "Speed limits",
       "buslane": "Bus-only lanes",
       "proh-plb": "Public light buses prohibited",
+      "cutoff": "Cut off for public light buses",
       "proh-ld": "Learner drivers prohibited",
       "proh-gv": "Goods vehicles prohibited",
       "proh-all": "All motor vehicles prohibited",
@@ -79,13 +80,15 @@
       "buslane": "Bus-only lane",
       "prohibition": "Prohibition",
       "nsr": "No stopping",
-      "pedzone": "Pedestrian zone"
+      "pedzone": "Pedestrian zone",
+      "cutoff": "Cut off for public light buses"
     },
     "appliesHere": "Applies here",
     "showSigns": "Show signs for this rule",
     "showRowSigns": "Show signs for: {rule}",
     "defaultSpeed": "50 km/h is the default limit; it is not drawn on the map.",
     "speedValue": "{n} km/h",
+    "kmValue": "{n} km",
     "fields": {
       "speed": "Limit",
       "hours": "Hours",
@@ -94,6 +97,8 @@
       "vehicles": "Applies to",
       "except": "Except",
       "when": "When",
+      "sealedBy": "Every way in is closed on",
+      "areaLength": "Roads cut off",
       "remarks": "Remarks"
     },
     "values": {
@@ -138,6 +143,7 @@
       "other": "Other days"
     },
     "source": "Road Network (2nd generation), Transport Department",
+    "cutoffSource": "Worked out from the Transport Department's prohibitions and turn bans, not a posted rule",
     "close": "Close"
   },
   "theme": {

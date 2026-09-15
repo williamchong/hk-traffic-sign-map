@@ -65,7 +65,7 @@ function onShowSigns() {
             {{ title }}
           </h2>
           <p class="mt-0.5 text-xs text-muted">
-            {{ $t('rules.source') }}
+            {{ $t(rule.layer === 'cutoff' ? 'rules.cutoffSource' : 'rules.source') }}
           </p>
         </div>
       </div>

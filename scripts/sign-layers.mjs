@@ -69,6 +69,17 @@ export const RDNET_RULE_LAYERS = {
 // the rules below don't classify, so nothing is silently dropped. Duplicated
 // in app/composables/useRoadRules.ts per the two-runtime rule.
 export const PROHIBITION_KINDS = ['plb', 'ld', 'gv', 'all', 'other']
+// Turn bans (edge → edge movements, by CENTERLINE OBJECTID), read only to
+// derive the cut-off layer below.
+export const RDNET_TURN_LAYER = 'TURN'
+// The one DERIVED source-layer in the road-rules archive (road-cutoff.mjs):
+// roads a vehicle class cannot enter at all because TD's prohibitions and turn
+// bans close every way in. Not an FGDB layer, so kept out of RDNET_RULE_LAYERS.
+// `CUTOFF_VEHICLE` is the class it is computed for — one public light bus row,
+// since green minibuses run on "PLB Proh" roads under route permits and a
+// green-minibus layer would contradict the routes riders see.
+export const CUTOFF_LAYER = 'cutoff'
+export const CUTOFF_VEHICLE = 'PLB'
 
 // NSR (no-stopping restrictions) codes its three descriptive fields as small
 // integers, where BUS_ONLY_LANE prints free text — so unlike every other rule

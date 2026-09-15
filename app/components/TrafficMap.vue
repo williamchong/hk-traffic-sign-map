@@ -226,14 +226,20 @@ const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tie
 // non-hidden layers and the sign popup's "applies here" lookup
 // (querySourceFeatures below) needs them loaded regardless. Rule ids stay OUT
 // of signLayerIds: the click handler's featureKey assumes point geometry.
-const RULE_LAYERS: RuleLayer[] = ['speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
+// Draw order: `cutoff` first, so its wide band sits under every rule line.
+const RULE_LAYERS: RuleLayer[] = ['cutoff', 'speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
 const ruleLayerId = (layer: RuleLayer) => `rule-${layer}`
 const ruleHitLayerId = (layer: RuleLayer) => `rule-${layer}-hit`
 const ruleHitLayerIds = RULE_LAYERS.map(ruleHitLayerId)
+// Hit layers that follow their row instead of staying on: no sign links to a
+// cut-off road, and the other hit layers already keep the source's tiles
+// resident, so an always-on one would only cost line buckets and a hit-test
+// on every pointer move.
+const ruleHitFollowsRow = (layer: RuleLayer) => layer === 'cutoff'
 // Speed limits run for kilometres and read at the overview; bus lanes and
 // prohibitions are short urban segments that only make sense street-level;
 // no-stopping's 20k kerb lines are a smear until the streets separate.
-const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12 }
+const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12, cutoff: 11 }
 const RULE_LINE_WIDTH = expr(['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 3, 17, 6])
 const ruleColor = (key: string) => RULE_ROWS.find(r => r.key === key)!.color
 // A bus lane's `bound` is its side of the centreline in the digitised
@@ -263,6 +269,13 @@ const RULE_PAINT: Record<RuleLayer, LineLayerSpecification['paint']> = {
   },
   pedzone: {
     'line-color': ruleColor('pedzone')
+  },
+  // A wide, faint band rather than a line: it marks roads no rule names, the
+  // area behind the PLB prohibitions that seal it, not a rule of its own.
+  cutoff: {
+    'line-color': ruleColor('cutoff'),
+    'line-width': expr(['interpolate', ['linear'], ['zoom'], 11, 4, 14, 10, 17, 22]),
+    'line-opacity': 0.35
   }
 }
 // Which features of the link's source-layer count as the sign's rule
@@ -672,13 +685,16 @@ onMounted(async () => {
         id: ruleHitLayerId(layer),
         type: 'line',
         ...common,
+        layout: { visibility: ruleHitFollowsRow(layer) ? 'none' : 'visible' },
         paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 14 }
       }, 'sel-group-glow')
       m.addLayer({
         id: ruleLayerId(layer),
         type: 'line',
         ...common,
-        layout: { 'line-cap': 'round', 'line-join': 'round', 'visibility': 'none' },
+        // Butt caps on the translucent cut-off band: round caps of adjoining
+        // edges overlap at every junction and stack into bright dots.
+        layout: { 'line-cap': layer === 'cutoff' ? 'butt' : 'round', 'line-join': 'round', 'visibility': 'none' },
         paint: { 'line-width': RULE_LINE_WIDTH, 'line-opacity': 0.75, ...RULE_PAINT[layer] }
       }, 'sel-group-glow')
     }
@@ -691,6 +707,7 @@ onMounted(async () => {
         const kinds = enabledKinds.value
         const on = layer === 'prohibition' ? kinds.length > 0 : !!rulesEnabled.value[layer]
         m.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none')
+        if (ruleHitFollowsRow(layer)) m.setLayoutProperty(ruleHitLayerId(layer), 'visibility', on ? 'visible' : 'none')
         if (layer === 'prohibition') m.setFilter(id, expr(['in', ['get', 'kind'], ['literal', kinds]]))
       }
     }

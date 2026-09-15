@@ -67,6 +67,7 @@
       "speed": "車速限制",
       "buslane": "巴士專線",
       "proh-plb": "禁止公共小巴駛入",
+      "cutoff": "公共小巴無法駛入的路段",
       "proh-ld": "禁止學習駕駛人士駛入",
       "proh-gv": "禁止貨車駛入",
       "proh-all": "禁止所有汽車駛入",
@@ -79,13 +80,15 @@
       "buslane": "巴士專線",
       "prohibition": "禁止駛入",
       "nsr": "禁止停車",
-      "pedzone": "行人專用區"
+      "pedzone": "行人專用區",
+      "cutoff": "公共小巴無法駛入的路段"
     },
     "appliesHere": "此處適用的規則",
     "showSigns": "只顯示此規則的標誌",
     "showRowSigns": "只顯示此規則的標誌：{rule}",
     "defaultSpeed": "每小時50公里為預設車速限制，地圖上不會繪出。",
     "speedValue": "每小時{n}公里",
+    "kmValue": "{n}公里",
     "fields": {
       "speed": "限速",
       "hours": "時段",
@@ -94,6 +97,8 @@
       "vehicles": "適用車輛",
       "except": "除外",
       "when": "生效",
+      "sealedBy": "所有入口禁止駛入的街道",
+      "areaLength": "受影響路段",
       "remarks": "備註"
     },
     "values": {
@@ -138,6 +143,7 @@
       "other": "其他日子"
     },
     "source": "運輸署道路網絡（第二代）",
+    "cutoffSource": "根據運輸署的禁止駛入及禁止轉向限制推算，並非路牌列明的規則",
     "close": "關閉"
   },
   "theme": {

@@ -10,10 +10,13 @@ import { str } from '~/utils/format'
 // module state like useTrafficLayers, shared by the panel, the map and the
 // popups.
 
-// tippecanoe source-layer names in the archive — RDNET_RULE_LAYERS keys and
-// PROHIBITION_KINDS / NSR_VEHICLE_TYPES in scripts/sign-layers.mjs, duplicated
-// per the two-runtime rule.
-export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone'
+// tippecanoe source-layer names in the archive — RDNET_RULE_LAYERS keys,
+// CUTOFF_LAYER and PROHIBITION_KINDS / NSR_VEHICLE_TYPES in
+// scripts/sign-layers.mjs, duplicated per the two-runtime rule.
+// `cutoff` is the one DERIVED layer: roads public light buses cannot enter at
+// all, because TD's prohibitions and turn bans close every way in
+// (scripts/road-cutoff.mjs) — its popup says so rather than citing a rule.
+export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone' | 'cutoff'
 export type ProhibitionKind = 'plb' | 'ld' | 'gv' | 'all' | 'other'
 export type NsrVehicle = 'ALL' | 'TX' | 'PLB' | 'GV' | 'OTH'
 export type NsrTimeZone = '24h' | 'peaks' | 'day' | 'late' | 'other'
@@ -37,6 +40,9 @@ export const RULE_ROWS: RuleRow[] = [
   { key: 'speed', layer: 'speed', color: '#f59e0b' },
   { key: 'buslane', layer: 'buslane', color: '#2563eb' },
   { key: 'proh-plb', layer: 'prohibition', kind: 'plb', color: '#0d9488' },
+  // Beside the PLB prohibitions it follows from, in a lighter teal: drawn as a
+  // wide translucent band, so it reads as "the area behind" those dashes.
+  { key: 'cutoff', layer: 'cutoff', color: '#2dd4bf' },
   { key: 'proh-ld', layer: 'prohibition', kind: 'ld', color: '#7c3aed' },
   { key: 'proh-gv', layer: 'prohibition', kind: 'gv', color: '#b45309' },
   { key: 'proh-all', layer: 'prohibition', kind: 'all', color: '#e11d48' },
@@ -238,7 +244,8 @@ function dayMask(mask: unknown, t: Translate) {
 // The popup rows for one rule feature — shared by the rule popup and the sign
 // popup's "applies here" block so both read identically.
 export function ruleRows(layer: RuleLayer, p: Record<string, unknown>, t: Translate, locale: Locale): [string, string][] {
-  const street = locale === 'zh-HK' ? (str(p.st_zh) ?? str(p.st_en)) : (str(p.st_en) ?? str(p.st_zh))
+  const pick = (zh: unknown, en: unknown) => locale === 'zh-HK' ? (str(zh) ?? str(en)) : (str(en) ?? str(zh))
+  const street = pick(p.st_zh, p.st_en)
   const rows: [string, string | null][] = []
   if (layer === 'speed') {
     rows.push([t('rules.fields.speed'), p.speed != null ? t('rules.speedValue', { n: p.speed }) : null])
@@ -246,6 +253,10 @@ export function ruleRows(layer: RuleLayer, p: Record<string, unknown>, t: Transl
     rows.push([t('rules.fields.vehicles'), vehicles(p.veh, t)])
     rows.push([t('rules.fields.hours'), str(p.tz) ? t(`rules.nsrHours.${p.tz}`) : null])
     rows.push([t('rules.fields.days'), str(p.eday) ? t(`rules.nsrDays.${p.eday}`) : null])
+  } else if (layer === 'cutoff') {
+    rows.push([t('rules.fields.vehicles'), vehicles(p.veh, t)])
+    rows.push([t('rules.fields.sealedBy'), pick(p.via_zh, p.via_en)])
+    rows.push([t('rules.fields.areaLength'), p.area_m != null ? t('rules.kmValue', { n: (Number(p.area_m) / 1000).toFixed(1) }) : null])
   } else if (layer === 'buslane' || layer === 'pedzone') {
     rows.push([t('rules.fields.hours'), str(p.hours)])
     rows.push([t('rules.fields.days'), dayMask(p.days, t)])
