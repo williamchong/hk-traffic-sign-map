@@ -56,9 +56,12 @@ const readLayer = (layer, select) => streamOgrGeoJSON(layer, [
 
 const text = v => (v == null || v === '' || v === 'NA' ? null : String(v).trim())
 // CENTERLINE spells "no name" as -99.
+// The Chinese column types it four ways: `–９９` (en dash, full-width digits —
+// 4,216 routes), `－９９` (1,299), `-９９` (114) and plain `-99`. NFKC folds the
+// full-width forms, but not the en dash, so every dash is folded as well.
 const street = (v) => {
   const s = text(v)
-  return s === '-99' ? null : s
+  return s && /^[-‐-―−]99$/.test(s.normalize('NFKC')) ? null : s
 }
 // Tile properties with the null/undefined entries dropped, so an absent
 // remark or street name costs no bytes.
