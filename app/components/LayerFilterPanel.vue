@@ -18,8 +18,16 @@ const allOn = computed(() => categories.every(c => enabled[c.key]))
 // and the viewport is unknown to the prerender (see the hydration note on
 // `tabMode` below; the section renders client-only for the same reason).
 const rulesOpen = ref(false)
+
+// View-only fold of the whole filter body (tabs + active tab), down to header
+// + nav — on a phone the open card covers most of the map. Same screen-size
+// default as `rulesOpen`. Not in useTrafficLayers: it doesn't touch the map filter.
+const expanded = ref(false)
+
 onMounted(() => {
-  rulesOpen.value = anyRuleOn.value || window.matchMedia('(min-width: 768px)').matches
+  const desktop = window.matchMedia('(min-width: 768px)').matches
+  expanded.value = desktop
+  rulesOpen.value = anyRuleOn.value || desktop
 })
 
 // Legend chips for the rows whose lines are coloured by a value, not the row
@@ -51,12 +59,6 @@ watch(filterMode, (v) => {
   tabMode.value = v
 })
 
-// View-only: folds the whole filter body (tabs + active tab) away so the
-// panel shrinks to just its header + nav — essential on mobile, where the
-// sign-id tab's tall result list otherwise covers most of the viewport.
-// Not in useTrafficLayers because it doesn't touch the map filter.
-const expanded = ref(true)
-
 // Tabs are label-only — icons added visual noise in a 288px-wide panel
 // without aiding recognition; the labels are short and self-explanatory.
 const tabItems = computed(() => [
@@ -86,7 +88,7 @@ function onTabChange(value: string | number) {
 
 <template>
   <UCard
-    class="absolute left-4 top-4 z-10 w-72 max-w-[calc(100vw-2rem)]"
+    class="absolute left-4 top-4 z-10 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto"
     :ui="{ body: 'p-4 sm:p-4 space-y-2' }"
   >
     <!-- Header is two rows so the title and subtitle each get the full
