@@ -39,6 +39,7 @@ import {
   NSR_VEHICLE_TYPES, NSR_TIME_ZONES, NSR_EFFECTIVE_DAYS
 } from './sign-layers.mjs'
 import { requireTool, mergeTilesVersion, streamOgrGeoJSON } from './geo.mjs'
+import { DASHES } from './text-similarity.mjs'
 
 const RDNET_ZIP = join(RAW_DIR, 'RdNet_IRNP.gdb.zip')
 const scratch = key => join(RAW_DIR, `_rules_${key}.geojsonl`)
@@ -55,13 +56,13 @@ const readLayer = (layer, select) => streamOgrGeoJSON(layer, [
 ])
 
 const text = v => (v == null || v === '' || v === 'NA' ? null : String(v).trim())
-// CENTERLINE spells "no name" as -99.
-// The Chinese column types it four ways: `–９９` (en dash, full-width digits —
-// 4,216 routes), `－９９` (1,299), `-９９` (114) and plain `-99`. NFKC folds the
-// full-width forms, but not the en dash, so every dash is folded as well.
+// CENTERLINE spells "no name" as -99 — plainly in English, but four ways in
+// the Chinese column: `–９９` (en dash, full-width digits — 4,216 routes),
+// `－９９` (1,299), `-９９` (114) and `-99`. NFKC folds the full-width forms but
+// not the en dash, so the dashes are folded too, as the name binds fold them.
 const street = (v) => {
   const s = text(v)
-  return s && /^[-‐-―−]99$/.test(s.normalize('NFKC')) ? null : s
+  return s?.normalize('NFKC').replace(DASHES, '-') === '-99' ? null : s
 }
 // Tile properties with the null/undefined entries dropped, so an absent
 // remark or street name costs no bytes.
