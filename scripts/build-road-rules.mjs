@@ -1,5 +1,6 @@
-// Builds the road-rules overlay archive — where a speed limit, a bus-only lane
-// or a vehicle prohibition applies — from TD's Road Network v2 FGDB (the
+// Builds the road-rules overlay archive — where a speed limit, a bus-only lane,
+// a vehicle prohibition, a no-stopping restriction or a pedestrian zone
+// applies — from TD's Road Network v2 FGDB (the
 // package fetch-data already downloads for compute-bearings). The extents are
 // TD's own; nothing here is derived from sign points. (The evaluation that
 // settled this: 26 % of 70 km/h segments and 64 % of bus-lane segments have no
@@ -7,7 +8,7 @@
 // one — while 90–99 % of the matching signs sit within 15 m of their rule
 // feature, which is what the runtime's sign→rule lookup leans on.)
 //
-// Three tippecanoe source-layers, one per RDNET_RULE_LAYERS key:
+// One tippecanoe source-layer per RDNET_RULE_LAYERS key:
 //   speed        SPEED_LIMIT lines as-is; `speed` = the int of "70 km/h".
 //                50 km/h is the territory default and has no rows.
 //   buslane      BUS_ONLY_LANE lines as-is, with the printed hours + day mask.
@@ -15,8 +16,15 @@
 //                ROAD_ROUTE_ID, the whole CENTERLINE route it governs — so each
 //                row is drawn on that route's line, once per `kind` it
 //                addresses (see kindsOf), so a legend row is a plain filter.
-// Every feature also carries the route's street name (st_en / st_zh) for the
-// popup, joined from CENTERLINE by ROAD_ROUTE_ID.
+//   nsr          NSR (no-stopping) lines as-is — the biggest layer here by far
+//                (20k rows), and the only one whose descriptive fields are
+//                CODED (see the NSR_* tables in sign-layers.mjs) rather than
+//                printed. It is also the only one with no route id, so it is
+//                streamed straight through rather than buffered for a join.
+//   pedzone      PEDESTRIAN_ZONE lines as-is; same hours + day mask as buslane.
+// Every feature also carries its street name (st_en / st_zh) for the popup,
+// joined from CENTERLINE — by ROAD_ROUTE_ID for every layer but NSR, which
+// names its roads by ST_CODE instead.
 
 import { mkdir, readFile, rm } from 'node:fs/promises'
 import { createWriteStream } from 'node:fs'
@@ -27,17 +35,18 @@ import { dirname, join } from 'node:path'
 
 import {
   RAW_DIR, TARGET_SRS, OUTPUT_PMTILES_RULES,
-  RDNET_CENTERLINE_LAYER, RDNET_RULE_LAYERS, PROHIBITION_KINDS
+  RDNET_CENTERLINE_LAYER, RDNET_RULE_LAYERS, PROHIBITION_KINDS,
+  NSR_VEHICLE_TYPES, NSR_TIME_ZONES, NSR_EFFECTIVE_DAYS
 } from './sign-layers.mjs'
 import { requireTool, mergeTilesVersion, streamOgrGeoJSON } from './geo.mjs'
 
 const RDNET_ZIP = join(RAW_DIR, 'RdNet_IRNP.gdb.zip')
 const scratch = key => join(RAW_DIR, `_rules_${key}.geojsonl`)
 
-// One FGDB layer as WGS84 features. `-dim XY` is mandatory: SPEED_LIMIT,
-// BUS_ONLY_LANE and PROHIBITION are *measured* (XYM) geometries and
-// tippecanoe would otherwise read the M as elevation. `-select` keeps the
-// tiles lean — every property is bytes in every tile the feature touches.
+// One FGDB layer as WGS84 features. `-dim XY` is mandatory: every rule layer
+// but NSR is a *measured* (XYM) geometry and tippecanoe would otherwise read
+// the M as elevation. `-select` keeps the tiles lean — every property is bytes
+// in every tile the feature touches.
 const readLayer = (layer, select) => streamOgrGeoJSON(layer, [
   `/vsizip/${RDNET_ZIP}`, layer,
   '-t_srs', TARGET_SRS,
@@ -76,8 +85,8 @@ function kindsOf(p) {
 }
 
 // Backpressure-aware append of one feature line.
-async function writeFeature(out, geometry, properties) {
-  const line = JSON.stringify({ type: 'Feature', geometry, properties }) + '\n'
+async function writeFeature(out, geometry, properties, tippecanoe) {
+  const line = JSON.stringify({ type: 'Feature', geometry, properties, tippecanoe }) + '\n'
   if (!out.write(line)) await once(out, 'drain')
 }
 
@@ -86,8 +95,11 @@ requireTool('tippecanoe', 'brew install tippecanoe')
 
 const t0 = Date.now()
 
-// 1. The three rule layers — small (≈7k rows) so they're held in memory while
-//    the CENTERLINE pass below resolves their routes.
+// 1. The route-referencing rule layers — small (≈7k rows) so they're held in
+//    memory while the CENTERLINE pass below resolves their routes. NSR is
+//    deliberately NOT read here: at 20k line features it is bigger than all of
+//    these together, and since it needs no route join there is nothing to hold
+//    it in memory FOR — it streams straight to its scratch file in step 3.
 console.log(`Reading ${RDNET_ZIP} …`)
 const speedRows = []
 for await (const f of readLayer(RDNET_RULE_LAYERS.speed, 'ROAD_ROUTE_ID,SPEED_LIMIT,BOUND,REMARKS')) speedRows.push(f)
@@ -95,33 +107,50 @@ const busRows = []
 for await (const f of readLayer(RDNET_RULE_LAYERS.buslane, 'ROAD_ROUTE_ID,TIME_ZONE,EFFECTIVE_DAY,BOUND,REMARKS')) busRows.push(f)
 const prohRows = []
 for await (const f of readLayer(RDNET_RULE_LAYERS.prohibition, 'ROAD_ROUTE_ID,INC_VEH_TYPE,EXC_VEH_TYPE,PART_TIME_PROHIBITION,EFF_ALL_DAYS,OTHER_REST_TYPE_GV,REMARKS')) prohRows.push(f)
-console.log(`  ${RDNET_RULE_LAYERS.speed}: ${speedRows.length}  ${RDNET_RULE_LAYERS.buslane}: ${busRows.length}  ${RDNET_RULE_LAYERS.prohibition}: ${prohRows.length}`)
+const pedRows = []
+for await (const f of readLayer(RDNET_RULE_LAYERS.pedzone, 'ROAD_ROUTE_ID,TIME_ZONE,EFFECTIVE_DAY,REMARKS')) pedRows.push(f)
+console.log(`  ${RDNET_RULE_LAYERS.speed}: ${speedRows.length}  ${RDNET_RULE_LAYERS.buslane}: ${busRows.length}  ${RDNET_RULE_LAYERS.prohibition}: ${prohRows.length}  ${RDNET_RULE_LAYERS.pedzone}: ${pedRows.length}`)
 
-// 2. One CENTERLINE pass keeping only the routes those rows reference: the
-//    street names for every rule, the line geometry for prohibitions.
-const wanted = new Set([...speedRows, ...busRows, ...prohRows].map(f => f.properties.ROAD_ROUTE_ID))
+// 2. One CENTERLINE pass, serving two different joins:
+//    • by ROUTE_ID, for the layers that reference a route — street names for
+//      all of them, plus the line geometry for prohibitions (points only).
+//    • by ST_CODE, for NSR, which carries no route id. This one is built
+//      UNFILTERED and before the `wanted` skip below: NSR hasn't been read yet
+//      (it streams later), so its street codes aren't knowable here — and at
+//      ~5.8k distinct codes holding names for every street costs nothing.
+const wanted = new Set([...speedRows, ...busRows, ...prohRows, ...pedRows].map(f => f.properties.ROAD_ROUTE_ID))
 const needGeometry = new Set(prohRows.map(f => f.properties.ROAD_ROUTE_ID))
 const routes = new Map()
-for await (const f of readLayer(RDNET_CENTERLINE_LAYER, 'ROUTE_ID,STREET_ENAME,STREET_CNAME')) {
+const streetsByCode = new Map()
+for await (const f of readLayer(RDNET_CENTERLINE_LAYER, 'ROUTE_ID,ST_CODE,STREET_ENAME,STREET_CNAME')) {
+  const names = {
+    st_en: street(f.properties.STREET_ENAME),
+    st_zh: street(f.properties.STREET_CNAME)
+  }
+  const stCode = f.properties.ST_CODE
+  if (stCode != null && !streetsByCode.has(stCode)) streetsByCode.set(stCode, names)
   const id = f.properties.ROUTE_ID
   if (!wanted.has(id)) continue
-  routes.set(id, {
-    st_en: street(f.properties.STREET_ENAME),
-    st_zh: street(f.properties.STREET_CNAME),
-    geometry: needGeometry.has(id) ? f.geometry : null
-  })
+  routes.set(id, { ...names, geometry: needGeometry.has(id) ? f.geometry : null })
 }
-console.log(`  ${RDNET_CENTERLINE_LAYER}: ${routes.size} of ${wanted.size} referenced routes found`)
+console.log(`  ${RDNET_CENTERLINE_LAYER}: ${routes.size} of ${wanted.size} referenced routes found, ${streetsByCode.size} street codes named`)
 
-const streetProps = (routeId) => {
-  const r = routes.get(routeId)
+// A miss yields undefineds that `compact` drops.
+const namesFrom = (map, key) => {
+  const r = map.get(key)
   return { st_en: r?.st_en, st_zh: r?.st_zh }
 }
+const streetProps = routeId => namesFrom(routes, routeId)
+const streetPropsByCode = stCode => namesFrom(streetsByCode, stCode)
 
-// 3. Write the three scratch streams tippecanoe reads.
+// Diagnostic tallies: count per key, printed most-common first.
+const bump = (m, k) => m.set(k, (m.get(k) ?? 0) + 1)
+const tally = (m, sep = ' ') => [...m].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}${sep}${n}`).join(' · ')
+
+// 3. Write the scratch streams tippecanoe reads, one per layer.
 await mkdir(dirname(OUTPUT_PMTILES_RULES), { recursive: true })
 const outs = Object.fromEntries(Object.keys(RDNET_RULE_LAYERS).map(k => [k, createWriteStream(scratch(k))]))
-const counts = { speed: 0, buslane: 0, prohibition: 0 }
+const counts = Object.fromEntries(Object.keys(RDNET_RULE_LAYERS).map(k => [k, 0]))
 
 let unparsedSpeed = 0
 for (const { geometry, properties: p } of speedRows) {
@@ -151,6 +180,19 @@ for (const { geometry, properties: p } of busRows) {
   counts.buslane++
 }
 
+// Same printed hours + day mask as a bus lane, minus the BOUND: a pedestrian
+// zone closes the whole street, so there is no side of the centreline to
+// offset the line onto.
+for (const { geometry, properties: p } of pedRows) {
+  await writeFeature(outs.pedzone, geometry, compact({
+    hours: text(p.TIME_ZONE),
+    days: text(p.EFFECTIVE_DAY),
+    remarks: text(p.REMARKS),
+    ...streetProps(p.ROAD_ROUTE_ID)
+  }))
+  counts.pedzone++
+}
+
 const kindTally = Object.fromEntries(PROHIBITION_KINDS.map(k => [k, 0]))
 const otherHeads = new Map()
 let noRoute = 0
@@ -161,7 +203,7 @@ for (const { properties: p } of prohRows) {
     continue
   }
   const { kinds, head } = kindsOf(p)
-  if (kinds.includes('other')) otherHeads.set(head, (otherHeads.get(head) ?? 0) + 1)
+  if (kinds.includes('other')) bump(otherHeads, head)
   const shared = compact({
     inc: text(p.INC_VEH_TYPE),
     exc: text(p.EXC_VEH_TYPE),
@@ -178,17 +220,50 @@ for (const { properties: p } of prohRows) {
 }
 if (noRoute) console.warn(`  ⚠ ${noRoute} PROHIBITION rows reference a route missing from CENTERLINE — skipped`)
 
+// NSR streams feature-by-feature: its own geometry, and a street name from the
+// by-code map already built, so nothing is held. The three coded fields become
+// slugs (`veh` is TD's vehicle code, shared with the prohibition layer's i18n);
+// deliberately `tz` / `eday` rather than buslane's `hours` / `days`, which hold
+// free text and a Y/N mask — one property name, one value space.
+// Kept out of the z9–11 tiles entirely (= RULE_MINZOOM.nsr in TrafficMap.vue):
+// nothing draws NSR there, but the always-on speed hit layer loads those tiles
+// for every visitor, overlay or not — and 18.9k lines at z9 roughly
+// quadrupled them. The sign popup's lookup finds no NSR line below z12, where
+// simplification already makes a 15 m match unreliable.
+const NSR_TILE_ZOOM = { minzoom: 12 }
+const nsrTally = { veh: new Map(), tz: new Map(), eday: new Map() }
+let nsrNoStreet = 0
+let othBlank = 0
+for await (const { geometry, properties: p } of readLayer(RDNET_RULE_LAYERS.nsr, 'VEHICLE_TYPE,TIME_ZONE,EFFECTIVE_DAY,ST_CODE_1,REMARKS')) {
+  const veh = NSR_VEHICLE_TYPES[p.VEHICLE_TYPE] ?? 'OTH'
+  const tz = NSR_TIME_ZONES[p.TIME_ZONE] ?? 'other'
+  const eday = NSR_EFFECTIVE_DAYS[p.EFFECTIVE_DAY] ?? 'other'
+  const remarks = text(p.REMARKS)
+  const names = streetPropsByCode(p.ST_CODE_1)
+  if (!names.st_en && !names.st_zh) nsrNoStreet++
+  if (veh === 'OTH' && !remarks) othBlank++
+  bump(nsrTally.veh, veh)
+  bump(nsrTally.tz, tz)
+  bump(nsrTally.eday, eday)
+  await writeFeature(outs.nsr, geometry, compact({ veh, tz, eday, remarks, ...names }), NSR_TILE_ZOOM)
+  counts.nsr++
+}
+
 for (const out of Object.values(outs)) out.end()
 await Promise.all(Object.values(outs).map(out => once(out, 'finish')))
 
-console.log(`  features → speed ${counts.speed}, buslane ${counts.buslane}, prohibition ${counts.prohibition} (rows × kinds)`)
+console.log(`  features → ${Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(', ')} (prohibition = rows × kinds)`)
 console.log(`  prohibition kinds: ${PROHIBITION_KINDS.map(k => `${k} ${kindTally[k]}`).join(', ')}`)
 // The heads that fell to `other` are TD's wording drifting past kindsOf —
 // review after every refresh; a new common head means a new rule or a regex fix.
-const heads = [...otherHeads].sort((a, b) => b[1] - a[1]).map(([h, n]) => `${h} ×${n}`)
-console.log(`  \`other\` remark heads: ${heads.join(' · ') || 'none'}`)
+console.log(`  \`other\` remark heads: ${tally(otherHeads, ' ×') || 'none'}`)
+// NSR's code distribution, to read against the tallies in sign-layers.mjs: a
+// shifted count means TD re-coded a table and a slug now says the wrong thing.
+console.log(`  nsr veh: ${tally(nsrTally.veh)}`)
+console.log(`  nsr tz: ${tally(nsrTally.tz)}  eday: ${tally(nsrTally.eday)}`)
+console.log(`  nsr: ${othBlank} OTH rows carry no REMARKS; ${nsrNoStreet} rows name no street`)
 
-if (counts.speed + counts.buslane + counts.prohibition === 0) {
+if (Object.values(counts).every(n => n === 0)) {
   console.error('No rule features converted — aborting before tippecanoe.')
   process.exit(1)
 }

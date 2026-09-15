@@ -6,7 +6,7 @@ import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf,
 import type { FilterMode, SelectedSign } from '~/composables/useTrafficLayers'
 import {
   RULE_SOURCE, RULE_ROWS, SIGN_RULE_LINKS, SIGN_RULE_RADIUS_M,
-  speedColorStops, prohibitionColorStops, type RuleLayer
+  speedColorStops, prohibitionColorStops, nsrColorStops, type RuleLayer, type SignRuleLink
 } from '~/composables/useRoadRules'
 import { pointToLineMetres } from '~/utils/geo'
 import tilesVersion from '~/data/tilesVersion.json'
@@ -226,13 +226,14 @@ const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tie
 // non-hidden layers and the sign popup's "applies here" lookup
 // (querySourceFeatures below) needs them loaded regardless. Rule ids stay OUT
 // of signLayerIds: the click handler's featureKey assumes point geometry.
-const RULE_LAYERS: RuleLayer[] = ['speed', 'buslane', 'prohibition']
+const RULE_LAYERS: RuleLayer[] = ['speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
 const ruleLayerId = (layer: RuleLayer) => `rule-${layer}`
 const ruleHitLayerId = (layer: RuleLayer) => `rule-${layer}-hit`
 const ruleHitLayerIds = RULE_LAYERS.map(ruleHitLayerId)
 // Speed limits run for kilometres and read at the overview; bus lanes and
-// prohibitions are short urban segments that only make sense street-level.
-const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11 }
+// prohibitions are short urban segments that only make sense street-level;
+// no-stopping's 20k kerb lines are a smear until the streets separate.
+const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12 }
 const RULE_LINE_WIDTH = expr(['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 3, 17, 6])
 const ruleColor = (key: string) => RULE_ROWS.find(r => r.key === key)!.color
 // A bus lane's `bound` is its side of the centreline in the digitised
@@ -252,6 +253,26 @@ const RULE_PAINT: Record<RuleLayer, LineLayerSpecification['paint']> = {
   prohibition: {
     'line-color': expr(['match', ['get', 'kind'], ...prohibitionColorStops, ruleColor('proh-other')]),
     'line-dasharray': [2, 1.5]
+  },
+  // Dotted (a near-zero dash with round caps draws dots), distinct from the
+  // prohibition dashes, and read as a kerb line. No offset: NSR has no BOUND
+  // field to say which kerb.
+  nsr: {
+    'line-color': expr(['match', ['get', 'veh'], ...nsrColorStops, ruleColor('nsr')]),
+    'line-dasharray': [0.1, 2]
+  },
+  pedzone: {
+    'line-color': ruleColor('pedzone')
+  }
+}
+// Which features of the link's source-layer count as the sign's rule
+// (undefined = any of them).
+const ruleLinkFilter = (link: SignRuleLink): ExpressionSpecification | undefined => {
+  switch (link.layer) {
+    case 'speed': return expr(['==', ['get', 'speed'], link.speed])
+    case 'prohibition': return expr(['==', ['get', 'kind'], link.kind])
+    case 'nsr': return expr(['all', ['==', ['get', 'veh'], link.veh], ['==', ['get', 'tz'], link.tz]])
+    case 'buslane': return undefined
   }
 }
 
@@ -661,7 +682,7 @@ onMounted(async () => {
         paint: { 'line-width': RULE_LINE_WIDTH, 'line-opacity': 0.75, ...RULE_PAINT[layer] }
       }, 'sel-group-glow')
     }
-    // Legend → layers: speed / bus lane by visibility; the one prohibition
+    // Legend → layers: every non-prohibition layer by visibility; the one prohibition
     // layer by a `kind` filter over the rows that are on (hidden when none).
     const syncRuleLayers = () => {
       for (const layer of RULE_LAYERS) {
@@ -818,9 +839,7 @@ onMounted(async () => {
         governingRule.value = null
         return
       }
-      const filter = link.speed != null
-        ? expr(['==', ['get', 'speed'], link.speed])
-        : link.kind ? expr(['==', ['get', 'kind'], link.kind]) : undefined
+      const filter = ruleLinkFilter(link)
       let best: GeoJSONFeature | null = null
       let bestD = SIGN_RULE_RADIUS_M
       // `validate: false`: the filter is built from typed constants, so skip
@@ -919,7 +938,7 @@ onMounted(async () => {
     m.on('mouseenter', id, () => (m.getCanvas().style.cursor = 'pointer'))
     m.on('mouseleave', id, () => (m.getCanvas().style.cursor = ''))
   }
-  // Rule lines: ONE delegated pair over all three hit layers (each
+  // Rule lines: ONE delegated pair over all the hit layers (each
   // layer-scoped listener is its own hit-test per mousemove). `mousemove`
   // rather than `mouseenter`, because the enter latch would stick on a line
   // whose row is off and never re-fire for an enabled line reached without

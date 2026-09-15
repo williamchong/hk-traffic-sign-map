@@ -93,7 +93,7 @@ rerun to refresh. The stages, each runnable on its own:
 | 3 | `data:stacks` | Groups signs into signposts and faces; bakes each member's column offset |
 | 4 | `data:stacked-icons` | Re-renders in-signpost pictograms to a common width |
 | 5 | `data:tiles` | Reprojects, injects facing/stack properties, packs both PMTiles archives |
-| 6 | `data:road-rules` | Tiles the Road Network's speed-limit, bus-only-lane and vehicle-prohibition extents into the road-rules overlay archive |
+| 6 | `data:road-rules` | Tiles the Road Network's speed-limit, bus-only-lane, vehicle-prohibition, no-stopping and pedestrian-zone extents into the road-rules overlay archive |
 
 Two sign archives are built on purpose. `traffic-signs.pmtiles` (~25 MB) is
 thinned for the zoomed-out overview; `traffic-signs-full.pmtiles` (~45 MB)
@@ -101,10 +101,11 @@ retains every feature so a sign-number filter finds all of them at any zoom.
 One pyramid cannot serve both, because tile thinning happens before the
 runtime filter is known.
 
-A third, small archive, `road-rules.pmtiles` (~1.3 MB), holds *where a rule
-applies*: speed-limit segments, bus-only lanes with their hours, and the
-routes each vehicle prohibition (public light buses, learner drivers, goods
-vehicles, all motor vehicles) covers. These extents come straight from the
+A third, small archive, `road-rules.pmtiles` (~3.4 MB), holds *where a rule
+applies*: speed-limit segments, bus-only lanes with their hours, the routes
+each vehicle prohibition (public light buses, learner drivers, goods vehicles,
+all motor vehicles) covers, no-stopping restrictions by vehicle type, hours
+and days, and pedestrian zones. These extents come straight from the
 Transport Department's Road Network (2nd generation) layers — the same
 package step 2 reads for centrelines — and are never inferred from sign
 positions. It has its own cache-buster key because it rebuilds on its own

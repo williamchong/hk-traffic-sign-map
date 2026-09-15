@@ -49,15 +49,19 @@ export const BUILD_TIME_DATA = [
 export const RDNET_CENTERLINE_LAYER = 'CENTERLINE'
 
 // Rule-extent layers of the same FGDB, tiled by build-road-rules.mjs into the
-// road-rules overlay (tippecanoe source-layer name → FGDB layer). SPEED_LIMIT
-// and BUS_ONLY_LANE carry their own line geometry; PROHIBITION is a point AT
-// the sign that references the whole CENTERLINE route it governs by
-// ROAD_ROUTE_ID, so the builder joins it onto that route's line. The
-// no-stopping (NSR) and pedestrian-zone layers are deliberately not tiled yet.
+// road-rules overlay (tippecanoe source-layer name → FGDB layer). SPEED_LIMIT,
+// BUS_ONLY_LANE, NSR and PEDESTRIAN_ZONE carry their own line geometry;
+// PROHIBITION is a point AT the sign that references the whole CENTERLINE route
+// it governs by ROAD_ROUTE_ID, so the builder joins it onto that route's line.
+// NSR is the odd one out for the street-name join: it carries no route id at
+// all, naming its roads by ST_CODE_1..6 instead, so it joins CENTERLINE on
+// ST_CODE (99.0 % of rows resolve) while every other layer joins on ROUTE_ID.
 export const RDNET_RULE_LAYERS = {
   speed: 'SPEED_LIMIT',
   buslane: 'BUS_ONLY_LANE',
-  prohibition: 'PROHIBITION'
+  prohibition: 'PROHIBITION',
+  nsr: 'NSR',
+  pedzone: 'PEDESTRIAN_ZONE'
 }
 // Who a prohibition addresses, derived per row from INC_VEH_TYPE + the REMARKS
 // head token (`<who> Proh/ E <exceptions>`); one tile feature per row × kind so
@@ -65,6 +69,24 @@ export const RDNET_RULE_LAYERS = {
 // the rules below don't classify, so nothing is silently dropped. Duplicated
 // in app/composables/useRoadRules.ts per the two-runtime rule.
 export const PROHIBITION_KINDS = ['plb', 'ld', 'gv', 'all', 'other']
+
+// NSR (no-stopping restrictions) codes its three descriptive fields as small
+// integers, where BUS_ONLY_LANE prints free text — so unlike every other rule
+// layer these need the dataspec's tables (rdnet_dataspec.zip §7) to mean
+// anything. Each maps to a slug the runtime expands via i18n, per the
+// "tile props are lean, words are the runtime's job" rule; an unmapped code
+// falls to the catch-all rather than being dropped, as with PROHIBITION_KINDS.
+//
+// VEHICLE_TYPE deliberately maps onto TD's OWN vehicle codes (the vocabulary
+// INC_VEH_TYPE already uses on the prohibition layer), so the runtime reuses
+// one set of vehicle translations for both layers instead of gaining a second.
+// Territory-wide tallies, as a tripwire for a future TD refresh:
+//   ALL 13,367 · OTH 5,198 · PLB 949 · GV 410 · TX 122
+export const NSR_VEHICLE_TYPES = { 1: 'ALL', 2: 'TX', 3: 'PLB', 4: 'GV', 5: 'OTH' }
+// 1 24 hours · 2 8am-10am and 5pm-7pm · 3 7am-7pm · 4 7am-midnight · 5 others
+export const NSR_TIME_ZONES = { 1: '24h', 2: 'peaks', 3: 'day', 4: 'late', 5: 'other' }
+// 1 all days · 2 all days except Sundays and PH · 3 Sundays and PH · 4 others
+export const NSR_EFFECTIVE_DAYS = { 1: 'all', 2: 'exc-sun-ph', 3: 'sun-ph', 4: 'other' }
 
 // Sign codes that address the driver coming the WRONG way — the "no entry"
 // family. Every other plate speaks to traffic already legally on the road and

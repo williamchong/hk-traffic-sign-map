@@ -2,18 +2,21 @@ import { useLocalStorage } from '@vueuse/core'
 import type { LngLat } from 'maplibre-gl'
 import { str } from '~/utils/format'
 
-// Road-rules overlay state — where a speed limit, bus-only lane or vehicle
-// prohibition applies. The extents are TD's Road Network v2 layers tiled by
+// Road-rules overlay state — where a speed limit, bus-only lane, vehicle
+// prohibition, no-stopping restriction or pedestrian zone applies. The
+// extents are TD's Road Network v2 layers tiled by
 // scripts/build-road-rules.mjs into public/data/road-rules.pmtiles; nothing
 // is derived from sign points (see CLAUDE.md, pipeline step 5). Singleton
 // module state like useTrafficLayers, shared by the panel, the map and the
 // popups.
 
 // tippecanoe source-layer names in the archive — RDNET_RULE_LAYERS keys and
-// PROHIBITION_KINDS in scripts/sign-layers.mjs, duplicated per the
-// two-runtime rule.
-export type RuleLayer = 'speed' | 'buslane' | 'prohibition'
+// PROHIBITION_KINDS / NSR_VEHICLE_TYPES in scripts/sign-layers.mjs, duplicated
+// per the two-runtime rule.
+export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone'
 export type ProhibitionKind = 'plb' | 'ld' | 'gv' | 'all' | 'other'
+export type NsrVehicle = 'ALL' | 'TX' | 'PLB' | 'GV' | 'OTH'
+export type NsrTimeZone = '24h' | 'peaks' | 'day' | 'late' | 'other'
 export const RULE_SOURCE = 'rules'
 
 export interface RuleRow {
@@ -37,7 +40,11 @@ export const RULE_ROWS: RuleRow[] = [
   { key: 'proh-ld', layer: 'prohibition', kind: 'ld', color: '#7c3aed' },
   { key: 'proh-gv', layer: 'prohibition', kind: 'gv', color: '#b45309' },
   { key: 'proh-all', layer: 'prohibition', kind: 'all', color: '#e11d48' },
-  { key: 'proh-other', layer: 'prohibition', kind: 'other', color: '#64748b' }
+  { key: 'proh-other', layer: 'prohibition', kind: 'other', color: '#64748b' },
+  // Non-prohibition rows keep key === layer (rowKeyFor relies on it) and never
+  // carry a `kind` — prohibitionColorStops is built from the rows that do.
+  { key: 'nsr', layer: 'nsr', color: '#db2777' },
+  { key: 'pedzone', layer: 'pedzone', color: '#65a30d' }
 ]
 
 // Speed-limit lines are coloured by value (the row colour is only its swatch
@@ -51,6 +58,18 @@ export const SPEED_COLORS: Record<number, string> = {
 }
 export const SPEED_VALUES = Object.keys(SPEED_COLORS).map(Number)
 export const speedColorStops = SPEED_VALUES.flatMap(v => [v, SPEED_COLORS[v]!])
+// No-stopping lines are coloured by who may not stop (`veh`, TD's vehicle
+// code), in a pink/magenta family that no other row or speed value uses —
+// the dotted pattern already marks them as kerbside, the hue says whose rule.
+export const NSR_VEH_COLORS: Record<NsrVehicle, string> = {
+  ALL: '#db2777',
+  TX: '#f472b6',
+  PLB: '#c026d3',
+  GV: '#86198f',
+  OTH: '#e879f9'
+}
+export const NSR_VEH_VALUES = Object.keys(NSR_VEH_COLORS) as NsrVehicle[]
+export const nsrColorStops = NSR_VEH_VALUES.flatMap(v => [v, NSR_VEH_COLORS[v]!])
 export const prohibitionColorStops = RULE_ROWS.filter(r => r.kind).flatMap(r => [r.kind!, r.color])
 
 export const rowKeyFor = (layer: RuleLayer, kind?: string | null) =>
@@ -92,11 +111,13 @@ const governingRule = ref<GoverningRule | null>(null)
 // SIGN_RULE_RADIUS_M of the sign — 90–99 % of these signs sit that close to
 // their rule (measured over the whole territory), so a miss usually means
 // the sign is a repeater on a segment TD keyed differently, not a wrong rule.
-export interface SignRuleLink {
-  layer: RuleLayer
-  speed?: number
-  kind?: ProhibitionKind
-}
+// No-stopping needs TD's vehicle code AND the time band the plate prints — a
+// veh-only match would hand a 7am–7pm plate the 24-hour line on the next kerb.
+export type SignRuleLink
+  = | { layer: 'speed', speed: number }
+    | { layer: 'buslane' }
+    | { layer: 'prohibition', kind: ProhibitionKind }
+    | { layer: 'nsr', veh: NsrVehicle, tz: NsrTimeZone }
 export const SIGN_RULE_LINKS: Record<string, SignRuleLink> = {
   TS173: { layer: 'speed', speed: 30 },
   TS175: { layer: 'speed', speed: 70 },
@@ -114,7 +135,47 @@ export const SIGN_RULE_LINKS: Record<string, SignRuleLink> = {
   TS373: { layer: 'buslane' },
   TS119: { layer: 'prohibition', kind: 'plb' },
   TS522: { layer: 'prohibition', kind: 'plb' },
-  TS130: { layer: 'prohibition', kind: 'ld' }
+  TS130: { layer: 'prohibition', kind: 'ld' },
+  // No-stopping zones, each held to the same bar as the links above: the
+  // share of the code's installs within SIGN_RULE_RADIUS_M of an NSR line of
+  // the SAME veh + tz, measured territory-wide at the tile (pole) position —
+  // ALL 95.1–97.9 %, PLB 91.2–100 %, GV 95.6–100 %, bus (TD codes it OTH)
+  // 88.9–100 % over a 96.4 % family. Codes under 10 installs ride on their
+  // (veh, tz) group's rate. Deliberately NOT linked, because TD's lines don't
+  // agree with the plate: the 7am–7pm and 8–10am & 5–7pm all-vehicle zones
+  // (TS2133 18.5 %, TS2134 23.6 %, TS2230 17.1 %, TS184 47.2 % — TD codes
+  // most of those kerbs OTH, not ALL), the clearway TS183 (70.9 %), TS2138
+  // (83.0 %), and every plate whose hours fall in NSR's "other" band except
+  // goods vehicles'. The END-of-zone plates mark where a zone stops, not
+  // where it applies, so they never link.
+  TS2131: { layer: 'nsr', veh: 'ALL', tz: 'late' },
+  TS2132: { layer: 'nsr', veh: 'ALL', tz: 'late' },
+  TS188: { layer: 'nsr', veh: 'ALL', tz: 'late' },
+  TS2137: { layer: 'nsr', veh: 'ALL', tz: '24h' },
+  TS189: { layer: 'nsr', veh: 'ALL', tz: '24h' },
+  TS2140: { layer: 'nsr', veh: 'PLB', tz: 'late' },
+  TS2141: { layer: 'nsr', veh: 'PLB', tz: 'late' },
+  TS204: { layer: 'nsr', veh: 'PLB', tz: 'late' },
+  TS2142: { layer: 'nsr', veh: 'PLB', tz: 'day' },
+  TS2143: { layer: 'nsr', veh: 'PLB', tz: 'day' },
+  TS200: { layer: 'nsr', veh: 'PLB', tz: 'day' },
+  TS2146: { layer: 'nsr', veh: 'PLB', tz: '24h' },
+  TS2147: { layer: 'nsr', veh: 'PLB', tz: '24h' },
+  TS205: { layer: 'nsr', veh: 'PLB', tz: '24h' },
+  TS2149: { layer: 'nsr', veh: 'GV', tz: 'late' },
+  TS2150: { layer: 'nsr', veh: 'GV', tz: 'late' },
+  TS2151: { layer: 'nsr', veh: 'GV', tz: 'day' },
+  TS2152: { layer: 'nsr', veh: 'GV', tz: 'day' },
+  TS2153: { layer: 'nsr', veh: 'GV', tz: 'other' },
+  TS2154: { layer: 'nsr', veh: 'GV', tz: 'other' },
+  TS2155: { layer: 'nsr', veh: 'GV', tz: '24h' },
+  TS2156: { layer: 'nsr', veh: 'GV', tz: '24h' },
+  TS2158: { layer: 'nsr', veh: 'OTH', tz: 'late' },
+  TS2159: { layer: 'nsr', veh: 'OTH', tz: 'late' },
+  TS2160: { layer: 'nsr', veh: 'OTH', tz: 'day' },
+  TS2161: { layer: 'nsr', veh: 'OTH', tz: 'day' },
+  TS2164: { layer: 'nsr', veh: 'OTH', tz: '24h' },
+  TS2165: { layer: 'nsr', veh: 'OTH', tz: '24h' }
 }
 export const SIGN_RULE_RADIUS_M = 15
 // The 50 km/h plate: the default limit, which TD's data does not draw.
@@ -155,7 +216,11 @@ export function ruleRows(layer: RuleLayer, p: Record<string, unknown>, t: Transl
   const rows: [string, string | null][] = []
   if (layer === 'speed') {
     rows.push([t('rules.fields.speed'), p.speed != null ? t('rules.speedValue', { n: p.speed }) : null])
-  } else if (layer === 'buslane') {
+  } else if (layer === 'nsr') {
+    rows.push([t('rules.fields.vehicles'), vehicles(p.veh, t)])
+    rows.push([t('rules.fields.hours'), str(p.tz) ? t(`rules.nsrHours.${p.tz}`) : null])
+    rows.push([t('rules.fields.days'), str(p.eday) ? t(`rules.nsrDays.${p.eday}`) : null])
+  } else if (layer === 'buslane' || layer === 'pedzone') {
     rows.push([t('rules.fields.hours'), str(p.hours)])
     rows.push([t('rules.fields.days'), dayMask(p.days, t)])
   } else {

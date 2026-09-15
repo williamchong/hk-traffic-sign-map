@@ -70,12 +70,16 @@
       "proh-ld": "Learner drivers prohibited",
       "proh-gv": "Goods vehicles prohibited",
       "proh-all": "All motor vehicles prohibited",
-      "proh-other": "Other prohibitions"
+      "proh-other": "Other prohibitions",
+      "nsr": "No stopping",
+      "pedzone": "Pedestrian zones"
     },
     "popup": {
       "speed": "Speed limit",
       "buslane": "Bus-only lane",
-      "prohibition": "Prohibition"
+      "prohibition": "Prohibition",
+      "nsr": "No stopping",
+      "pedzone": "Pedestrian zone"
     },
     "appliesHere": "Applies here",
     "defaultSpeed": "50 km/h is the default limit; it is not drawn on the map.",
@@ -117,6 +121,19 @@
       "sat": "Sat",
       "sun": "Sun",
       "ph": "Public holidays"
+    },
+    "nsrHours": {
+      "24h": "24 hours",
+      "peaks": "8–10am & 5–7pm",
+      "day": "7am–7pm",
+      "late": "7am–midnight",
+      "other": "Other times"
+    },
+    "nsrDays": {
+      "all": "Every day",
+      "exc-sun-ph": "Every day except Sundays & public holidays",
+      "sun-ph": "Sundays & public holidays",
+      "other": "Other days"
     },
     "source": "Road Network (2nd generation), Transport Department",
     "close": "Close"

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ruleRows, ruleTitleKey, rowKeyFor, RULE_ROWS, SPEED_COLORS } from '~/composables/useRoadRules'
+import { ruleRows, ruleTitleKey, rowKeyFor, RULE_ROWS, SPEED_COLORS, NSR_VEH_COLORS, type NsrVehicle } from '~/composables/useRoadRules'
 import { formatLngLat } from '~/utils/format'
 
 // Detail card for a clicked rule line (speed limit / bus-only lane /
-// prohibition). Same slot as SignPopup — TrafficMap keeps at most one of
+// prohibition / no stopping / pedestrian zone). Same slot as SignPopup — TrafficMap keeps at most one of
 // `selectedSign` / `selectedRule` set, so the two never overlap.
 const { selectedRule } = useRoadRules()
 const { t, locale } = useI18n()
@@ -12,12 +12,15 @@ const rule = computed(() => selectedRule.value)
 
 const title = computed(() => rule.value ? t(ruleTitleKey(rule.value.layer, rule.value.properties)) : '')
 
-// Swatch: a speed limit takes its value's colour, everything else its row's.
+// Swatch: a speed limit takes its value's colour, a no-stopping line its
+// vehicle type's, everything else its row's.
 const color = computed(() => {
   const r = rule.value
   if (!r) return undefined
   const speed = Number(r.properties.speed)
   if (r.layer === 'speed' && SPEED_COLORS[speed]) return SPEED_COLORS[speed]
+  const veh = r.properties.veh as NsrVehicle
+  if (r.layer === 'nsr' && NSR_VEH_COLORS[veh]) return NSR_VEH_COLORS[veh]
   const kind = typeof r.properties.kind === 'string' ? r.properties.kind : null
   return RULE_ROWS.find(row => row.key === rowKeyFor(r.layer, kind))?.color
 })

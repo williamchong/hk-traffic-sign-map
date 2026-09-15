@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VisibleCategoryKey } from '~/composables/useSignCategories'
 import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
-import { SPEED_VALUES, SPEED_COLORS } from '~/composables/useRoadRules'
+import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS } from '~/composables/useRoadRules'
 
 const { categories, enabled, toggleAll, mapUnavailable, filterMode } = useTrafficLayers()
 const { rows: ruleRows, rulesEnabled, anyRuleOn } = useRoadRules()
@@ -20,6 +20,13 @@ const rulesOpen = ref(false)
 onMounted(() => {
   rulesOpen.value = anyRuleOn.value
 })
+
+// Legend chips for the rows whose lines are coloured by a value, not the row
+// colour: speed limits by km/h, no-stopping by vehicle type.
+const ruleChips = computed<Record<string, { label: string, color: string }[]>>(() => ({
+  speed: SPEED_VALUES.map(v => ({ label: String(v), color: SPEED_COLORS[v]! })),
+  nsr: NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] }))
+}))
 
 function onRuleToggle(key: string, value: boolean) {
   rulesEnabled.value[key] = value
@@ -235,17 +242,17 @@ function onTabChange(value: string | number) {
                   />
                   <span class="truncate">{{ $t(`rules.rows.${r.key}`) }}</span>
                 </label>
-                <!-- Speed lines are coloured by value; show the scale while on. -->
+                <!-- A row whose lines are coloured by value shows its scale while on. -->
                 <div
-                  v-if="r.key === 'speed' && rulesEnabled.speed"
+                  v-if="ruleChips[r.key] && rulesEnabled[r.key]"
                   class="ml-6 flex flex-wrap gap-1"
                 >
                   <span
-                    v-for="v in SPEED_VALUES"
-                    :key="v"
+                    v-for="c in ruleChips[r.key]"
+                    :key="c.label"
                     class="rounded px-1 text-[10px] font-medium text-white"
-                    :style="{ backgroundColor: SPEED_COLORS[v] }"
-                  >{{ v }}</span>
+                    :style="{ backgroundColor: c.color }"
+                  >{{ c.label }}</span>
                 </div>
               </template>
             </div>
