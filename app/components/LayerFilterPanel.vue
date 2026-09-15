@@ -12,13 +12,14 @@ const { t } = useI18n()
 const allOn = computed(() => categories.every(c => enabled[c.key]))
 
 // The road-rules section is independent of the filter tabs (an overlay, not
-// a sign filter) and sits under both. Folded unless something is already on
-// — set after mount, since `rulesEnabled` is localStorage-backed (see the
-// hydration note on `tabMode` below; the section renders client-only for the
-// same reason).
+// a sign filter) and sits under both. Unfolded on desktop (Tailwind `md`+),
+// where the panel has room for the legend; on a phone folded unless something
+// is already on — set after mount, since `rulesEnabled` is localStorage-backed
+// and the viewport is unknown to the prerender (see the hydration note on
+// `tabMode` below; the section renders client-only for the same reason).
 const rulesOpen = ref(false)
 onMounted(() => {
-  rulesOpen.value = anyRuleOn.value
+  rulesOpen.value = anyRuleOn.value || window.matchMedia('(min-width: 768px)').matches
 })
 
 // Legend chips for the rows whose lines are coloured by a value, not the row
