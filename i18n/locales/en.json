@@ -182,13 +182,18 @@
     "h1": "About the HK Traffic Sign Map",
     "whatTitle": "What this is",
     "whatP2": "Hong Kong has hundreds of thousands of road signs. This project puts every one in the Transport Department’s open dataset onto a single fast, zoomable map so you can see exactly which signs stand on any street — useful for drivers and learner drivers, road-safety and town-planning research, accessibility audits, or simple curiosity.",
+    "whatP3": "Beyond the signs themselves, a road-rules overlay draws where each rule actually applies — speed-limit stretches, bus-only lanes with their hours, vehicle prohibitions, no-stopping restrictions and pedestrian zones — along with the roads public light buses cannot reach at all because every way in is closed to them.",
     "howTitle": "How to use it",
     "how1": "Pan and zoom to any street; signs spread apart as you zoom in.",
     "how2": "Click a sign or dot to inspect it. Click the same spot again to cycle through several overlapping signs.",
-    "how3": "Use the Categories panel to toggle sign classes on or off; fold the panel away for a larger map.",
+    "how3": "Use the Categories panel to toggle sign classes on or off, or switch to “By sign ID” to search for particular signs by number or meaning; a matched sign brings the rest of its signpost with it. Fold the panel away for a larger map.",
+    "how4": "Each plate is turned the way it faces on the street and drawn as if laid flat on the ground, so it reads upright from the side its drivers approach. Signs sharing a post hang together in one column.",
+    "how5": "Turn on a Road rules row to draw where that rule applies, and click a line for its details. “Show signs for this rule” narrows the map to the signs that announce it.",
     "dataTitle": "Data & attribution",
-    "attribution": "Sign data is from the Hong Kong Transport Department’s “Traffic Aids Drawings (2nd generation)” open dataset on {dataGovHk}, used under the {terms}. The basemap is © {osm} contributors.",
-    "dataGovHkLabel": "data.gov.hk",
+    "attribution": "Sign data is from the Hong Kong Transport Department’s {tad} and road-rule extents from its {roadNetwork} open datasets on data.gov.hk, used under the {terms}. Chinese sign names are from the department’s {ruc}. The basemap is © {osm} contributors.",
+    "tadLabel": "Traffic Aids Drawings (2nd generation)",
+    "roadNetworkLabel": "Road Network (2nd generation)",
+    "rucLabel": "Road Users’ Code",
     "termsLabel": "data.gov.hk Terms and Conditions",
     "osmLabel": "OpenStreetMap",
     "disclaimer": "This is an independent, informational project. It is not affiliated with the Transport Department and must not be relied on for navigation or as a legal authority on road traffic regulations.",
@@ -198,7 +203,7 @@
   },
   "faq": {
     "metaTitle": "FAQ & User Guide",
-    "metaDescription": "Frequently asked questions and a quick user guide for the HK Traffic Sign Map: data source, how to read and filter signs, update frequency, and mobile use.",
+    "metaDescription": "Frequently asked questions and a quick user guide for the HK Traffic Sign Map: data sources, how to read and filter signs, the road-rules overlay, update frequency, and mobile use.",
     "h1": "FAQ & User Guide",
     "items": [
       {
@@ -207,7 +212,7 @@
       },
       {
         "q": "Where does the sign data come from?",
-        "a": "From the Hong Kong Transport Department’s open dataset “Traffic Aids Drawings (2nd generation)”, published on data.gov.hk. The basemap is © OpenStreetMap contributors."
+        "a": "From the Hong Kong Transport Department’s open datasets on data.gov.hk: “Traffic Aids Drawings (2nd generation)” for the signs, and “Road Network (2nd generation)” for the road rules and the direction each sign faces. Chinese sign names come from the department’s Road Users’ Code. The basemap is © OpenStreetMap contributors."
       },
       {
         "q": "How current is the data?",
@@ -226,8 +231,20 @@
         "a": "A sign is drawn as its real pictogram once you zoom in past its level-of-detail threshold and if it exists in the pictogram catalogue. Until then, or for not-yet-catalogued signs, it stays a coloured dot so it is never hidden."
       },
       {
+        "q": "Which way do the signs face?",
+        "a": "Each sign is turned to the direction it faces, worked out from the direction of travel on the road beside its pole, and drawn as if laid flat on the ground — so it reads upright from the side the drivers it addresses approach. Signs on the same post hang in one column; a pole with signs on both sides shows a column for each side. No published source records which way a sign faces, so treat the facing as an estimate, especially at junctions."
+      },
+      {
         "q": "Can I filter which signs are shown?",
-        "a": "Yes. Use the Categories panel to toggle any sign class on or off, or hide them all at once. The panel can be folded away to give the map more room."
+        "a": "Yes. Use the Categories panel to toggle any sign class on or off, or hide them all at once. The “By sign ID” tab searches signs by number or meaning and shows only the ones you pick, each with the rest of its signpost. The panel can be folded away to give the map more room."
+      },
+      {
+        "q": "What are the coloured lines on the roads?",
+        "a": "The Road rules section of the panel draws where a rule applies, straight from the Transport Department’s road network data: speed limits, bus-only lanes, vehicle prohibitions, no-stopping restrictions and pedestrian zones. Click a line for its details, including hours and days, and use “Show signs for this rule” to see the signs that announce it. The default 50 km/h limit has no line of its own."
+      },
+      {
+        "q": "What are “Minibus no-go roads”?",
+        "a": "Roads that public light buses may not use. Dashed lines are the routes the Transport Department prohibits them from; the wider shaded band marks roads that are cut off because every way in is closed by those prohibitions or by turn bans. The cut-off band is worked out by this site from the department’s own rules rather than published by it. Green minibuses running under route permits are not covered."
       },
       {
         "q": "Does it work on a phone?",

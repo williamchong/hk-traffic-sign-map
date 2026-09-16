@@ -22,8 +22,9 @@ deploys as a static site — no tile server, no database.
   invisible.
 - **Which way each sign faces.** Every sign is turned to its real-world
   facing, derived at build time from the directed Road Network centreline that
-  hosts its pole (absolute for 97.7 % of signs). The pictogram's top points
-  the way the plate looks — toward the drivers who read it.
+  hosts its pole (absolute for 97.7 % of signs). Each plate is drawn as if
+  tipped flat onto the map, so it reads upright to the drivers it addresses —
+  its top points away from them.
 - **Signposts, not loose plates.** 34,836 posts carrying 79,201 signs are
   drawn as rigid assemblies: members stack in a column in Index-Plan order
   (main signs first, supplementary last) and 8,725 multi-face posts hang each
@@ -33,6 +34,17 @@ deploys as a static site — no tile server, no database.
   85.9 % of installed sign features and Traditional Chinese for 34.6 %
   (English shows through where no Chinese exists). Matching one sign pulls in
   its whole signpost.
+- **Where the rules apply.** A road-rules overlay draws speed limits, bus-only
+  lanes, vehicle prohibitions, no-stopping restrictions and pedestrian zones
+  along the roads they govern, straight from TD's Road Network data. Clicking a
+  line — or a legend row — filters the map to the signs that announce that
+  rule, and the popup of a speed-limit, bus-lane, prohibition or no-stopping
+  sign shows the rule line it stands beside, where one lies within 15 m.
+- **Where minibuses cannot go at all.** "Minibus no-go roads" (on by default)
+  pairs TD's public-light-bus prohibitions with a shaded band over the roads
+  they seal off — every way in closed by a ban or a turn restriction, like
+  Laguna City's Sin Fat Road. That band is derived from TD's own bans over
+  TD's network, and its popup says so.
 
 ## Prerequisites
 
@@ -93,7 +105,7 @@ rerun to refresh. The stages, each runnable on its own:
 | 3 | `data:stacks` | Groups signs into signposts and faces; bakes each member's column offset |
 | 4 | `data:stacked-icons` | Re-renders in-signpost pictograms to a common width |
 | 5 | `data:tiles` | Reprojects, injects facing/stack properties, packs both PMTiles archives |
-| 6 | `data:road-rules` | Tiles the Road Network's speed-limit, bus-only-lane, vehicle-prohibition, no-stopping and pedestrian-zone extents into the road-rules overlay archive |
+| 6 | `data:road-rules` | Tiles the Road Network's speed-limit, bus-only-lane, vehicle-prohibition, no-stopping and pedestrian-zone extents, plus the derived minibus cut-off areas, into the road-rules overlay archive |
 
 Two sign archives are built on purpose. `traffic-signs.pmtiles` (~25 MB) is
 thinned for the zoomed-out overview; `traffic-signs-full.pmtiles` (~45 MB)
@@ -101,15 +113,18 @@ retains every feature so a sign-number filter finds all of them at any zoom.
 One pyramid cannot serve both, because tile thinning happens before the
 runtime filter is known.
 
-A third, small archive, `road-rules.pmtiles` (~3.4 MB), holds *where a rule
+A third, small archive, `road-rules.pmtiles` (~3.9 MB), holds *where a rule
 applies*: speed-limit segments, bus-only lanes with their hours, the routes
 each vehicle prohibition (public light buses, learner drivers, goods vehicles,
 all motor vehicles) covers, no-stopping restrictions by vehicle type, hours
 and days, and pedestrian zones. These extents come straight from the
 Transport Department's Road Network (2nd generation) layers — the same
 package step 2 reads for centrelines — and are never inferred from sign
-positions. It has its own cache-buster key because it rebuilds on its own
-cadence.
+positions. The one derived layer is `cutoff`: roads public light buses
+cannot enter at all — edges of TD's directed centreline graph that, once every
+unconditional PLB prohibition is closed and its turn bans applied, can no
+longer be reached from the main network. It
+has its own cache-buster key because it rebuilds on its own cadence.
 
 **Re-cropping a pictogram invalidates the tiles.** Column offsets are baked
 from each plate's pixel dimensions, so a catalogue change means re-running

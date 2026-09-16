@@ -5,16 +5,28 @@
 // HTML. The attribution paragraph uses <i18n-t> so the external links
 // stay intact inside a translatable sentence.
 const localePath = useLocalePath()
+const { locale } = useI18n()
 
 const UTM = '?utm_source=hk-traffic-sign-map&utm_medium=about'
 
 const LINKS = {
-  dataGovHk: 'https://data.gov.hk/en-data/dataset/hk-td-tis_16-traffic-aids-drawings-v2',
+  tad: 'https://data.gov.hk/en-data/dataset/hk-td-tis_16-traffic-aids-drawings-v2',
+  roadNetwork: 'https://data.gov.hk/en-data/dataset/hk-td-tis_15-road-network-v2',
   terms: 'https://data.gov.hk/en/terms-and-conditions',
   osm: 'https://www.openstreetmap.org/copyright',
   source: `https://github.com/williamchong/hk-traffic-sign-map${UTM}`,
   author: `https://blog.williamchong.cloud/${UTM}`
 }
+
+// One <i18n-t> slot per link, each labelled by `about.<slot>Label`. The
+// Road Users' Code is published as separate English and Chinese pages.
+const attributionLinks = computed(() => ({
+  tad: LINKS.tad,
+  roadNetwork: LINKS.roadNetwork,
+  ruc: `https://www.td.gov.hk/${locale.value === 'zh-HK' ? 'tc' : 'en'}/road_safety/road_users_code/index/chapter_8_the_language_of_the_road/`,
+  terms: LINKS.terms,
+  osm: LINKS.osm
+}))
 </script>
 
 <template>
@@ -25,6 +37,7 @@ const LINKS = {
       </h2>
       <p>{{ $t('site.summary') }}</p>
       <p>{{ $t('about.whatP2') }}</p>
+      <p>{{ $t('about.whatP3') }}</p>
     </section>
 
     <section class="space-y-2">
@@ -35,6 +48,8 @@ const LINKS = {
         <li>{{ $t('about.how1') }}</li>
         <li>{{ $t('about.how2') }}</li>
         <li>{{ $t('about.how3') }}</li>
+        <li>{{ $t('about.how4') }}</li>
+        <li>{{ $t('about.how5') }}</li>
       </ul>
     </section>
 
@@ -47,29 +62,17 @@ const LINKS = {
         tag="p"
         scope="global"
       >
-        <template #dataGovHk>
+        <template
+          v-for="(href, slot) in attributionLinks"
+          :key="slot"
+          #[slot]
+        >
           <a
-            :href="LINKS.dataGovHk"
+            :href="href"
             target="_blank"
             rel="noopener"
             class="text-primary underline"
-          >{{ $t('about.dataGovHkLabel') }}</a>
-        </template>
-        <template #terms>
-          <a
-            :href="LINKS.terms"
-            target="_blank"
-            rel="noopener"
-            class="text-primary underline"
-          >{{ $t('about.termsLabel') }}</a>
-        </template>
-        <template #osm>
-          <a
-            :href="LINKS.osm"
-            target="_blank"
-            rel="noopener"
-            class="text-primary underline"
-          >{{ $t('about.osmLabel') }}</a>
+          >{{ $t(`about.${slot}Label`) }}</a>
         </template>
       </i18n-t>
       <p class="text-muted">
