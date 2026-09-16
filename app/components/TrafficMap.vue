@@ -238,8 +238,12 @@ const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tie
 // clicks tolerance on a 1–6 px line, and it keeps the source's tiles resident
 // even when every overlay is off, because MapLibre only loads tiles for
 // non-hidden layers and the sign popup's "applies here" lookup
-// (querySourceFeatures below) needs them loaded regardless. Rule ids stay OUT
-// of signLayerIds: the click handler's featureKey assumes point geometry.
+// (querySourceFeatures below) needs them loaded regardless. Residency is not
+// completeness, though — MapLibre's `used` flag is per SOURCE, so the hit
+// layers keep the tiles coming, but what is IN a tile is set per feature by
+// tippecanoe.minzoom; see the lookup's own comment for what resolves where.
+// Rule ids stay OUT of signLayerIds: the click handler's featureKey assumes
+// point geometry.
 // Draw order: `cutoff` first, so its wide band sits under every rule line.
 const RULE_LAYERS: RuleLayer[] = ['cutoff', 'speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
 const ruleLayerId = (layer: RuleLayer) => `rule-${layer}`
@@ -876,9 +880,18 @@ onMounted(async () => {
     // "Applies here": for a sign whose plate announces a rule the archive has
     // an extent for (SIGN_RULE_LINKS), find the nearest matching rule feature
     // within SIGN_RULE_RADIUS_M of the sign and hand it to the sign popup.
-    // querySourceFeatures reads the loaded tiles — resident at every zoom
-    // thanks to the always-on hit layers — so this is a local, synchronous
-    // lookup; a sign too far from any matching feature just shows no block.
+    // querySourceFeatures reads the LOADED tiles, so the lookup is local and
+    // synchronous — but only as complete as the tiles at the CURRENT zoom. A
+    // layer held out of the low-zoom tiles resolves nothing there: `nsr`
+    // starts at z12 (NSR_TILE_ZOOM), so all 28 no-stopping codes — ~6.5k
+    // clickable signs — find no line below it. Quantization costs the other
+    // three a little at the zoom floor; measured territory-wide, they resolve
+    // 83.5 % at z9 and 95.1 % at z10 against a ~97 % ceiling (that residue is
+    // signs genuinely >15 m from any TD line, at any zoom).
+    // A miss and a sign with no rule are indistinguishable here on purpose:
+    // SignPopup hides the block outright, so a gap never shows a WRONG rule,
+    // it only withholds a right one. Don't "fix" a low zoom by gating this to
+    // null — that is what it already returns, minus the answers it gets right.
     const lookupGoverningRule = (s: SelectedSign | null) => {
       const code = typeof s?.properties.SIGNID === 'string' ? s.properties.SIGNID : null
       const link = code ? SIGN_RULE_LINKS[code] : undefined
