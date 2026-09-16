@@ -65,7 +65,15 @@ const expr = (e: unknown) => e as ExpressionSpecification
 
 // FACE_BEARING is the way the plate faces (its outward normal, toward the
 // drivers who read it), computed at build time by scripts/compute-bearings.mjs
-// and rotated here so the pictogram's top points that way. The sign's POLE is
+// and rotated here so the pictogram's top points the OPPOSITE way — the plan
+// view draws the plate as if tipped flat onto the map, and a vertical plate
+// tipped BACKWARD (away from the traffic it addresses) lands face-up with its
+// top edge behind it. So `icon-rotate` is FACE_BEARING + 180: a plate facing
+// south reads upright on a north-up map, which is also what its driver sees,
+// since they travel at FACE_BEARING + 180. Rotating by the bearing itself
+// tips the plate FORWARD instead — that buries the face in the ground and
+// draws the artwork upside down for everyone who can actually read the sign
+// (a southbound "EXPRESSWAY" plate came out mirrored). The sign's POLE is
 // snapped to the nearest Road Network v2 centreline, which is *directed*, so
 // with the kerb side and drive-on-the-left the facing is absolute: on a
 // one-way edge both kerbs face back against the flow, on a two-way edge the
@@ -77,7 +85,7 @@ const expr = (e: unknown) => e as ExpressionSpecification
 //
 // Coverage is ~98 % of the 178k signs; ~1 % fall back to the old road-marking
 // tangent (relative only — FACE_ABS 0) and ~1 % (off-network piers, gantries)
-// have no FACE_BEARING and fall through `coalesce` to 0 → upright. Nothing
+// have no FACE_BEARING and take the rotation's 0 arm → upright. Nothing
 // publishes a facing to grade this against, and a corner pole 5.7 m from one
 // street and 5.8 m from the other is hosted on the nearest — the known weak
 // spot (see CLAUDE.md, pipeline step 2).
@@ -92,7 +100,11 @@ const expr = (e: unknown) => e as ExpressionSpecification
 // map rotation — without it the rotation would lock to the viewport and the
 // orientation cue would be meaningless.
 const iconRotation = {
-  'icon-rotate': expr(['coalesce', ['get', 'FACE_BEARING'], 0]),
+  // The +180 rides INSIDE the has-check, never after a `coalesce` to 0: a sign
+  // with no bearing must stay upright, not be turned upside down.
+  'icon-rotate': expr([
+    'case', ['has', 'FACE_BEARING'], ['+', ['get', 'FACE_BEARING'], 180], 0
+  ]),
   'icon-rotation-alignment': 'map' as const
 }
 
@@ -134,8 +146,10 @@ const stackOffset = offsetGrid('STACK_OFF', OFFSET_STEP, OFFSET_MAX)
 // i.e. its FACE_BEARING — points once rotated, so the highlight underlines
 // the plate. The bar sits just past the pictogram's bottom edge and rides the
 // same `icon-rotate`/`icon-size` as the plate, so it reads as the plate's
-// physical edge seen from above, with the artwork spread out on the side the
-// drivers read it from. Sizes are icon source px (pictogram space): a lone
+// physical base seen from above: with the tipped-flat convention above, that
+// base is the edge nearest the traffic, and the artwork lies back from it,
+// away from the drivers, exactly as a plate tipped backward would lie.
+// Sizes are icon source px (pictogram space): a lone
 // pictogram is height-normalized to PICTO_PX, a stacked member is
 // width-normalized so its height is read back from the loaded image. Each
 // feature carries its own MARK_OFF (the bar's centre offset); one bar per

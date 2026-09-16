@@ -252,7 +252,7 @@ for (const faceNames of posts) {
   // was hosted at the same pole, so they agree unless one is missing). A
   // multi-face post with no bearing at all still turns its faces apart from 0
   // (upright), so the faces never draw on top of each other; a single-face
-  // post without one stays null → upright via the runtime coalesce — unless it
+  // post without one stays null → upright at runtime (no FACE_BEARING) — unless it
   // is a no-entry face, which then turns to 180 so it still reads as opposed to
   // its neighbours.
   const raw = postFacing(primary.fid)
