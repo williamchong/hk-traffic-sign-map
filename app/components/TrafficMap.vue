@@ -5,7 +5,7 @@ import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSi
 import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf, plateSizeFactorExpr } from '~/composables/useSignCatalogue'
 import type { FilterMode, SelectedSign } from '~/composables/useTrafficLayers'
 import {
-  RULE_SOURCE, RULE_ROWS, SIGN_RULE_LINKS, SIGN_RULE_RADIUS_M,
+  RULE_SOURCE, SIGN_RULE_LINKS, SIGN_RULE_RADIUS_M, CUTOFF_COLOR, ruleColor,
   speedColorStops, prohibitionColorStops, nsrColorStops, type RuleLayer, type SignRuleLink
 } from '~/composables/useRoadRules'
 import { pointToLineMetres } from '~/utils/geo'
@@ -230,18 +230,23 @@ const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tie
 const RULE_LAYERS: RuleLayer[] = ['cutoff', 'speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
 const ruleLayerId = (layer: RuleLayer) => `rule-${layer}`
 const ruleHitLayerId = (layer: RuleLayer) => `rule-${layer}-hit`
-const ruleHitLayerIds = RULE_LAYERS.map(ruleHitLayerId)
-// Hit layers that follow their row instead of staying on: no sign links to a
-// cut-off road, and the other hit layers already keep the source's tiles
-// resident, so an always-on one would only cost line buckets and a hit-test
-// on every pointer move.
-const ruleHitFollowsRow = (layer: RuleLayer) => layer === 'cutoff'
+// `cutoff` gets NO hit line. It is the one rule drawn as a wide band (4 px at
+// z11 to 22 px at z17), so it is already its own click target, and a 14 px
+// transparent twin would mean a second bucket and a second hit-test per
+// pointer move over ~4.7k territory-wide lines that draw nothing — a cost
+// every visitor now pays, since the PLB row that owns the band is on by
+// default. The other five keep theirs: they are 1-6 px lines, and their
+// always-on hit layers are what keep the source's tiles resident.
+const RULE_HIT_LAYERS: RuleLayer[] = RULE_LAYERS.filter(l => l !== 'cutoff')
+// What a click or hover hit-tests: those hit lines plus the band itself. A
+// hidden layer returns no features, so the band is unpickable when its row is
+// off — the hit lines need `isRowEnabled` for that, being always on.
+const rulePickLayerIds = [...RULE_HIT_LAYERS.map(ruleHitLayerId), ruleLayerId('cutoff')]
 // Speed limits run for kilometres and read at the overview; bus lanes and
 // prohibitions are short urban segments that only make sense street-level;
 // no-stopping's 20k kerb lines are a smear until the streets separate.
 const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12, cutoff: 11 }
 const RULE_LINE_WIDTH = expr(['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 3, 17, 6])
-const ruleColor = (key: string) => RULE_ROWS.find(r => r.key === key)!.color
 // A bus lane's `bound` is its side of the centreline in the digitised
 // direction (1 left, -1 right, 0 both); `line-offset` is positive to the
 // right of the line, so the lane draws on its own side. The side factor rides
@@ -271,9 +276,10 @@ const RULE_PAINT: Record<RuleLayer, LineLayerSpecification['paint']> = {
     'line-color': ruleColor('pedzone')
   },
   // A wide, faint band rather than a line: it marks roads no rule names, the
-  // area behind the PLB prohibitions that seal it, not a rule of its own.
+  // area behind the PLB prohibitions that seal it, not a rule of its own — so
+  // its colour is a constant, not a row's (it shares the PLB row's checkbox).
   cutoff: {
-    'line-color': ruleColor('cutoff'),
+    'line-color': CUTOFF_COLOR,
     'line-width': expr(['interpolate', ['linear'], ['zoom'], 11, 4, 14, 10, 17, 22]),
     'line-opacity': 0.35
   }
@@ -681,13 +687,14 @@ onMounted(async () => {
     // every time a filter-mode flip re-adds them. Roads stay under signs.
     for (const layer of RULE_LAYERS) {
       const common = { 'source': RULE_SOURCE, 'source-layer': layer, 'minzoom': RULE_MINZOOM[layer] } as const
-      m.addLayer({
-        id: ruleHitLayerId(layer),
-        type: 'line',
-        ...common,
-        layout: { visibility: ruleHitFollowsRow(layer) ? 'none' : 'visible' },
-        paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 14 }
-      }, 'sel-group-glow')
+      if (RULE_HIT_LAYERS.includes(layer)) {
+        m.addLayer({
+          id: ruleHitLayerId(layer),
+          type: 'line',
+          ...common,
+          paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 14 }
+        }, 'sel-group-glow')
+      }
       m.addLayer({
         id: ruleLayerId(layer),
         type: 'line',
@@ -698,17 +705,26 @@ onMounted(async () => {
         paint: { 'line-width': RULE_LINE_WIDTH, 'line-opacity': 0.75, ...RULE_PAINT[layer] }
       }, 'sel-group-glow')
     }
-    // Legend → layers: every non-prohibition layer by visibility; the one prohibition
-    // layer by a `kind` filter over the rows that are on (hidden when none).
+    // Legend → layers: every non-prohibition layer by visibility, via
+    // isRowEnabled (NOT the layer name — `cutoff` rides the PLB row); the one
+    // prohibition layer by a `kind` filter over the rows that are on (hidden
+    // when none).
+    // Every setLayoutProperty/setFilter dirties the style and repaints even
+    // when the value is unchanged, and a real change reloads every resident
+    // tile of the source — so write only on a difference. This watch also
+    // fires on a cross-tab storage event, where nothing has actually moved.
     const syncRuleLayers = () => {
+      const kinds = enabledKinds.value
+      const kindFilter = expr(['in', ['get', 'kind'], ['literal', kinds]])
       for (const layer of RULE_LAYERS) {
         const id = ruleLayerId(layer)
         if (!m.getLayer(id)) continue
-        const kinds = enabledKinds.value
-        const on = layer === 'prohibition' ? kinds.length > 0 : !!rulesEnabled.value[layer]
-        m.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none')
-        if (ruleHitFollowsRow(layer)) m.setLayoutProperty(ruleHitLayerId(layer), 'visibility', on ? 'visible' : 'none')
-        if (layer === 'prohibition') m.setFilter(id, expr(['in', ['get', 'kind'], ['literal', kinds]]))
+        const on = layer === 'prohibition' ? kinds.length > 0 : isRowEnabled(layer)
+        const vis = on ? 'visible' : 'none'
+        if (m.getLayoutProperty(id, 'visibility') !== vis) m.setLayoutProperty(id, 'visibility', vis)
+        if (layer === 'prohibition' && JSON.stringify(m.getFilter(id)) !== JSON.stringify(kindFilter)) {
+          m.setFilter(id, kindFilter)
+        }
       }
     }
     watch(rulesEnabled, syncRuleLayers, { immediate: true, deep: true })
@@ -907,7 +923,7 @@ onMounted(async () => {
       // contested click (a rule line runs under many signs), and only a row
       // the legend has on is pickable — the transparent hit lines are always
       // present, so an off overlay must not open a popup.
-      const rule = m.queryRenderedFeatures(box, { layers: ruleHitLayerIds.filter(id => m.getLayer(id)) })
+      const rule = m.queryRenderedFeatures(box, { layers: rulePickLayerIds.filter(id => m.getLayer(id)) })
         .find(f => isRowEnabled(f.sourceLayer as RuleLayer, f.properties.kind as string | undefined))
       selectedRule.value = rule
         ? { layer: rule.sourceLayer as RuleLayer, properties: rule.properties, lngLat: e.lngLat }
@@ -962,12 +978,12 @@ onMounted(async () => {
   // leaving the hit layers. It only ever SETS the pointer — the lines run
   // under nearly every sign, so clearing here would undo a sign's own cue.
   // Leaving the lines clears it unless a sign is still under the pointer.
-  m.on('mousemove', ruleHitLayerIds, (e) => {
+  m.on('mousemove', rulePickLayerIds, (e) => {
     if (e.features?.some(f => isRowEnabled(f.sourceLayer as RuleLayer, f.properties.kind as string | undefined))) {
       m.getCanvas().style.cursor = 'pointer'
     }
   })
-  m.on('mouseleave', ruleHitLayerIds, (e) => {
+  m.on('mouseleave', rulePickLayerIds, (e) => {
     const layers = signLayerIds.filter(id => m.getLayer(id))
     if (!m.queryRenderedFeatures(e.point, { layers }).length) m.getCanvas().style.cursor = ''
   })

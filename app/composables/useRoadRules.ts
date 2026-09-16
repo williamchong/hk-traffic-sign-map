@@ -29,6 +29,8 @@ export interface RuleRow {
   // Prohibition rows are one source-layer split by `kind`.
   kind?: ProhibitionKind
   color: string
+  // On for a visitor who has never touched the overlay (see rulesEnabled).
+  defaultOn?: boolean
 }
 
 // Legend order. Colours are hex literals so the same value feeds the legend
@@ -39,10 +41,14 @@ export interface RuleRow {
 export const RULE_ROWS: RuleRow[] = [
   { key: 'speed', layer: 'speed', color: '#f59e0b' },
   { key: 'buslane', layer: 'buslane', color: '#2563eb' },
-  { key: 'proh-plb', layer: 'prohibition', kind: 'plb', color: '#0d9488' },
-  // Beside the PLB prohibitions it follows from, in a lighter teal: drawn as a
-  // wide translucent band, so it reads as "the area behind" those dashes.
-  { key: 'cutoff', layer: 'cutoff', color: '#2dd4bf' },
+  // ONE row for TWO source-layers: TD's "PLB Proh" lines and the derived
+  // `cutoff` band behind them (rowKeyFor sends both here). A ban and the area
+  // it seals off answer the same question — where a public light bus cannot
+  // go — and the band is unreadable without the dashes that cause it, so
+  // splitting them only asked the reader to tick two boxes for one answer.
+  // The one row that starts ON: it is the overlay's most useful reading and
+  // needs no legend to parse, unlike a speed or no-stopping colour scale.
+  { key: 'plb', layer: 'prohibition', kind: 'plb', color: '#0d9488', defaultOn: true },
   { key: 'proh-ld', layer: 'prohibition', kind: 'ld', color: '#7c3aed' },
   { key: 'proh-gv', layer: 'prohibition', kind: 'gv', color: '#b45309' },
   { key: 'proh-all', layer: 'prohibition', kind: 'all', color: '#e11d48' },
@@ -77,17 +83,32 @@ export const NSR_VEH_COLORS: Record<NsrVehicle, string> = {
 export const NSR_VEH_VALUES = Object.keys(NSR_VEH_COLORS) as NsrVehicle[]
 export const nsrColorStops = NSR_VEH_VALUES.flatMap(v => [v, NSR_VEH_COLORS[v]!])
 export const prohibitionColorStops = RULE_ROWS.filter(r => r.kind).flatMap(r => [r.kind!, r.color])
+// The cut-off band's own colour — a lighter teal than the PLB prohibition
+// dashes it shares a row with, so the wide translucent band reads as "the
+// area behind those dashes" and not as a second rule. It has no row of its
+// own to hold it, so it is a constant.
+export const CUTOFF_COLOR = '#2dd4bf'
+// A legend row's colour, by key — the map paint, the popup swatch and the
+// legend chips all resolve it here instead of each scanning RULE_ROWS.
+export const ruleColor = (key: string) => RULE_ROWS.find(r => r.key === key)!.color
 
-export const rowKeyFor = (layer: RuleLayer, kind?: string | null) =>
-  layer === 'prohibition' ? `proh-${kind ?? 'other'}` : layer
+// Which legend row draws this feature. `cutoff` has no row: it rides the PLB
+// prohibition row, so both source-layers map to that one key.
+export const rowKeyFor = (layer: RuleLayer, kind?: string | null) => {
+  if (layer === 'cutoff') return 'plb'
+  if (layer !== 'prohibition') return layer
+  return kind === 'plb' ? 'plb' : `proh-${kind ?? 'other'}`
+}
 
-// Off by default — the overlay is an opt-in reading of the map — and
-// persisted, unlike the category toggles: someone who turned on speed limits
-// wants them back on the next visit. `mergeDefaults` so a row added later
-// starts off instead of undefined.
+// Persisted, unlike the category toggles: someone who turned on speed limits
+// wants them back on the next visit. Every row is an opt-in reading of the
+// map except the PLB one, which starts on (`defaultOn`). `mergeDefaults` so a
+// row added later starts at its default instead of undefined — which is also
+// why a row whose default CHANGES needs a new key to reach anyone who already
+// has the old one stored (the merged PLB row is `plb`, not `proh-plb`).
 const rulesEnabled = useLocalStorage<Record<string, boolean>>(
   'hk-signs:road-rules',
-  Object.fromEntries(RULE_ROWS.map(r => [r.key, false])),
+  Object.fromEntries(RULE_ROWS.map(r => [r.key, !!r.defaultOn])),
   { mergeDefaults: true }
 )
 const anyRuleOn = computed(() => RULE_ROWS.some(r => rulesEnabled.value[r.key]))
@@ -274,9 +295,14 @@ export function ruleRows(layer: RuleLayer, p: Record<string, unknown>, t: Transl
   return rows.filter((r): r is [string, string] => !!r[1])
 }
 
-// Popup title: the legend row's label (a prohibition names its kind).
-export const ruleTitleKey = (layer: RuleLayer, p: Record<string, unknown>) =>
-  layer === 'prohibition' ? `rules.rows.${rowKeyFor(layer, str(p.kind))}` : `rules.popup.${layer}`
+// Popup title: the legend row's label (a prohibition names its kind). The PLB
+// row is the exception — its label covers the cut-off band too, so a clicked
+// line takes its own wording and still says which of the two it is.
+export const ruleTitleKey = (layer: RuleLayer, p: Record<string, unknown>) => {
+  if (layer !== 'prohibition') return `rules.popup.${layer}`
+  const key = rowKeyFor(layer, str(p.kind))
+  return key === 'plb' ? 'rules.popup.proh-plb' : `rules.rows.${key}`
+}
 
 export function useRoadRules() {
   return {

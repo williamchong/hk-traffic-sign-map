@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ruleRows, ruleTitleKey, rowKeyFor, linkedSignCodes, RULE_ROWS, SPEED_COLORS, NSR_VEH_COLORS, type NsrVehicle } from '~/composables/useRoadRules'
+import { ruleRows, ruleTitleKey, rowKeyFor, linkedSignCodes, ruleColor, SPEED_COLORS, NSR_VEH_COLORS, CUTOFF_COLOR, type NsrVehicle } from '~/composables/useRoadRules'
 import { formatLngLat } from '~/utils/format'
 
 // Detail card for a clicked rule line (speed limit / bus-only lane /
@@ -15,7 +15,8 @@ const rule = computed(() => selectedRule.value)
 const title = computed(() => rule.value ? t(ruleTitleKey(rule.value.layer, rule.value.properties)) : '')
 
 // Swatch: a speed limit takes its value's colour, a no-stopping line its
-// vehicle type's, everything else its row's.
+// vehicle type's, the cut-off band its own (it shares the PLB row, whose
+// colour is the ban lines'), everything else its row's.
 const color = computed(() => {
   const r = rule.value
   if (!r) return undefined
@@ -23,8 +24,9 @@ const color = computed(() => {
   if (r.layer === 'speed' && SPEED_COLORS[speed]) return SPEED_COLORS[speed]
   const veh = r.properties.veh as NsrVehicle
   if (r.layer === 'nsr' && NSR_VEH_COLORS[veh]) return NSR_VEH_COLORS[veh]
+  if (r.layer === 'cutoff') return CUTOFF_COLOR
   const kind = typeof r.properties.kind === 'string' ? r.properties.kind : null
-  return RULE_ROWS.find(row => row.key === rowKeyFor(r.layer, kind))?.color
+  return ruleColor(rowKeyFor(r.layer, kind))
 })
 
 const rows = computed(() =>

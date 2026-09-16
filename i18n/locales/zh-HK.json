@@ -66,8 +66,7 @@
     "rows": {
       "speed": "車速限制",
       "buslane": "巴士專線",
-      "proh-plb": "禁止公共小巴駛入",
-      "cutoff": "公共小巴無法駛入的路段",
+      "plb": "公共小巴不能駛入的路段",
       "proh-ld": "禁止學習駕駛人士駛入",
       "proh-gv": "禁止貨車駛入",
       "proh-all": "禁止所有汽車駛入",
@@ -75,10 +74,15 @@
       "nsr": "禁止停車",
       "pedzone": "行人專用區"
     },
+    "chips": {
+      "plbBan": "禁止駛入",
+      "plbCutoff": "無法駛入"
+    },
     "popup": {
       "speed": "車速限制",
       "buslane": "巴士專線",
       "prohibition": "禁止駛入",
+      "proh-plb": "禁止公共小巴駛入",
       "nsr": "禁止停車",
       "pedzone": "行人專用區",
       "cutoff": "公共小巴無法駛入的路段"

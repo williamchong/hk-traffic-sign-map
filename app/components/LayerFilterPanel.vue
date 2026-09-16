@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VisibleCategoryKey } from '~/composables/useSignCategories'
 import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
-import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES } from '~/composables/useRoadRules'
+import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES, CUTOFF_COLOR, ruleColor } from '~/composables/useRoadRules'
 
 const { categories, enabled, toggleAll, mapUnavailable, filterMode, filterToSigns, isOnlySigns } = useTrafficLayers()
 const { rows: ruleRows, rulesEnabled, anyRuleOn } = useRoadRules()
@@ -30,11 +30,17 @@ onMounted(() => {
   rulesOpen.value = anyRuleOn.value || desktop
 })
 
-// Legend chips for the rows whose lines are coloured by a value, not the row
-// colour: speed limits by km/h, no-stopping by vehicle type.
-const ruleChips = computed<Record<string, { label: string, color: string }[]>>(() => ({
+// Legend chips for the rows that draw more than one colour: speed limits by
+// km/h, no-stopping by vehicle type, and the PLB row's two source-layers —
+// TD's ban lines and the cut-off band behind them, one row, two readings.
+// `ink` overrides the chip's white text where the colour is too light for it.
+const ruleChips = computed<Record<string, { label: string, color: string, ink?: string }[]>>(() => ({
   speed: SPEED_VALUES.map(v => ({ label: String(v), color: SPEED_COLORS[v]! })),
-  nsr: NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] }))
+  nsr: NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] })),
+  plb: [
+    { label: t('rules.chips.plbBan'), color: ruleColor('plb') },
+    { label: t('rules.chips.plbCutoff'), color: CUTOFF_COLOR, ink: '#134e4a' }
+  ]
 }))
 
 function onRuleToggle(key: string, value: boolean) {
@@ -285,7 +291,7 @@ function onTabChange(value: string | number) {
                     v-for="c in ruleChips[r.key]"
                     :key="c.label"
                     class="rounded px-1 text-[10px] font-medium text-white"
-                    :style="{ backgroundColor: c.color }"
+                    :style="{ backgroundColor: c.color, color: c.ink }"
                   >{{ c.label }}</span>
                 </div>
               </template>

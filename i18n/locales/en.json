@@ -66,8 +66,7 @@
     "rows": {
       "speed": "Speed limits",
       "buslane": "Bus-only lanes",
-      "proh-plb": "Public light buses prohibited",
-      "cutoff": "Cut off for public light buses",
+      "plb": "Minibus no-go roads",
       "proh-ld": "Learner drivers prohibited",
       "proh-gv": "Goods vehicles prohibited",
       "proh-all": "All motor vehicles prohibited",
@@ -75,10 +74,15 @@
       "nsr": "No stopping",
       "pedzone": "Pedestrian zones"
     },
+    "chips": {
+      "plbBan": "Prohibited",
+      "plbCutoff": "Cut off"
+    },
     "popup": {
       "speed": "Speed limit",
       "buslane": "Bus-only lane",
       "prohibition": "Prohibition",
+      "proh-plb": "Public light buses prohibited",
       "nsr": "No stopping",
       "pedzone": "Pedestrian zone",
       "cutoff": "Cut off for public light buses"
