@@ -3,7 +3,7 @@ import type { VisibleCategoryKey } from '~/composables/useSignCategories'
 import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
 import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES, CUTOFF_COLOR, ruleColor } from '~/composables/useRoadRules'
 
-const { categories, enabled, toggleAll, mapUnavailable, filterMode, filterToSigns, isOnlySigns } = useTrafficLayers()
+const { categories, enabled, toggleAll, mapUnavailable, filterMode, addSigns, removeSigns } = useTrafficLayers()
 const { rows: ruleRows, rulesEnabled, anyRuleOn } = useRoadRules()
 const localePath = useLocalePath()
 const { track } = useAnalytics()
@@ -11,8 +11,10 @@ const { t } = useI18n()
 
 const allOn = computed(() => categories.every(c => enabled[c.key]))
 
-// The road-rules section is independent of the filter tabs (an overlay, not
-// a sign filter) and sits under both. Unfolded on desktop (Tailwind `md`+),
+// The road-rules section sits under both filter tabs: its lines are an
+// overlay, drawn whichever tab is active, and ticking a row also filters the
+// signs to the plates that announce it (see `onRuleToggle`). Unfolded on
+// desktop (Tailwind `md`+),
 // where the panel has room for the legend; on a phone folded unless something
 // is already on — set after mount, since `rulesEnabled` is localStorage-backed
 // and the viewport is unknown to the prerender (see the hydration note on
@@ -43,27 +45,31 @@ const ruleChips = computed<Record<string, { label: string, color: string, ink?: 
   ]
 }))
 
+// A rule row means "draw this reading, and show the plates that announce it":
+// its codes join the sign-ID allowlist, which is an OR, so several rows read
+// as a union. Add/remove rather than replace, so a row can join or leave a
+// hand-picked filter without clearing it, and an untick is the same gesture
+// undone. Driven from here — the only user write path into `rulesEnabled` —
+// rather than a watcher, which would also fire on `mergeDefaults` writing a
+// newly-added row key and on mount, where the `plb` default-on row would
+// filter a first visit down to its two plates.
 function onRuleToggle(key: string, value: boolean) {
   rulesEnabled.value[key] = value
-  track('rule_layer_toggle', { layer: key, enabled: value })
-}
-
-// The legend twin of RulePopup's "Show signs for this rule": every plate
-// linked to any rule the row draws. Rows no plate is linked to get no button.
-// The active row is one computed (a primitive) so a sign pick elsewhere only
-// re-renders the panel when it changes which row's filter is the live one.
-const activeRowKey = computed(() =>
-  ruleRows.find(r => ROW_SIGN_CODES[r.key]!.length && isOnlySigns(ROW_SIGN_CODES[r.key]!))?.key
-)
-
-// Also turns the row's lines on — the signs without the extent they announce
-// would read as a filter for nothing.
-function onRowShowSigns(key: string) {
-  if (!rulesEnabled.value[key]) onRuleToggle(key, true)
-  if (activeRowKey.value === key) return
+  // ONLY this row's codes, never a recompute over every row that is on. That
+  // recompute was tried and reverted: `plb` starts on and so never fires this
+  // handler, so it folded TS119/TS522 in on the first tick of ANY other row —
+  // which both expanded the filter the user did not ask about (ticking bus
+  // lanes added speed plates) and broke the undo, since unticking their one
+  // row then left plb's two plates instead of every sign. Per-row keeps each
+  // gesture to its own plates and makes the untick land back where it started;
+  // the cost is that a row already on contributes nothing until toggled, which
+  // is what the user asked for and nothing worse.
   const codes = ROW_SIGN_CODES[key]!
-  filterToSigns(codes)
-  track('filter_rule_signs', { layer: key, count: codes.length, from: 'legend' })
+  if (codes.length) {
+    if (value) addSigns(codes)
+    else removeSigns(codes)
+  }
+  track('rule_layer_toggle', { layer: key, enabled: value, signs: codes.length })
 }
 
 // Hydration-safe mirror of `filterMode` that the whole panel UI binds to.
@@ -258,30 +264,17 @@ function onTabChange(value: string | number) {
                 v-for="r in ruleRows"
                 :key="r.key"
               >
-                <div class="flex items-center gap-1">
-                  <label class="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-sm">
-                    <UCheckbox
-                      :model-value="!!rulesEnabled[r.key]"
-                      @update:model-value="v => onRuleToggle(r.key, !!v)"
-                    />
-                    <span
-                      class="h-1 w-4 shrink-0 rounded-full"
-                      :style="{ backgroundColor: r.color }"
-                    />
-                    <span class="truncate">{{ $t(`rules.rows.${r.key}`) }}</span>
-                  </label>
-                  <UButton
-                    v-if="ROW_SIGN_CODES[r.key]?.length"
-                    class="-my-1"
-                    size="xs"
-                    :color="activeRowKey === r.key ? 'primary' : 'neutral'"
-                    :variant="activeRowKey === r.key ? 'soft' : 'ghost'"
-                    icon="i-lucide-filter"
-                    :aria-label="$t('rules.showRowSigns', { rule: $t(`rules.rows.${r.key}`) })"
-                    :title="$t('rules.showRowSigns', { rule: $t(`rules.rows.${r.key}`) })"
-                    @click="onRowShowSigns(r.key)"
+                <label class="flex cursor-pointer items-center gap-2 text-sm">
+                  <UCheckbox
+                    :model-value="!!rulesEnabled[r.key]"
+                    @update:model-value="v => onRuleToggle(r.key, !!v)"
                   />
-                </div>
+                  <span
+                    class="h-1 w-4 shrink-0 rounded-full"
+                    :style="{ backgroundColor: r.color }"
+                  />
+                  <span class="truncate">{{ $t(`rules.rows.${r.key}`) }}</span>
+                </label>
                 <!-- A row whose lines are coloured by value shows its scale while on. -->
                 <div
                   v-if="ruleChips[r.key] && rulesEnabled[r.key]"

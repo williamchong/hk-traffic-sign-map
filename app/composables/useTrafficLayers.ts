@@ -133,15 +133,40 @@ function selectSign(id: string) {
 // so the codes are complete at every zoom).
 function filterToSigns(ids: string[]) {
   enabledSignIds.clear()
+  addSigns(ids)
+}
+const filterToSign = (id: string) => filterToSigns([id])
+
+// Union form of the above, for a filter assembled from several readings at
+// once (the road-rules rows: each one contributes the codes of the plates
+// that announce it, and the map filter is already an `in` over the allowlist
+// — an OR). Unlike `filterToSigns` these never clear, so a rule row can join
+// or leave a hand-picked filter without disturbing the rest of it.
+function addSigns(ids: string[]) {
   ids.forEach(selectSign)
   filterMode.value = 'sign-id'
 }
-const filterToSign = (id: string) => filterToSigns([id])
-// Is the map already showing exactly these codes? Lets a "show these" button
-// reflect that it is the active filter.
+// Dropping the last contribution returns to category mode: an empty allowlist
+// in sign-id mode is a filter that shows nothing (see `mapFilter`), and every
+// sign layer — the always-on dot included — rides that one filter, so leaving
+// it there would blank the map on an untick.
+function removeSigns(ids: string[]) {
+  ids.forEach(id => enabledSignIds.delete(id))
+  if (!enabledSignIds.size) filterMode.value = 'category'
+}
+
+// Two notions of "this button's filter is the live one", deliberately both:
+// `isOnlySigns` is EQUALITY, for the exclusive "show only this sign" action;
+// `hasAllSigns` is CONTAINMENT, for a union member that shares the allowlist
+// with other rows. Don't collapse them — the exclusive buttons would then
+// light up for a filter that merely includes their code.
 const isOnlySigns = (ids: string[]) =>
   filterMode.value === 'sign-id'
   && enabledSignIds.size === ids.length
+  && ids.every(id => enabledSignIds.has(id))
+const hasAllSigns = (ids: string[]) =>
+  filterMode.value === 'sign-id'
+  && ids.length > 0
   && ids.every(id => enabledSignIds.has(id))
 
 // "Hide this sign": add to the denylist and drop it from the allowlist if it
@@ -172,8 +197,10 @@ export function useTrafficLayers() {
     loadGroupIndex,
     selectSign,
     filterToSign,
-    filterToSigns,
+    addSigns,
+    removeSigns,
     isOnlySigns,
+    hasAllSigns,
     hideSign,
     unhideSign,
     toggleAll(value: boolean) {

@@ -12,7 +12,7 @@ const { selectedRule } = useRoadRules()
 // the highlighted segments can never disagree — a rule pick clears
 // `selectedNote`, so while this card is open those notes are this line's.
 const { activeNotes } = useRuleNotes()
-const { filterToSigns, isOnlySigns } = useTrafficLayers()
+const { addSigns, hasAllSigns } = useTrafficLayers()
 const { t, locale } = useI18n()
 const { track } = useAnalytics()
 
@@ -41,17 +41,23 @@ const rows = computed(() =>
 
 const coords = computed(() => rule.value ? formatLngLat(rule.value.lngLat) : '')
 
-// "Show signs for this rule": the plates that announce it, as a sign-ID
-// filter — the retain-all archive, so they are complete at every zoom (a
-// category-mode emphasis would only reach the thinned overview's survivors).
-// No button when no plate is linked to the rule.
+// "Show signs for this rule": the plates that announce it, added to the
+// sign-ID filter — the retain-all archive, so they are complete at every zoom
+// (a category-mode emphasis would only reach the thinned overview's
+// survivors). Narrower than the legend row's checkbox: a clicked 70 km/h line
+// adds TS175 alone, where the row covers every speed value. No button when no
+// plate is linked to the rule.
 const signCodes = computed(() => rule.value ? linkedSignCodes(rule.value.layer, rule.value.properties) : [])
-// Already exactly those picks — the button reflects it, as SignPopup's does.
-const isOnlyThese = computed(() => isOnlySigns(signCodes.value))
+// Already among the picks — the button reflects it, as SignPopup's does.
+// Containment, not equality: the filter is a union this is one member of.
+const isShowingThese = computed(() => hasAllSigns(signCodes.value))
 
+// No need to turn the row's lines on: this card only opens from a clicked
+// line, and TrafficMap picks a rule only when `isRowEnabled` says its row is
+// on — so the extent these plates announce is already drawn.
 function onShowSigns() {
-  if (!rule.value || !signCodes.value.length || isOnlyThese.value) return
-  filterToSigns(signCodes.value)
+  if (!rule.value || !signCodes.value.length || isShowingThese.value) return
+  addSigns(signCodes.value)
   track('filter_rule_signs', { layer: rule.value.layer, count: signCodes.value.length, from: 'popup' })
 }
 </script>
@@ -100,7 +106,7 @@ function onShowSigns() {
     <UButton
       v-if="signCodes.length"
       size="xs"
-      :variant="isOnlyThese ? 'soft' : 'solid'"
+      :variant="isShowingThese ? 'soft' : 'solid'"
       color="primary"
       block
       icon="i-lucide-filter"

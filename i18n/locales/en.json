@@ -60,7 +60,7 @@
   },
   "rules": {
     "title": "Road rules",
-    "hint": "Where a rule applies, from the Transport Department's road network data",
+    "hint": "Where a rule applies, from the Transport Department's road network data. Each row also shows the signs that announce it.",
     "collapse": "Collapse road rules",
     "expand": "Expand road rules",
     "rows": {
@@ -89,7 +89,6 @@
     },
     "appliesHere": "Applies here",
     "showSigns": "Show signs for this rule",
-    "showRowSigns": "Show signs for: {rule}",
     "defaultSpeed": "50 km/h is the default limit; it is not drawn on the map.",
     "speedValue": "{n} km/h",
     "kmValue": "{n} km",

@@ -60,7 +60,7 @@
   },
   "rules": {
     "title": "道路規則",
-    "hint": "規則適用的路段，來自運輸署道路網絡數據",
+    "hint": "規則適用的路段，來自運輸署道路網絡數據。開啟任何一項亦會顯示相應的標誌。",
     "collapse": "收合道路規則",
     "expand": "展開道路規則",
     "rows": {
@@ -88,8 +88,7 @@
       "cutoff": "公共小巴無法駛入的路段"
     },
     "appliesHere": "此處適用的規則",
-    "showSigns": "只顯示此規則的標誌",
-    "showRowSigns": "只顯示此規則的標誌：{rule}",
+    "showSigns": "顯示此規則的標誌",
     "defaultSpeed": "每小時50公里為預設車速限制，地圖上不會繪出。",
     "speedValue": "每小時{n}公里",
     "kmValue": "{n}公里",
