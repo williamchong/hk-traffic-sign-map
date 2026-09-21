@@ -8,6 +8,9 @@ import {
   RULE_SOURCE, SIGN_RULE_LINKS, SIGN_RULE_RADIUS_M, CUTOFF_COLOR, ruleColor,
   speedColorStops, prohibitionColorStops, nsrColorStops, type RuleLayer, type SignRuleLink
 } from '~/composables/useRoadRules'
+import {
+  RULE_NOTES, NOTE_SOURCE, NOTE_LAYER, NOTE_COVER_LAYERS, NOTE_FILTER_NONE, coversFilter, notesFor
+} from '~/composables/useRuleNotes'
 import { pointToLineMetres } from '~/utils/geo'
 import tilesVersion from '~/data/tilesVersion.json'
 
@@ -18,6 +21,7 @@ let detachProtocol: (() => void) | undefined
 
 const { mapFilter, selectedSign, selectedGroup, mapUnavailable, filterMode, loadGroupIndex } = useTrafficLayers()
 const { rulesEnabled, enabledKinds, isRowEnabled, selectedRule, governingRule } = useRoadRules()
+const { selectedNote, activeNotes } = useRuleNotes()
 const colorMode = useColorMode()
 const { track } = useAnalytics()
 
@@ -260,6 +264,21 @@ const RULE_HIT_LAYERS: RuleLayer[] = RULE_LAYERS.filter(l => l !== 'cutoff')
 // hidden layer returns no features, so the band is unpickable when its row is
 // off — the hit lines need `isRowEnabled` for that, being always on.
 const rulePickLayerIds = [...RULE_HIT_LAYERS.map(ruleHitLayerId), ruleLayerId('cutoff')]
+// Curated notes on the overlay (useRuleNotes): a pin beside the annotated
+// stretch, plus a highlighter band under the rule lines it covers. One
+// highlight layer per source-layer some note mentions, added BEFORE the rule
+// lines so the band sits under them — the point is to mark which lines the
+// note is about, not to hide them.
+const noteHighlightId = (layer: RuleLayer) => `rule-note-hl-${layer}`
+// Highlighter yellow, and deliberately not a row colour: it is a wide,
+// translucent band that only exists while a note is open, where the amber
+// speed row is a thin line drawn on top of it. Butt caps for the same reason
+// the cut-off band has them — round caps of adjoining edges stack into bright
+// dots at every junction.
+const NOTE_HIGHLIGHT_COLOR = '#facc15'
+const NOTE_HIGHLIGHT_WIDTH = expr(['interpolate', ['linear'], ['zoom'], 10, 6, 14, 14, 17, 28])
+// The pin badge, drawn once per icon kind (see addDrawnImage) in icon source px.
+const NOTE_PIN_PX = 34
 // Speed limits run for kilometres and read at the overview; bus lanes and
 // prohibitions are short urban segments that only make sense street-level;
 // no-stopping's 20k kerb lines are a smear until the streets separate.
@@ -493,6 +512,38 @@ onMounted(async () => {
       }
     })
 
+    // Note pins: a filled disc with a white ring and a drawn glyph — drawn
+    // rather than typeset, so the badge doesn't depend on a font being
+    // available when the style is built. `i` is dot-over-bar, `!` bar-over-dot.
+    for (const [icon, color, flip] of [['info', '#0284c7', false], ['warning', '#d97706', true]] as const) {
+      addDrawnImage(`note-${icon}`, NOTE_PIN_PX, NOTE_PIN_PX, (ctx) => {
+        const c = NOTE_PIN_PX / 2
+        ctx.beginPath()
+        ctx.arc(c, c, c - 2, 0, Math.PI * 2)
+        ctx.fillStyle = color
+        ctx.fill()
+        ctx.lineWidth = 2.5
+        ctx.strokeStyle = '#ffffff'
+        ctx.stroke()
+        // Bar and dot, swapped top-for-bottom between the two glyphs. The bar
+        // is a round-capped stroke rather than a roundRect — that call is
+        // recent enough to be worth not depending on for a map icon.
+        const barY = flip ? c - 7 : c - 1
+        const dotY = flip ? c + 7 : c - 5
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineCap = 'round'
+        ctx.lineWidth = 3.5
+        ctx.beginPath()
+        ctx.moveTo(c, barY + 1.75)
+        ctx.lineTo(c, barY + 7.25)
+        ctx.stroke()
+        ctx.fillStyle = '#ffffff'
+        ctx.beginPath()
+        ctx.arc(c, dotY, 2, 0, Math.PI * 2)
+        ctx.fill()
+      })
+    }
+
     m.addSource('sel-group', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
     // Two layers (a uniform EMPHASIS_SIZE means one zoom-interpolate, so no
     // per-tier split is needed): the glow disc rings each member, then the
@@ -560,6 +611,27 @@ onMounted(async () => {
         'icon-ignore-placement': true
       }
     })
+    // Note pins live in the overlay bucket, not with the rule lines: the rule
+    // and sign layers all insert beneath `sel-group-glow` (and the sign ones
+    // are re-inserted there on every filter-mode flip), so anything added here
+    // is permanently above them. A pin the signs could bury would be a pin
+    // nobody finds.
+    m.addSource(NOTE_SOURCE, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+    m.addLayer({
+      id: NOTE_LAYER,
+      type: 'symbol',
+      source: NOTE_SOURCE,
+      // Same floor as the lines a note annotates — below it there is nothing
+      // on screen for the pin to point at.
+      minzoom: Math.min(...NOTE_COVER_LAYERS.map(l => RULE_MINZOOM[l])),
+      layout: {
+        'icon-image': expr(['concat', 'note-', ['get', 'icon']]),
+        'icon-size': expr(['interpolate', ['linear'], ['zoom'], 11, 0.55, 16, 0.95]),
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true
+      }
+    })
+
     // Facing underline for the highlighted sign — one layer per overlay
     // source (lone sign / post members), drawn topmost so a neighbouring
     // plate never covers it. Only features given a MARK_OFF get a bar (the
@@ -703,6 +775,23 @@ onMounted(async () => {
     // (`sel-group-glow`): MapLibre inserts immediately before the anchor, so
     // whatever is added later lands on top — the sign layers now, and again
     // every time a filter-mode flip re-adds them. Roads stay under signs.
+    // First at this anchor, so every rule line draws over the highlighter.
+    for (const layer of NOTE_COVER_LAYERS) {
+      m.addLayer({
+        'id': noteHighlightId(layer),
+        'type': 'line',
+        'source': RULE_SOURCE,
+        'source-layer': layer,
+        'minzoom': RULE_MINZOOM[layer],
+        'filter': NOTE_FILTER_NONE,
+        'layout': { 'line-cap': 'butt', 'line-join': 'round' },
+        'paint': {
+          'line-color': NOTE_HIGHLIGHT_COLOR,
+          'line-width': NOTE_HIGHLIGHT_WIDTH,
+          'line-opacity': 0.55
+        }
+      }, 'sel-group-glow')
+    }
     for (const layer of RULE_LAYERS) {
       const common = { 'source': RULE_SOURCE, 'source-layer': layer, 'minzoom': RULE_MINZOOM[layer] } as const
       if (RULE_HIT_LAYERS.includes(layer)) {
@@ -745,7 +834,51 @@ onMounted(async () => {
         }
       }
     }
-    watch(rulesEnabled, syncRuleLayers, { immediate: true, deep: true })
+    // A note's pins follow the rows it belongs to: the overlay it annotates
+    // has to be on screen for the pin to mean anything. There are a handful of
+    // notes, so the source is just rebuilt rather than filtered.
+    // Guarded like the setFilter writes above, and for the same reason:
+    // `setData` is a worker round-trip that reloads the source's resident
+    // tiles, and this watch also fires on a cross-tab storage event where
+    // nothing has actually moved.
+    let pinKey = ''
+    const syncNotePins = () => {
+      const src = m.getSource(NOTE_SOURCE) as GeoJSONSource | undefined
+      if (!src) return
+      const shown = RULE_NOTES.filter(n => n.rows.some(row => rulesEnabled.value[row]))
+      const key = shown.map(n => n.id).join(',')
+      if (key !== pinKey) {
+        pinKey = key
+        src.setData({
+          type: 'FeatureCollection',
+          features: shown.flatMap(n => n.at.map(at => ({
+            type: 'Feature' as const,
+            properties: { id: n.id, icon: n.icon },
+            geometry: { type: 'Point' as const, coordinates: at }
+          })))
+        })
+      }
+      // A pin that just disappeared must not leave its card open behind it.
+      if (selectedNote.value && !shown.includes(selectedNote.value)) selectedNote.value = null
+    }
+    watch(rulesEnabled, () => {
+      syncRuleLayers()
+      syncNotePins()
+    }, { immediate: true, deep: true })
+
+    // Which lines the open note is about. Same guard as syncRuleLayers: a
+    // setFilter reloads every resident tile of the source, so only write on a
+    // real change.
+    const syncNoteHighlight = () => {
+      for (const layer of NOTE_COVER_LAYERS) {
+        const id = noteHighlightId(layer)
+        if (!m.getLayer(id)) continue
+        const covers = activeNotes.value.flatMap(n => n.covers.filter(c => c.layer === layer))
+        const filter = covers.length ? coversFilter(covers) : NOTE_FILTER_NONE
+        if (JSON.stringify(m.getFilter(id)) !== JSON.stringify(filter)) m.setFilter(id, filter)
+      }
+    }
+    watch(activeNotes, syncNoteHighlight, { immediate: true })
 
     addSignLayers(sourceForMode(filterMode.value))
     // In sign-ID mode, fetch the companion-group index so the filter can grow
@@ -936,6 +1069,21 @@ onMounted(async () => {
     const box: [[number, number], [number, number]] = [
       [e.point.x - 6, e.point.y - 6], [e.point.x + 6, e.point.y + 6]
     ]
+    // Note pins win a contested click outright, ahead of even the signs: a pin
+    // is a small, deliberate target the reader aimed at, and it is drawn on
+    // top, so whatever sits under it was not what they meant to hit.
+    if (m.getLayer(NOTE_LAYER)) {
+      const pin = m.queryRenderedFeatures(box, { layers: [NOTE_LAYER] })[0]
+      const note = pin && RULE_NOTES.find(n => n.id === pin.properties.id)
+      if (note) {
+        selectedSign.value = null
+        selectedRule.value = null
+        cycleKey = ''
+        selectedNote.value = note
+        track('rule_note_select', { note_id: note.id, from: 'pin' })
+        return
+      }
+    }
     // De-dupe: a catalogued sign appears in both its dot and pictogram layer.
     const seen = new Set<string>()
     const hits = m.queryRenderedFeatures(box, { layers }).filter((f) => {
@@ -945,6 +1093,7 @@ onMounted(async () => {
 
     if (!hits.length) {
       selectedSign.value = null
+      selectedNote.value = null // a rule pick supersedes an open note card
       cycleKey = ''
       // No sign under the pointer: try the rule lines. Signs always win a
       // contested click (a rule line runs under many signs), and only a row
@@ -961,6 +1110,12 @@ onMounted(async () => {
           kind: typeof rule.properties.kind === 'string' ? rule.properties.kind : null,
           zoom: Math.round(m.getZoom() * 10) / 10
         })
+        // The line carried a caveat — worth counting separately from a pin
+        // click, since it is the path a reader reaches by accident. Once per
+        // click, like every other event here, so the two `from` variants stay
+        // comparable even if a feature is ever covered by two notes.
+        const [note] = notesFor(rule.sourceLayer as RuleLayer, rule.properties)
+        if (note) track('rule_note_select', { note_id: note.id, from: 'rule' })
       }
       return
     }
@@ -973,6 +1128,7 @@ onMounted(async () => {
     if (!f) return
     const [lng, lat] = (f.geometry as unknown as { coordinates: [number, number] }).coordinates
     selectedRule.value = null // a sign pick replaces a rule pick; one popup at a time
+    selectedNote.value = null
     selectedSign.value = {
       properties: f.properties,
       lngLat: new maplibregl.LngLat(lng, lat),
@@ -992,12 +1148,17 @@ onMounted(async () => {
     })
   })
 
-  // Layer-scoped enter/leave only fire on transitions — far cheaper than
-  // hit-testing 316k features on every mousemove.
-  for (const id of signLayerIds) {
-    m.on('mouseenter', id, () => (m.getCanvas().style.cursor = 'pointer'))
-    m.on('mouseleave', id, () => (m.getCanvas().style.cursor = ''))
-  }
+  // ONE delegated pair over all the hover targets, as the rule lines below do.
+  // Only the LISTENER is transition-latched: MapLibre's delegate still runs a
+  // `queryRenderedFeatures` per mousemove, and per *id* that is 2 hit-tests per
+  // layer per move. Passing the array instead lets MapLibre filter the ids
+  // itself (so the filter-mode layer swap still works) for 2 hit-tests total.
+  // It also keeps the cursor correct: with a pair per id, moving from the dot
+  // layer onto a pictogram fired the dot's `mouseleave` while the pictogram's
+  // `mouseenter` was already latched, dropping the pointer cue over a sign.
+  const hoverLayerIds = [NOTE_LAYER, ...signLayerIds]
+  m.on('mouseenter', hoverLayerIds, () => (m.getCanvas().style.cursor = 'pointer'))
+  m.on('mouseleave', hoverLayerIds, () => (m.getCanvas().style.cursor = ''))
   // Rule lines: ONE delegated pair over all the hit layers (each
   // layer-scoped listener is its own hit-test per mousemove). `mousemove`
   // rather than `mouseenter`, because the enter latch would stick on a line

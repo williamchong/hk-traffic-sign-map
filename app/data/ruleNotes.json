@@ -1,0 +1,46 @@
+[
+  {
+    "id": "tsing-yi-vehicle-examination",
+    "icon": "info",
+    "rows": ["plb"],
+    "at": [[114.1048, 22.3592], [114.0880, 22.3480]],
+    "title": {
+      "en": "Minibuses may drive here to be examined",
+      "zh": "小巴可駛經此路往返驗車大樓"
+    },
+    "body": {
+      "en": "TD's road network data marks these roads prohibited to public light buses, and TS119 plates stand on them. But since the Vehicle Examination Complex (18 Sai Tso Wan Road) opened in 2021, TD also lets a public light bus drive a designated route to and from it without a permit: Tsing Tsuen Road (via Tsing Yi North Bridge), Tsing Yi North Coastal Road, Cheung Tsing Highway, Tsing Yi Road West and Sai Tso Wan Road. That opening covers the examination trip only, and it is recorded nowhere in the data — so the ban, and the area it cuts off, are still drawn here in full.",
+      "zh": "運輸署的道路網資料將這些路段列為禁止公共小巴駛入，路旁亦豎立 TS119 標誌。但自 2021 年車輛檢驗綜合大樓（西草灣路18號）啟用後，運輸署已開放指定路線予公共小巴在不需要許可證下往返驗車大樓驗車，包括青荃路（經青衣北橋）、青衣北岸公路、長青公路、青衣西路及西草灣路。該安排只適用於往返驗車的行程，而且沒有記錄在道路網資料內，所以圖上仍然完整顯示禁令及其封閉範圍。"
+    },
+    "source": {
+      "label": {
+        "en": "Transport Department press release, 20 May 2021",
+        "zh": "運輸署新聞公報（2021年5月20日）"
+      },
+      "url": "https://www.info.gov.hk/gia/general/202105/20/P2021051800741.htm"
+    },
+    "covers": [
+      {
+        "layer": "prohibition",
+        "kind": "plb",
+        "st": [
+          "TSING TSUEN ROAD",
+          "TSING YI NORTH COASTAL ROAD",
+          "CHEUNG TSING HIGHWAY",
+          "TSING YI ROAD WEST",
+          "SAI TSO WAN ROAD"
+        ]
+      },
+      {
+        "layer": "cutoff",
+        "via": [
+          "TSING TSUEN ROAD",
+          "TSING YI NORTH COASTAL ROAD",
+          "CHEUNG TSING HIGHWAY",
+          "TSING YI ROAD WEST",
+          "SAI TSO WAN ROAD"
+        ]
+      }
+    ]
+  }
+]

@@ -18,5 +18,6 @@
     <LayerFilterPanel />
     <SignPopup />
     <RulePopup />
+    <RuleNotePopup />
   </div>
 </template>

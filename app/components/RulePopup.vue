@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { ruleRows, ruleTitleKey, rowKeyFor, linkedSignCodes, ruleColor, SPEED_COLORS, NSR_VEH_COLORS, CUTOFF_COLOR, type NsrVehicle } from '~/composables/useRoadRules'
+import { useRuleNotes } from '~/composables/useRuleNotes'
 import { formatLngLat } from '~/utils/format'
 
 // Detail card for a clicked rule line (speed limit / bus-only lane /
 // prohibition / no stopping / pedestrian zone). Same slot as SignPopup — TrafficMap keeps at most one of
 // `selectedSign` / `selectedRule` set, so the two never overlap.
 const { selectedRule } = useRoadRules()
+// Curated caveats covering the clicked line. Read from the SAME `activeNotes`
+// the map highlights from, rather than re-deriving them here, so the card and
+// the highlighted segments can never disagree — a rule pick clears
+// `selectedNote`, so while this card is open those notes are this line's.
+const { activeNotes } = useRuleNotes()
 const { filterToSigns, isOnlySigns } = useTrafficLayers()
 const { t, locale } = useI18n()
 const { track } = useAnalytics()
@@ -82,6 +88,14 @@ function onShowSigns() {
     </div>
 
     <KeyValueRows :rows="rows" />
+
+    <div
+      v-for="note in activeNotes"
+      :key="note.id"
+      class="rounded-md border border-default bg-elevated/50 p-2.5"
+    >
+      <RuleNoteBlock :note="note" />
+    </div>
 
     <UButton
       v-if="signCodes.length"
