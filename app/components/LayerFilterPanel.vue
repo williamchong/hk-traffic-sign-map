@@ -37,6 +37,25 @@ onMounted(() => {
 // (TD's ban lines and the cut-off band behind them). Descriptive only — a
 // GROUPED row's chips are interactive instead, and are built from its members.
 // `ink` overrides the chip's white text where the colour is too light for it.
+//
+// A grouped row's chips take theirs from `chipInk`, because the licence
+// colours span too wide a luminance range for one ink: measured against the
+// 4.5:1 WCAG AA bar that this 10px text needs, white is 2.14:1 on the Lantau
+// blue and 3.30:1 on the NT green, while near-black is 4.35:1 on the urban
+// red. Nothing clears the bar everywhere, so it is picked per colour.
+const LIGHT_INK = '#ffffff'
+const DARK_INK = '#0f172a'
+// sRGB relative luminance (WCAG 2.x), then whichever ink contrasts more.
+function chipInk(bg: string) {
+  const channel = (c: number) => {
+    const v = c / 255
+    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+  }
+  const n = parseInt(bg.slice(1), 16)
+  const l = 0.2126 * channel(n >> 16 & 255) + 0.7152 * channel(n >> 8 & 255) + 0.0722 * channel(n & 255)
+  return (1.05 / (l + 0.05)) >= ((l + 0.05) / 0.05) ? LIGHT_INK : DARK_INK
+}
+
 const ruleChips = computed<Record<string, { label: string, color: string, ink?: string }[]>>(() => ({
   speed: SPEED_VALUES.map(v => ({ label: String(v), color: SPEED_COLORS[v]! })),
   nsr: NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] })),
@@ -53,17 +72,29 @@ const ruleChips = computed<Record<string, { label: string, color: string, ink?: 
 // the members' own state is what localStorage persists.
 const groupMemory = new Map<string, string[]>()
 const groupOn = (entry: LegendEntry) => entry.rows.some(r => rulesEnabled.value[r.key])
+// Tri-state, using UCheckbox's own `indeterminate` (the component this panel
+// uses everywhere): a plain boolean would draw "one of three colours on"
+// identically to "all three on".
+const groupState = (entry: LegendEntry) => {
+  const on = entry.rows.filter(r => rulesEnabled.value[r.key]).length
+  if (on === 0) return false
+  return on === entry.rows.length ? true : 'indeterminate' as const
+}
 function onGroupToggle(entry: LegendEntry, value: boolean) {
   const keys = entry.rows.map(r => r.key)
-  if (!value) {
+  const wanted = new Set<string>()
+  if (value) {
+    // Restore what was on when this row was last switched off; a first visit,
+    // or a memory of rows this group no longer has, turns all of them on.
+    const remembered = groupMemory.get(entry.key)?.filter(k => keys.includes(k)) ?? []
+    for (const k of (remembered.length ? remembered : keys)) wanted.add(k)
+  } else {
     groupMemory.set(entry.key, keys.filter(k => rulesEnabled.value[k]))
-    for (const k of keys) if (rulesEnabled.value[k]) onRuleToggle(k, false)
-    return
   }
-  const remembered = groupMemory.get(entry.key)?.filter(k => keys.includes(k)) ?? []
-  for (const k of (remembered.length ? remembered : keys)) {
-    if (!rulesEnabled.value[k]) onRuleToggle(k, true)
+  for (const k of keys) {
+    if (!!rulesEnabled.value[k] !== wanted.has(k)) applyRuleToggle(k, wanted.has(k))
   }
+  track('rule_group_toggle', { group: entry.key, enabled: value, rows: wanted.size })
 }
 
 // A rule row means "draw this reading, and show the plates that announce it":
@@ -74,7 +105,10 @@ function onGroupToggle(entry: LegendEntry, value: boolean) {
 // rather than a watcher, which would also fire on `mergeDefaults` writing a
 // newly-added row key and on mount, where the `plb` default-on row would
 // filter a first visit down to its two plates.
-function onRuleToggle(key: string, value: boolean) {
+// The state change, without the reporting: shared by a row's own checkbox and
+// by a grouped row's master, so the sign-code rules below live in one place
+// and a master click still counts as ONE gesture rather than one per member.
+function applyRuleToggle(key: string, value: boolean) {
   rulesEnabled.value[key] = value
   // ONLY this row's codes, never a recompute over every row that is on. That
   // recompute was tried and reverted: `plb` starts on and so never fires this
@@ -90,7 +124,11 @@ function onRuleToggle(key: string, value: boolean) {
     if (value) addSigns(codes)
     else removeSigns(codes)
   }
-  track('rule_layer_toggle', { layer: key, enabled: value, signs: codes.length })
+  return codes.length
+}
+
+function onRuleToggle(key: string, value: boolean) {
+  track('rule_layer_toggle', { layer: key, enabled: value, signs: applyRuleToggle(key, value) })
 }
 
 // Hydration-safe mirror of `filterMode` that the whole panel UI binds to.
@@ -287,7 +325,7 @@ function onTabChange(value: string | number) {
               >
                 <label class="flex cursor-pointer items-center gap-2 text-sm">
                   <UCheckbox
-                    :model-value="e.grouped ? groupOn(e) : !!rulesEnabled[e.key]"
+                    :model-value="e.grouped ? groupState(e) : !!rulesEnabled[e.key]"
                     @update:model-value="v => e.grouped ? onGroupToggle(e, !!v) : onRuleToggle(e.key, !!v)"
                   />
                   <!-- A grouped row has no single colour, so its swatch is its
@@ -306,6 +344,8 @@ function onTabChange(value: string | number) {
                      chips just show the scale its lines are coloured by. -->
                 <div
                   v-if="e.grouped && groupOn(e)"
+                  role="group"
+                  :aria-label="$t(`rules.rows.${e.key}`)"
                   class="ml-6 flex flex-wrap gap-1"
                 >
                   <button
@@ -314,9 +354,9 @@ function onTabChange(value: string | number) {
                     type="button"
                     class="cursor-pointer rounded border px-1 text-[10px] font-medium transition-colors"
                     :class="rulesEnabled[r.key]
-                      ? 'border-transparent text-white'
+                      ? 'border-transparent'
                       : 'border-default text-dimmed hover:text-muted'"
-                    :style="rulesEnabled[r.key] ? { backgroundColor: r.color } : {}"
+                    :style="rulesEnabled[r.key] ? { backgroundColor: r.color, color: chipInk(r.color) } : {}"
                     :aria-pressed="!!rulesEnabled[r.key]"
                     @click="onRuleToggle(r.key, !rulesEnabled[r.key])"
                   >

@@ -21,6 +21,10 @@ interface AnalyticsEvents {
   filter_signid_hide: { sign_id: string }
   filter_signid_unhide: { sign_id: string }
   rule_layer_toggle: { layer: string, enabled: boolean, signs: number }
+  // A grouped legend row's master checkbox — one event for one gesture,
+  // rather than a `rule_layer_toggle` per member, which would read as
+  // several independent toggles.
+  rule_group_toggle: { group: string, enabled: boolean, rows: number }
   rule_select: { layer: string, kind: string | null, zoom: number }
   rule_note_select: { note_id: string, from: 'pin' | 'rule' }
   filter_rule_signs: { layer: string, count: number, from: 'popup' }

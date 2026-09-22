@@ -98,6 +98,9 @@ export interface LegendEntry {
   grouped: boolean
 }
 export const LEGEND_ENTRIES: LegendEntry[] = RULE_ROWS.reduce<LegendEntry[]>((out, r) => {
+  // `e.grouped &&` is load-bearing, not redundant: without it a row whose
+  // `group` happened to equal an earlier UNGROUPED row's key would be folded
+  // into that row instead of opening its own group.
   const open = r.group ? out.find(e => e.grouped && e.key === r.group) : undefined
   if (open) open.rows.push(r)
   else out.push({ key: r.group ?? r.key, rows: [r], grouped: !!r.group })
