@@ -147,6 +147,7 @@
     },
     "source": "Road Network (2nd generation), Transport Department",
     "cutoffSource": "Worked out from the Transport Department's prohibitions and turn bans, not a posted rule",
+    "noticeSource": "Designated by Transport Department traffic notice no. {n}; not yet in the road network data",
     "close": "Close"
   },
   "theme": {

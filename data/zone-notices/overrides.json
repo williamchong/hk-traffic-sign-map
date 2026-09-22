@@ -1,0 +1,27 @@
+{
+  "_readme": [
+    "Human-curated corrections to TD's PROHIBITION rows for the public-light-bus cut-off layer, each citing a TD prohibited-zone notice (tnid in prohibited-zones.json).",
+    "The rows lag the Commissioner's notices by 1-35 months, in both directions. An entry lives here only while TD's data disagrees with TD's notice; `node scripts/audit-cutoff-notices.mjs` says when one has become redundant.",
+    "close: designate every CENTERLINE route of `st` (or only `routeIds`) as a PLB prohibited zone, BOUND 0 both ways / 1 digitised / -1 reverse.",
+    "open: drop the PROHIBITION row `prohibitionId` (must sit on `st`, as a guard against id reuse).",
+    "Never add an entry from a sign or from prose alone: a notice must state it, and for a `close` a TS119/TS522 should stand on the road."
+  ],
+  "close": [
+    {
+      "st": "NG LAU ROAD",
+      "bound": 0,
+      "notice": "67541",
+      "effective": "2022-08-15",
+      "why": "Designated a PLB prohibited zone from its junction with Castle Peak Road - Lam Tei northbound on 15 Aug 2022; two TS119 stand on it; no PROHIBITION row in the 2026-09 network."
+    }
+  ],
+  "open": [
+    {
+      "prohibitionId": 11116,
+      "st": "KAI LIM ROAD",
+      "notice": "83743",
+      "effective": "2025-11-16",
+      "why": "Zone rescinded 16 Nov 2025; row 11116 (created 2011) still present and sealed a 178 m cut-off area."
+    }
+  ]
+}

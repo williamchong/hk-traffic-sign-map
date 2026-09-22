@@ -25,6 +25,8 @@
 // vehicle is turned away from is not blamed on the class), minus the banned
 // routes themselves, which the prohibition layer already draws.
 
+import { CUTOFF_VEHICLE } from './sign-layers.mjs'
+
 const TIMED = /\d{4}|\d{1,2}(:\d\d)?\s*[ap]\.?m\b/i
 const SIZED = /\bover\b|tonne|\d(\.\d+)?\s*m\b/i
 const tokens = s => (s ?? '').toUpperCase().split(/[^A-Z]+/).filter(Boolean)
@@ -43,6 +45,45 @@ export function closesFor(row, addresses, exempt) {
   if (size && size !== 'NA' && tokens(size).some(t => t !== 'NA')) return false
   return !TIMED.test(remarks) && !SIZED.test(remarks)
 }
+
+// Who a PROHIBITION row addresses, as legend kinds. INC_VEH_TYPE is the coded
+// field, but two of the rules the map wants live only in the free-text
+// REMARKS: learner drivers ("LD Proh", coded OTH) and all-motor-vehicle
+// closures ("AMV Proh"). The remarks follow `<who> Proh/ E <exceptions>`; the
+// head token is enough. A row can address several (e.g. "PLB Proh/ LD Proh" →
+// plb + ld); a row none of these match is `other` rather than dropped. The
+// head is returned too, so the build's `other` tally can report TD's wording
+// drifting past these rules. Lives here, beside the class test below, so the
+// legend and the cut-off read one set of patterns.
+const has = v => v != null && v !== '' && v !== 'NA'
+export function kindsOf(p) {
+  const remarks = p.REMARKS ?? ''
+  const head = remarks.split('/')[0].trim()
+  const inc = (p.INC_VEH_TYPE ?? '').split(',').map(s => s.trim())
+  const kinds = new Set()
+  if (/\bLD\s*Proh/i.test(remarks)) kinds.add('ld')
+  if (inc.includes(CUTOFF_VEHICLE) || /^PLB\s*Proh|^Proh\s+PLB/i.test(head)) kinds.add('plb')
+  if (inc.includes('GV') || /^GV\b/i.test(head) || has(p.OTHER_REST_TYPE_GV)) kinds.add('gv')
+  if (inc.includes('ALL') || /^AMV\s*Proh|^All vehicles/i.test(head)) kinds.add('all')
+  if (!kinds.size) kinds.add('other')
+  return { kinds: [...kinds], head: head || '(blank)' }
+}
+
+// Whether a PROHIBITION / TURN row addresses the cut-off class. The coded
+// INC_VEH_TYPE decides when it names a class; the remarks head (via kindsOf)
+// only when the code is OTH/NA — a loose head costs whole districts (one
+// INC=GMB row remarked "PLB Proh" once sealed 40 km of Sha Tin). Shared by
+// build-road-rules.mjs, zone-overrides.mjs and audit-cutoff-notices.mjs so all
+// close the same roads. `CUTOFF_EXEMPT` is what lets the class through: its
+// own code, or "LB" as the remarks abbreviate light buses ("E Bus & LB").
+// "E GMB" does not exempt — red minibuses stay banned.
+export const CUTOFF_EXEMPT = new Set([CUTOFF_VEHICLE, 'LB'])
+export function addressesCutoff(row) {
+  const inc = (row.INC_VEH_TYPE ?? '').split(',').map(s => s.trim()).filter(c => c && c !== 'NA' && c !== 'OTH')
+  if (inc.length) return inc.includes(CUTOFF_VEHICLE) || inc.includes('ALL')
+  return kindsOf(row).kinds.some(k => k === 'plb' || k === 'all')
+}
+export const closesForCutoff = row => closesFor(row, addressesCutoff, CUTOFF_EXEMPT)
 
 const nodeKey = (x, y) => `${Math.round(x)},${Math.round(y)}`
 

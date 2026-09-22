@@ -103,6 +103,37 @@ export async function readSignIdCounts(gmlPath) {
   return counts
 }
 
+// The label points of every installed sign whose SIGNID is in `codes` (null =
+// every sign), as
+// [x, y, code] in HK1980 metres — streamed like readSignIdCounts, since the
+// audit that wants them needs a few thousand points out of a 206 MB file.
+// A member's <gml:pos> precedes its SIGNID attribute, so the position is held
+// until the member closes.
+export async function readSignPoints(gmlPath, codes) {
+  const want = codes ? new Set(codes) : null
+  const points = []
+  const rl = createInterface({ input: createReadStream(gmlPath), crlfDelay: Infinity })
+  let pos = null
+  let id = null
+  let pending = false
+  for await (const line of rl) {
+    if (line.includes('<core:cityObjectMember>')) {
+      pos = null
+      id = null
+    }
+    const m = line.match(ptPosRx)
+    if (m) pos = [parseFloat(m[1]), parseFloat(m[2])]
+    if (pending) {
+      id = line.match(/<gen:value>([^<]*)<\/gen:value>/)?.[1]?.trim() ?? null
+      pending = false
+    } else if (line.includes('<gen:stringAttribute name="SIGNID">')) {
+      pending = true
+    }
+    if (line.includes('</core:cityObjectMember>') && pos && id && (!want || want.has(id))) points.push([pos[0], pos[1], id])
+  }
+  return points
+}
+
 // Reproject HK1980 [x, y] pairs to WGS84 [lng, lat] (6 dp, ~0.1 m) in ONE
 // gdaltransform pass. Callers dedupe their inputs first; this only pipes.
 export async function reprojectPoints(points) {

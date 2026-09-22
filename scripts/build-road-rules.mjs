@@ -25,6 +25,12 @@
 //   cutoff       DERIVED (road-cutoff.mjs): CENTERLINE routes public light
 //                buses cannot enter at all, because prohibitions and turn bans
 //                close every way in; each names the routes that seal its area.
+// The PROHIBITION rows lag TD's own prohibited-zone notices by 1–35 months
+// (both ways), so data/zone-notices/overrides.json — human-curated, each entry
+// citing a notice — closes or reopens named routes BEFORE the prohibition
+// lines are written and the cut-off search runs (zone-overrides.mjs). A row
+// added that way carries `notice` in its tile props, so the popup names the
+// notice instead of the network. Notices verify; they never generate extents.
 // Every feature also carries its street name (st_en / st_zh) for the popup,
 // joined from CENTERLINE — by ROAD_ROUTE_ID for every layer but NSR, which
 // names its roads by ST_CODE instead.
@@ -44,7 +50,8 @@ import {
 } from './sign-layers.mjs'
 import { requireTool, mergeTilesVersion, streamOgrGeoJSON } from './geo.mjs'
 import { DASHES } from './text-similarity.mjs'
-import { closesFor, computeCutoff } from './road-cutoff.mjs'
+import { kindsOf, closesForCutoff, computeCutoff } from './road-cutoff.mjs'
+import { applyZoneOverrides, loadOverrides } from './zone-overrides.mjs'
 
 const RDNET_ZIP = join(RAW_DIR, 'RdNet_IRNP.gdb.zip')
 const scratch = key => join(RAW_DIR, `_rules_${key}.geojsonl`)
@@ -74,26 +81,6 @@ const street = (v) => {
 // remark or street name costs no bytes.
 const compact = obj => Object.fromEntries(Object.entries(obj).filter(([, v]) => v != null))
 
-// Who a PROHIBITION row addresses. INC_VEH_TYPE is the coded field, but two
-// of the rules the map wants live only in the free-text REMARKS: learner
-// drivers ("LD Proh", coded OTH) and all-motor-vehicle closures ("AMV Proh").
-// The remarks follow `<who> Proh/ E <exceptions>`; the head token is enough.
-// A row can address several (e.g. "PLB Proh/ LD Proh" → plb + ld); a row none
-// of these match is `other` rather than dropped. The head is returned too, so
-// the `other` tally can report TD's wording drifting past these rules.
-function kindsOf(p) {
-  const remarks = p.REMARKS ?? ''
-  const head = remarks.split('/')[0].trim()
-  const inc = (p.INC_VEH_TYPE ?? '').split(',').map(s => s.trim())
-  const kinds = new Set()
-  if (/\bLD\s*Proh/i.test(remarks)) kinds.add('ld')
-  if (inc.includes('PLB') || /^PLB\s*Proh|^Proh\s+PLB/i.test(head)) kinds.add('plb')
-  if (inc.includes('GV') || /^GV\b/i.test(head) || text(p.OTHER_REST_TYPE_GV)) kinds.add('gv')
-  if (inc.includes('ALL') || /^AMV\s*Proh|^All vehicles/i.test(head)) kinds.add('all')
-  if (!kinds.size) kinds.add('other')
-  return { kinds: [...kinds], head: head || '(blank)' }
-}
-
 // Backpressure-aware append of one feature line.
 async function writeFeature(out, geometry, properties, tippecanoe) {
   const line = JSON.stringify({ type: 'Feature', geometry, properties, tippecanoe }) + '\n'
@@ -116,7 +103,9 @@ for await (const f of readLayer(RDNET_RULE_LAYERS.speed, 'ROAD_ROUTE_ID,SPEED_LI
 const busRows = []
 for await (const f of readLayer(RDNET_RULE_LAYERS.buslane, 'ROAD_ROUTE_ID,TIME_ZONE,EFFECTIVE_DAY,BOUND,REMARKS')) busRows.push(f)
 const prohRows = []
-for await (const f of readLayer(RDNET_RULE_LAYERS.prohibition, 'ROAD_ROUTE_ID,INC_VEH_TYPE,EXC_VEH_TYPE,PART_TIME_PROHIBITION,EFF_ALL_DAYS,OTHER_REST_TYPE_GV,REMARKS,BOUND')) prohRows.push(f)
+// PROHIBITION_ID is read for the overrides' `open` lookup only; it never
+// reaches the tiles (the feature loop picks its props explicitly).
+for await (const f of readLayer(RDNET_RULE_LAYERS.prohibition, 'PROHIBITION_ID,ROAD_ROUTE_ID,INC_VEH_TYPE,EXC_VEH_TYPE,PART_TIME_PROHIBITION,EFF_ALL_DAYS,OTHER_REST_TYPE_GV,REMARKS,BOUND')) prohRows.push(f)
 const pedRows = []
 for await (const f of readLayer(RDNET_RULE_LAYERS.pedzone, 'ROAD_ROUTE_ID,TIME_ZONE,EFFECTIVE_DAY,REMARKS')) pedRows.push(f)
 console.log(`  ${RDNET_RULE_LAYERS.speed}: ${speedRows.length}  ${RDNET_RULE_LAYERS.buslane}: ${busRows.length}  ${RDNET_RULE_LAYERS.prohibition}: ${prohRows.length}  ${RDNET_RULE_LAYERS.pedzone}: ${pedRows.length}`)
@@ -193,31 +182,28 @@ const readGeometries = ids => Promise.all(Array.from({ length: Math.ceil(ids.len
 // graph; only the cut-off edges must wait for computeCutoff below.
 await Promise.all([readNamesAndGraph(), readTurns(), readGeometries([...new Set(prohRows.map(f => f.properties.ROAD_ROUTE_ID))])])
 
-// The cut-off class: a row addresses public light buses when its coded
-// INC_VEH_TYPE names PLB or ALL. The remarks head (kindsOf) decides only when
-// the code names no specific class (OTH / NA): here, unlike a legend `kind`,
-// a loose head costs whole districts — one INC=GMB row remarked "PLB Proh"
-// sealed 40 km of Sha Tin. The class is let through by its own code, or "LB"
-// as the remarks abbreviate light buses ("E Bus & LB"). "E GMB" does not
-// exempt: red minibuses stay banned. TURN rows go through the same test, but
-// their 184 uncoded (NA/OTH) remarks carry no `<who> Proh` head — only
-// exceptions or a size ("E FB", "Over 7m") — so kindsOf files them `other` and
-// they are not applied: a missed closure, never an invented one.
-const cutoffExempt = new Set([CUTOFF_VEHICLE, 'LB'])
-const addressesCutoff = (row) => {
-  const inc = (row.INC_VEH_TYPE ?? '').split(',').map(s => s.trim()).filter(c => c && c !== 'NA' && c !== 'OTH')
-  return inc.length
-    ? inc.includes(CUTOFF_VEHICLE) || inc.includes('ALL')
-    : kindsOf(row).kinds.some(k => k === 'plb' || k === 'all')
-}
+// Notice-backed overrides (zone-overrides.mjs), applied to the rows BOTH the
+// prohibition lines and the cut-off search read, so a road TD's notice closes
+// is drawn as a ban and seals what lies behind it. The class test lives in
+// road-cutoff.mjs (`addressesCutoff`): coded INC_VEH_TYPE first, remarks head
+// only for OTH/NA rows — see the note there on why a loose head costs whole
+// districts. TURN rows go through the same test, but their 184 uncoded
+// remarks carry no `<who> Proh` head, so they are not applied: a missed
+// closure, never an invented one.
+const overrides = applyZoneOverrides(prohRows.map(f => f.properties), new Map([...routes].map(([id, r]) => [id, r.st_en])), await loadOverrides())
+const prohProps = overrides.rows
+for (const w of overrides.warnings) console.warn(`  ⚠ override: ${w}`)
+
 const cutoff = computeCutoff({
   edges: graphEdges,
-  prohibitions: prohRows.map(f => f.properties),
+  prohibitions: prohProps,
   turns: turnRows,
-  closes: row => closesFor(row, addressesCutoff, cutoffExempt)
+  closes: closesForCutoff
 })
 
-await readGeometries([...new Set(cutoff.groups.flatMap(g => g.edges.map(e => e.routeId)))].filter(id => !geometries.has(id)))
+// Geometry for the cut-off edges and for any route an override closed (the
+// prohibition read above only fetched TD's own rows' routes).
+await readGeometries([...new Set([...cutoff.groups.flatMap(g => g.edges.map(e => e.routeId)), ...prohProps.map(p => p.ROAD_ROUTE_ID)])].filter(id => !geometries.has(id)))
 for (const [id, geometry] of geometries) if (routes.has(id)) routes.get(id).geometry = geometry
 console.log(`  ${RDNET_CENTERLINE_LAYER}: ${routes.size} routes named, ${geometries.size} geometries, ${streetsByCode.size} street codes named; ${RDNET_TURN_LAYER}: ${turnRows.length}`)
 
@@ -249,6 +235,7 @@ for (const { geometry, properties: p } of speedRows) {
     speed,
     bound: p.BOUND ?? 0,
     remarks: text(p.REMARKS),
+    notice: p.notice,
     ...streetProps(p.ROAD_ROUTE_ID)
   }))
   counts.speed++
@@ -261,6 +248,7 @@ for (const { geometry, properties: p } of busRows) {
     days: text(p.EFFECTIVE_DAY),
     bound: p.BOUND ?? 0,
     remarks: text(p.REMARKS),
+    notice: p.notice,
     ...streetProps(p.ROAD_ROUTE_ID)
   }))
   counts.buslane++
@@ -274,6 +262,7 @@ for (const { geometry, properties: p } of pedRows) {
     hours: text(p.TIME_ZONE),
     days: text(p.EFFECTIVE_DAY),
     remarks: text(p.REMARKS),
+    notice: p.notice,
     ...streetProps(p.ROAD_ROUTE_ID)
   }))
   counts.pedzone++
@@ -282,7 +271,7 @@ for (const { geometry, properties: p } of pedRows) {
 const kindTally = Object.fromEntries(PROHIBITION_KINDS.map(k => [k, 0]))
 const otherHeads = new Map()
 let noRoute = 0
-for (const { properties: p } of prohRows) {
+for (const p of prohProps) {
   const route = routes.get(p.ROAD_ROUTE_ID)
   if (!route?.geometry) {
     noRoute++
@@ -296,6 +285,7 @@ for (const { properties: p } of prohRows) {
     part_time: p.PART_TIME_PROHIBITION === 'Y',
     all_days: p.EFF_ALL_DAYS !== 'N',
     remarks: text(p.REMARKS),
+    notice: p.notice,
     ...streetProps(p.ROAD_ROUTE_ID)
   })
   for (const kind of kinds) {
@@ -375,6 +365,7 @@ console.log(`  nsr: ${othBlank} OTH rows carry no REMARKS; ${nsrNoStreet} rows n
 // wording closesFor no longer reads as conditional.
 const { stats } = cutoff
 const totalKm = cutoff.groups.reduce((s, g) => s + g.lenM, 0) / 1000
+console.log(`  overrides: ${overrides.applied.close} route(s) closed, ${overrides.applied.open} row(s) reopened from ${'data/zone-notices/overrides.json'}${overrides.warnings.length ? ` — ${overrides.warnings.length} warning(s) above` : ''}`)
 console.log(`  cutoff (${CUTOFF_VEHICLE}): ${stats.closedRoutes} closed routes, ${stats.bannedTurns} turn bans applied (${stats.turnsSkipped} skipped) → ${stats.cutEdges} edges, ${totalKm.toFixed(0)} km in ${cutoff.groups.length} areas`)
 for (const g of cutoff.groups.slice(0, 8)) {
   console.log(`    ${(g.lenM / 1000).toFixed(1)} km  ${joinNames(g.edges.map(e => e.routeId), 'st_en', 3) ?? '(unnamed)'}  ← ${joinNames(g.entryRouteIds, 'st_en') ?? '(unnamed)'}`)

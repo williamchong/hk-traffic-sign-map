@@ -41,6 +41,15 @@ const rows = computed(() =>
 
 const coords = computed(() => rule.value ? formatLngLat(rule.value.lngLat) : '')
 
+// A ban the build added from a TD traffic notice rather than a road-network
+// row (scripts/zone-overrides.mjs) carries the notice number; the source line
+// then names the notice instead of the network, and links the notice feed.
+const notice = computed(() => {
+  const n = rule.value?.properties.notice
+  return typeof n === 'string' ? n : null
+})
+const NOTICES_URL = 'https://data.gov.hk/en-data/dataset/hk-td-tis_22-traffic-notices'
+
 // "Show signs for this rule": the plates that announce it, added to the
 // sign-ID filter — the retain-all archive, so they are complete at every zoom
 // (a category-mode emphasis would only reach the thinned overview's
@@ -79,7 +88,16 @@ function onShowSigns() {
             {{ title }}
           </h2>
           <p class="mt-0.5 text-xs text-muted">
-            {{ $t(rule.layer === 'cutoff' ? 'rules.cutoffSource' : 'rules.source') }}
+            <a
+              v-if="notice"
+              :href="NOTICES_URL"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-dotted underline-offset-2"
+            >{{ $t('rules.noticeSource', { n: notice }) }}</a>
+            <template v-else>
+              {{ $t(rule.layer === 'cutoff' ? 'rules.cutoffSource' : 'rules.source') }}
+            </template>
           </p>
         </div>
       </div>
