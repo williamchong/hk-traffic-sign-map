@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VisibleCategoryKey } from '~/composables/useSignCategories'
 import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
-import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES, CUTOFF_COLOR, ruleColor } from '~/composables/useRoadRules'
+import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES, CUTOFF_COLOR, TAXI_CHIP_ACCESS, ruleColor } from '~/composables/useRoadRules'
 
 const { categories, enabled, toggleAll, mapUnavailable, filterMode, addSigns, removeSigns } = useTrafficLayers()
 const { rows: ruleRows, rulesEnabled, anyRuleOn } = useRoadRules()
@@ -32,17 +32,26 @@ onMounted(() => {
   rulesOpen.value = anyRuleOn.value || desktop
 })
 
-// Legend chips for the rows that draw more than one colour: speed limits by
-// km/h, no-stopping by vehicle type, and the PLB row's two source-layers —
-// TD's ban lines and the cut-off band behind them, one row, two readings.
-// `ink` overrides the chip's white text where the colour is too light for it.
+// Legend chips for a row that draws more than ONE reading — by colour for
+// speed limits (km/h) and no-stopping (vehicle type), by source-layer for the
+// PLB row (TD's ban lines and the cut-off band behind them), and by `access`
+// for the NT taxi row, whose three readings share one hue and differ only in
+// width. `ink` overrides the chip's white text where the colour is too light.
 const ruleChips = computed<Record<string, { label: string, color: string, ink?: string }[]>>(() => ({
-  speed: SPEED_VALUES.map(v => ({ label: String(v), color: SPEED_COLORS[v]! })),
-  nsr: NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] })),
-  plb: [
+  'speed': SPEED_VALUES.map(v => ({ label: String(v), color: SPEED_COLORS[v]! })),
+  'nsr': NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] })),
+  'plb': [
     { label: t('rules.chips.plbBan'), color: ruleColor('plb') },
     { label: t('rules.chips.plbCutoff'), color: CUTOFF_COLOR, ink: '#134e4a' }
-  ]
+  ],
+  // The NT row draws three readings of one colour: its operating area, the
+  // fringe facilities TD lets it serve, and the designated through-routes
+  // between them. One hue, three widths on the map — so the chips carry the
+  // wording rather than a colour scale, and only the row that has all three
+  // needs them (Lantau has only an area, urban only its exclusions).
+  'taxi-nt': TAXI_CHIP_ACCESS.map(a => ({
+    label: t(`rules.taxiAccess.${a}`), color: ruleColor('taxi-nt')
+  }))
 }))
 
 // A rule row means "draw this reading, and show the plates that announce it":

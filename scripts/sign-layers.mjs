@@ -37,13 +37,23 @@ export const SIGN_LAYERS = [
 //   lines, kerb edges) stay as the fallback host for signs no centreline
 //   reaches — they give a road tangent but no direction. Not tiled: ~155 MB
 //   of short strokes that don't render usefully at the viewer's zooms.
+// • HAD's 18 district boundaries, the classifier for the taxi operating areas
+//   (TAXI_LAYER below). Not TD's, and not drawable: it is an ADMINISTRATIVE
+//   partition whose outer edge runs through the sea in straight lines (Islands
+//   District is 93 vertices for the whole of Lantau), which is exactly right
+//   for asking "which district is this road edge in" and useless as a fill.
 export const BUILD_TIME_DATA = [
   {
     file: 'RdNet_IRNP.gdb', ext: 'zip',
     url: 'https://static.data.gov.hk/td/road-network-v2/RdNet_IRNP.gdb.zip',
     label: 'Road Network v2 (directed centrelines, for absolute face bearings)'
   },
-  { file: 'DTAD_RD_MARK_LINE', ext: 'gml', label: 'Road marking line (fallback face-bearing host)' }
+  { file: 'DTAD_RD_MARK_LINE', ext: 'gml', label: 'Road marking line (fallback face-bearing host)' },
+  {
+    file: 'hksar_18_district_boundary', ext: 'json',
+    url: 'https://www.had.gov.hk/psi/hong-kong-administrative-boundaries/hksar_18_district_boundary.json',
+    label: 'HAD district boundaries (taxi operating-area classifier)'
+  }
 ]
 // Layer name inside the Road Network FGDB that carries the directed centrelines.
 export const RDNET_CENTERLINE_LAYER = 'CENTERLINE'
@@ -80,6 +90,26 @@ export const RDNET_TURN_LAYER = 'TURN'
 // green-minibus layer would contradict the routes riders see.
 export const CUTOFF_LAYER = 'cutoff'
 export const CUTOFF_VEHICLE = 'PLB'
+
+// The second derived source-layer, and the only CURATED one: which colour of
+// taxi may serve a road. Its extent is data/taxi-zones/areas.json rather than
+// an FGDB layer, so it is kept out of RDNET_RULE_LAYERS like the cut-off one.
+// Why it cannot be read off TD's data, and why the TS329 / TS569 plates audit
+// it instead of feeding it: taxi-zones.mjs and data/taxi-zones/README.md.
+export const TAXI_LAYER = 'taxi'
+// The three licence colours, as the tile prop `taxi`. `urban` is emitted only
+// for the roads red taxis may NOT use (Tung Chung Road and South Lantau) —
+// drawing the ~3,900 km it CAN use would say nothing.
+export const TAXI_CLASSES = ['nt', 'lantau', 'urban']
+// How a road relates to that colour, as the tile prop `access`:
+//   area  — inside the permitted operating area; may ply for hire
+//   dest  — a named facility on the fringe that TD lets the colour serve from
+//           its own rank, in territory otherwise closed to it: the airport and
+//           the HZMB port, Disneyland, three stations, two hospitals, an
+//           estate and the racecourse
+//   route — a designated through-route only; may carry, may not pick up
+//   none  — expressly excluded (urban only)
+export const TAXI_ACCESS = ['area', 'dest', 'route', 'none']
 
 // NSR (no-stopping restrictions) codes its three descriptive fields as small
 // integers, where BUS_ONLY_LANE prints free text — so unlike every other rule

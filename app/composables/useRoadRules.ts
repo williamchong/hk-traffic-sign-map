@@ -16,8 +16,15 @@ import { str } from '~/utils/format'
 // `cutoff` is the one DERIVED layer: roads public light buses cannot enter at
 // all, because TD's prohibitions and turn bans close every way in
 // (scripts/road-cutoff.mjs) — its popup says so rather than citing a rule.
-export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone' | 'cutoff'
+export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone' | 'cutoff' | 'taxi'
 export type ProhibitionKind = 'plb' | 'ld' | 'gv' | 'all' | 'other'
+// `taxi` is the second DERIVED layer and the only CURATED one: which colour of
+// taxi may serve a road. No TD layer publishes it (PROHIBITION's `TX` code has
+// no colour dimension), so the extent is data/taxi-zones/areas.json, drawn
+// from Cap. 374E Sch. 7 and TD's own boundary map — which is why its popup
+// cites that instead of the network, as `cutoff`'s does.
+export type TaxiClass = 'nt' | 'lantau' | 'urban'
+export type TaxiAccess = 'area' | 'dest' | 'route' | 'none'
 export type NsrVehicle = 'ALL' | 'TX' | 'PLB' | 'GV' | 'OTH'
 export type NsrTimeZone = '24h' | 'peaks' | 'day' | 'late' | 'other'
 export const RULE_SOURCE = 'rules'
@@ -28,6 +35,10 @@ export interface RuleRow {
   layer: RuleLayer
   // Prohibition rows are one source-layer split by `kind`.
   kind?: ProhibitionKind
+  // Taxi rows are one source-layer split by `taxi`. A SEPARATE field, not a
+  // reuse of `kind`: prohibitionColorStops is built from the rows that carry
+  // `kind`, and would otherwise pick these up.
+  taxi?: TaxiClass
   color: string
   // On for a visitor who has never touched the overlay (see rulesEnabled).
   defaultOn?: boolean
@@ -53,11 +64,24 @@ export const RULE_ROWS: RuleRow[] = [
   { key: 'proh-gv', layer: 'prohibition', kind: 'gv', color: '#b45309' },
   { key: 'proh-all', layer: 'prohibition', kind: 'all', color: '#e11d48' },
   { key: 'proh-other', layer: 'prohibition', kind: 'other', color: '#64748b' },
-  // Non-prohibition rows keep key === layer (rowKeyFor relies on it) and never
-  // carry a `kind` — prohibitionColorStops is built from the rows that do.
+  // A row on a layer that is NOT split keeps key === layer (rowKeyFor relies
+  // on it) and carries neither discriminator — prohibitionColorStops is built
+  // from the rows that carry `kind`, taxiColorStops from those with `taxi`.
   { key: 'nsr', layer: 'nsr', color: '#db2777' },
-  { key: 'pedzone', layer: 'pedzone', color: '#65a30d' }
+  { key: 'pedzone', layer: 'pedzone', color: '#65a30d' },
+  // One source-layer, three rows, split by `taxi` — the same shape as the
+  // prohibition rows. The colours are the licence colours themselves, because
+  // that is the only thing anyone knows about a HK taxi at a glance. The red
+  // sits near `proh-all`'s rose: they stay apart because the urban row draws
+  // only South Lantau and Tung Chung Road, where no prohibition dashes run.
+  { key: 'taxi-nt', layer: 'taxi', taxi: 'nt', color: '#16a34a' },
+  { key: 'taxi-lantau', layer: 'taxi', taxi: 'lantau', color: '#38bdf8' },
+  { key: 'taxi-urban', layer: 'taxi', taxi: 'urban', color: '#dc2626' }
 ]
+export const taxiColorStops = RULE_ROWS.filter(r => r.taxi).flatMap(r => [r.taxi!, r.color])
+// The readings the NT row draws, in legend-chip order. `none` is absent: it is
+// the urban row's only reading, and that row needs no chips to explain one.
+export const TAXI_CHIP_ACCESS: TaxiAccess[] = ['area', 'dest', 'route']
 
 // Speed-limit lines are coloured by value (the row colour is only its swatch
 // fallback). 50 km/h is the territory default and has no rows in the data.
@@ -96,8 +120,24 @@ export const ruleColor = (key: string) => RULE_ROWS.find(r => r.key === key)!.co
 // prohibition row, so both source-layers map to that one key.
 export const rowKeyFor = (layer: RuleLayer, kind?: string | null) => {
   if (layer === 'cutoff') return 'plb'
+  // The two layers that hold several rows resolve theirs from a tile property;
+  // every other layer still has key === layer.
+  if (layer === 'taxi') return `taxi-${kind ?? 'nt'}`
   if (layer !== 'prohibition') return layer
   return kind === 'plb' ? 'plb' : `proh-${kind ?? 'other'}`
+}
+// The tile property that splits a multi-row source-layer into its rows.
+// Everything else is one layer, one row, toggled by visibility alone.
+export const ROW_SPLIT_PROP: Partial<Record<RuleLayer, string>> = { prohibition: 'kind', taxi: 'taxi' }
+// Which row a clicked FEATURE belongs to, read from whichever property its own
+// layer splits on. Every caller that turns a feature into a row must go
+// through this: reading `kind` directly worked while `prohibition` was the
+// only split layer, but a taxi feature carries `taxi` and no `kind`, so a
+// clicked Lantau band would have been tested against the NT row — unpickable
+// unless NT happened to be on, and mislabelled when it was.
+export const rowValueOf = (layer: RuleLayer, p: Record<string, unknown>) => {
+  const prop = ROW_SPLIT_PROP[layer]
+  return prop ? str(p[prop]) ?? null : null
 }
 
 // Persisted, unlike the category toggles: someone who turned on speed limits
@@ -115,6 +155,8 @@ const anyRuleOn = computed(() => RULE_ROWS.some(r => rulesEnabled.value[r.key]))
 const enabledKinds = computed(() =>
   RULE_ROWS.filter(r => r.kind && rulesEnabled.value[r.key]).map(r => r.kind!)
 )
+const enabledTaxis = computed(() =>
+  RULE_ROWS.filter(r => r.taxi && rulesEnabled.value[r.key]).map(r => r.taxi!))
 const isRowEnabled = (layer: RuleLayer, kind?: string | null) => !!rulesEnabled.value[rowKeyFor(layer, kind)]
 
 export interface SelectedRule {
@@ -231,6 +273,24 @@ export const ROW_SIGN_CODES: Record<string, string[]> = Object.fromEntries(RULE_
     .filter(([, link]) => rowKeyFor(link.layer, link.layer === 'prohibition' ? link.kind : null) === r.key)
     .map(([code]) => code)
 ]))
+// The plates that announce a taxi row, added to ROW_SIGN_CODES by hand rather
+// than derived from SIGN_RULE_LINKS. They are NOT links: TS329 and TS569 are
+// end-of-zone plates, and the standing rule above is that a terminator says
+// where a zone stops, not where it applies, so neither may drive the sign
+// popup's "applies here" lookup. Ticking the row still shows them, which is
+// what a row means — "draw this reading, and show the plates that announce
+// it". The stand plates come too, because a rank is the clearest thing a
+// colour's area has on the ground.
+//   TS329 END OF PERMITTED AREA FOR NT TAXIS · TS818 NT TAXIS (stand)
+//   TS569 END OF PERMITTED AREA FOR LANTAU TAXIS · TS566 LANTAU TAXIS
+//   TS567 URBAN TAXIS
+const TAXI_ROW_CODES: Record<string, string[]> = {
+  'taxi-nt': ['TS329', 'TS818'],
+  'taxi-lantau': ['TS569', 'TS566'],
+  'taxi-urban': ['TS567']
+}
+for (const [row, codes] of Object.entries(TAXI_ROW_CODES)) ROW_SIGN_CODES[row] = codes
+
 // The 50 km/h plate: the default limit, which TD's data does not draw.
 export const DEFAULT_SPEED_CODES = new Set(['TS174'])
 
@@ -274,6 +334,12 @@ export function ruleRows(layer: RuleLayer, p: Record<string, unknown>, t: Transl
     rows.push([t('rules.fields.vehicles'), vehicles(p.veh, t)])
     rows.push([t('rules.fields.hours'), str(p.tz) ? t(`rules.nsrHours.${p.tz}`) : null])
     rows.push([t('rules.fields.days'), str(p.eday) ? t(`rules.nsrDays.${p.eday}`) : null])
+  } else if (layer === 'taxi') {
+    rows.push([t('rules.fields.taxiAccess'), str(p.access) ? t(`rules.taxiAccess.${p.access}`) : null])
+    // A designated route is one of TD's thirteen numbered ones; a destination
+    // names the facility. Only one of the two is ever set.
+    rows.push([t('rules.fields.taxiRoute'), p.route_n != null ? t('rules.taxiRouteNo', { n: p.route_n }) : null])
+    rows.push([t('rules.fields.taxiDest'), pick(p.dest_zh, p.dest_en)])
   } else if (layer === 'cutoff') {
     rows.push([t('rules.fields.vehicles'), vehicles(p.veh, t)])
     rows.push([t('rules.fields.sealedBy'), pick(p.via_zh, p.via_en)])
@@ -299,6 +365,9 @@ export function ruleRows(layer: RuleLayer, p: Record<string, unknown>, t: Transl
 // row is the exception — its label covers the cut-off band too, so a clicked
 // line takes its own wording and still says which of the two it is.
 export const ruleTitleKey = (layer: RuleLayer, p: Record<string, unknown>) => {
+  // Three rows in one layer: the title names the colour, as the popup for a
+  // prohibition names its kind.
+  if (layer === 'taxi') return `rules.popup.taxi-${str(p.taxi) ?? 'nt'}`
   if (layer !== 'prohibition') return `rules.popup.${layer}`
   const key = rowKeyFor(layer, str(p.kind))
   return key === 'plb' ? 'rules.popup.proh-plb' : `rules.rows.${key}`
@@ -310,6 +379,7 @@ export function useRoadRules() {
     rulesEnabled,
     anyRuleOn,
     enabledKinds,
+    enabledTaxis,
     isRowEnabled,
     selectedRule,
     governingRule

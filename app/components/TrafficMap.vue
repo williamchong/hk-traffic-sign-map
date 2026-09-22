@@ -5,8 +5,9 @@ import { CATEGORY_FALLBACK_COLOR, categoryColorStops } from '~/composables/useSi
 import { TIER_LOD, SIGN_FIRST_SIZE, codesByTier, categoryKeyExpr, categoryKeyOf, plateSizeFactorExpr } from '~/composables/useSignCatalogue'
 import type { FilterMode, SelectedSign } from '~/composables/useTrafficLayers'
 import {
-  RULE_SOURCE, SIGN_RULE_LINKS, SIGN_RULE_RADIUS_M, CUTOFF_COLOR, ruleColor,
-  speedColorStops, prohibitionColorStops, nsrColorStops, type RuleLayer, type SignRuleLink
+  RULE_SOURCE, SIGN_RULE_LINKS, SIGN_RULE_RADIUS_M, CUTOFF_COLOR, ruleColor, ROW_SPLIT_PROP, rowValueOf,
+  speedColorStops, prohibitionColorStops, nsrColorStops, taxiColorStops,
+  type RuleLayer, type SignRuleLink
 } from '~/composables/useRoadRules'
 import {
   RULE_NOTES, NOTE_SOURCE, NOTE_LAYER, NOTE_COVER_LAYERS, NOTE_FILTER_NONE, coversFilter, notesFor
@@ -20,7 +21,7 @@ import tilesVersion from '~/data/tilesVersion.json'
 let detachProtocol: (() => void) | undefined
 
 const { mapFilter, selectedSign, selectedGroup, mapUnavailable, filterMode, loadGroupIndex } = useTrafficLayers()
-const { rulesEnabled, enabledKinds, isRowEnabled, selectedRule, governingRule } = useRoadRules()
+const { rulesEnabled, enabledKinds, enabledTaxis, isRowEnabled, selectedRule, governingRule } = useRoadRules()
 const { selectedNote, activeNotes } = useRuleNotes()
 const colorMode = useColorMode()
 const { track } = useAnalytics()
@@ -248,22 +249,37 @@ const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tie
 // tippecanoe.minzoom; see the lookup's own comment for what resolves where.
 // Rule ids stay OUT of signLayerIds: the click handler's featureKey assumes
 // point geometry.
-// Draw order: `cutoff` first, so its wide band sits under every rule line.
-const RULE_LAYERS: RuleLayer[] = ['cutoff', 'speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
+// Draw order: the two wide bands first — `taxi` under `cutoff`, both under
+// every rule line.
+const RULE_LAYERS: RuleLayer[] = ['taxi', 'cutoff', 'speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
 const ruleLayerId = (layer: RuleLayer) => `rule-${layer}`
 const ruleHitLayerId = (layer: RuleLayer) => `rule-${layer}-hit`
-// `cutoff` gets NO hit line. It is the one rule drawn as a wide band (4 px at
-// z11 to 22 px at z17), so it is already its own click target, and a 14 px
-// transparent twin would mean a second bucket and a second hit-test per
-// pointer move over ~4.7k territory-wide lines that draw nothing — a cost
-// every visitor now pays, since the PLB row that owns the band is on by
-// default. The other five keep theirs: they are 1-6 px lines, and their
-// always-on hit layers are what keep the source's tiles resident.
-const RULE_HIT_LAYERS: RuleLayer[] = RULE_LAYERS.filter(l => l !== 'cutoff')
-// What a click or hover hit-tests: those hit lines plus the band itself. A
-// hidden layer returns no features, so the band is unpickable when its row is
-// off — the hit lines need `isRowEnabled` for that, being always on.
-const rulePickLayerIds = [...RULE_HIT_LAYERS.map(ruleHitLayerId), ruleLayerId('cutoff')]
+// Five layers get an ALWAYS-ON 14 px transparent hit line. It is load-bearing
+// twice: click tolerance on a 1-6 px line, and keeping the source's tiles
+// resident so the sign popup's "applies here" lookup can query them even with
+// every overlay hidden (MapLibre only fetches tiles for non-hidden layers).
+const RULE_HIT_LAYERS: RuleLayer[] = RULE_LAYERS.filter(l => l !== 'cutoff' && l !== 'taxi')
+// `cutoff` needs none: it is a 4-22 px band, so it is already its own target.
+// `taxi` is the awkward one — its `area` and `dest` features draw as bands,
+// but a designated ROUTE draws at exactly RULE_LINE_WIDTH, so it needs the
+// same tolerance every other thin line gets. It gets a hit line that FOLLOWS
+// ITS ROW rather than being always on, because nothing needs its tiles kept
+// resident: no taxi plate drives the "applies here" lookup (TAXI_ROW_CODES).
+// ⚠️ What that saves is a bucket and a hit-test per pointer move, NOT bytes.
+// An MVT tile carries every source-layer, and the always-on `rule-speed-hit`
+// already keeps this source's tiles coming from z9 — so the taxi features are
+// downloaded whether or not a taxi row is ticked, and hiding a layer never
+// changes that. The only lever on those bytes is a separate source.
+const TOGGLED_HIT_LAYERS: RuleLayer[] = ['taxi']
+// What a click or hover hit-tests: the hit lines plus the cut-off band. A
+// hidden layer returns no features, so a toggled hit line and the band are
+// unpickable when their row is off; the always-on five need `isRowEnabled`
+// for that instead.
+const rulePickLayerIds = [
+  ...RULE_HIT_LAYERS.map(ruleHitLayerId),
+  ...TOGGLED_HIT_LAYERS.map(ruleHitLayerId),
+  ruleLayerId('cutoff')
+]
 // Curated notes on the overlay (useRuleNotes): a pin beside the annotated
 // stretch, plus a highlighter band under the rule lines it covers. One
 // highlight layer per source-layer some note mentions, added BEFORE the rule
@@ -282,7 +298,9 @@ const NOTE_PIN_PX = 34
 // Speed limits run for kilometres and read at the overview; bus lanes and
 // prohibitions are short urban segments that only make sense street-level;
 // no-stopping's 20k kerb lines are a smear until the streets separate.
-const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12, cutoff: 11 }
+// A taxi operating area is a thing you read zoomed OUT — it answers "can this
+// colour come here at all", which is a question about a district, not a kerb.
+const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12, cutoff: 11, taxi: 10 }
 const RULE_LINE_WIDTH = expr(['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 3, 17, 6])
 // A bus lane's `bound` is its side of the centreline in the digitised
 // direction (1 left, -1 right, 0 both); `line-offset` is positive to the
@@ -311,6 +329,24 @@ const RULE_PAINT: Record<RuleLayer, LineLayerSpecification['paint']> = {
   },
   pedzone: {
     'line-color': ruleColor('pedzone')
+  },
+  // Bands like the cut-off one, coloured by licence colour. `access` varies
+  // width and opacity rather than the dash pattern, because `line-dasharray`
+  // is the one line paint MapLibre will not take a data expression for — and
+  // splitting this into two layers to dash one of them would double the
+  // toggling and the click handling for a purely cosmetic difference. So an
+  // operating AREA is the widest and faintest (it is territory), a fringe
+  // DESTINATION is as wide but brighter (a facility, not a district), and a
+  // designated ROUTE is narrow and brightest, because it is a road and not an
+  // area at all. Every width rides in the interpolate's STOP OUTPUTS: a zoom
+  // input is only legal directly under a top-level interpolate.
+  taxi: {
+    'line-color': expr(['match', ['get', 'taxi'], ...taxiColorStops, ruleColor('taxi-nt')]),
+    'line-width': expr(['interpolate', ['linear'], ['zoom'],
+      10, ['match', ['get', 'access'], 'route', 1.5, 4],
+      14, ['match', ['get', 'access'], 'route', 3, 10],
+      17, ['match', ['get', 'access'], 'route', 6, 22]]),
+    'line-opacity': expr(['match', ['get', 'access'], 'route', 0.6, 'dest', 0.5, 0.3])
   },
   // A wide, faint band rather than a line: it marks roads no rule names, the
   // area behind the PLB prohibitions that seal it, not a rule of its own — so
@@ -794,11 +830,15 @@ onMounted(async () => {
     }
     for (const layer of RULE_LAYERS) {
       const common = { 'source': RULE_SOURCE, 'source-layer': layer, 'minzoom': RULE_MINZOOM[layer] } as const
-      if (RULE_HIT_LAYERS.includes(layer)) {
+      const toggledHit = TOGGLED_HIT_LAYERS.includes(layer)
+      if (RULE_HIT_LAYERS.includes(layer) || toggledHit) {
         m.addLayer({
           id: ruleHitLayerId(layer),
           type: 'line',
           ...common,
+          // A toggled hit line starts hidden and is shown by syncRuleLayers
+          // with its own layer; an always-on one is never hidden.
+          layout: toggledHit ? { visibility: 'none' } : {},
           paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 14 }
         }, 'sel-group-glow')
       }
@@ -808,7 +848,7 @@ onMounted(async () => {
         ...common,
         // Butt caps on the translucent cut-off band: round caps of adjoining
         // edges overlap at every junction and stack into bright dots.
-        layout: { 'line-cap': layer === 'cutoff' ? 'butt' : 'round', 'line-join': 'round', 'visibility': 'none' },
+        layout: { 'line-cap': layer === 'cutoff' || layer === 'taxi' ? 'butt' : 'round', 'line-join': 'round', 'visibility': 'none' },
         paint: { 'line-width': RULE_LINE_WIDTH, 'line-opacity': 0.75, ...RULE_PAINT[layer] }
       }, 'sel-group-glow')
     }
@@ -821,16 +861,27 @@ onMounted(async () => {
     // tile of the source — so write only on a difference. This watch also
     // fires on a cross-tab storage event, where nothing has actually moved.
     const syncRuleLayers = () => {
-      const kinds = enabledKinds.value
-      const kindFilter = expr(['in', ['get', 'kind'], ['literal', kinds]])
+      // The two SPLIT layers — prohibition by `kind`, taxi by `taxi` — are
+      // visible when any of their rows is on, and filtered to exactly those
+      // rows. Every other layer is one row and rides visibility alone.
+      const splitValues: Partial<Record<RuleLayer, string[]>> = {
+        prohibition: enabledKinds.value,
+        taxi: enabledTaxis.value
+      }
       for (const layer of RULE_LAYERS) {
-        const id = ruleLayerId(layer)
-        if (!m.getLayer(id)) continue
-        const on = layer === 'prohibition' ? kinds.length > 0 : isRowEnabled(layer)
+        const values = splitValues[layer]
+        const on = values ? values.length > 0 : isRowEnabled(layer)
         const vis = on ? 'visible' : 'none'
-        if (m.getLayoutProperty(id, 'visibility') !== vis) m.setLayoutProperty(id, 'visibility', vis)
-        if (layer === 'prohibition' && JSON.stringify(m.getFilter(id)) !== JSON.stringify(kindFilter)) {
-          m.setFilter(id, kindFilter)
+        const filter = values && expr(['in', ['get', ROW_SPLIT_PROP[layer]!], ['literal', values]])
+        // A toggled hit line rides with its own layer, so the invisible target
+        // can never outlive the line a reader can see.
+        const ids = TOGGLED_HIT_LAYERS.includes(layer)
+          ? [ruleLayerId(layer), ruleHitLayerId(layer)]
+          : [ruleLayerId(layer)]
+        for (const id of ids) {
+          if (!m.getLayer(id)) continue
+          if (m.getLayoutProperty(id, 'visibility') !== vis) m.setLayoutProperty(id, 'visibility', vis)
+          if (filter && JSON.stringify(m.getFilter(id)) !== JSON.stringify(filter)) m.setFilter(id, filter)
         }
       }
     }
@@ -1100,14 +1151,14 @@ onMounted(async () => {
       // the legend has on is pickable — the transparent hit lines are always
       // present, so an off overlay must not open a popup.
       const rule = m.queryRenderedFeatures(box, { layers: rulePickLayerIds.filter(id => m.getLayer(id)) })
-        .find(f => isRowEnabled(f.sourceLayer as RuleLayer, f.properties.kind as string | undefined))
+        .find(f => isRowEnabled(f.sourceLayer as RuleLayer, rowValueOf(f.sourceLayer as RuleLayer, f.properties)))
       selectedRule.value = rule
         ? { layer: rule.sourceLayer as RuleLayer, properties: rule.properties, lngLat: e.lngLat }
         : null
       if (rule) {
         track('rule_select', {
           layer: rule.sourceLayer as string,
-          kind: typeof rule.properties.kind === 'string' ? rule.properties.kind : null,
+          kind: rowValueOf(rule.sourceLayer as RuleLayer, rule.properties),
           zoom: Math.round(m.getZoom() * 10) / 10
         })
         // The line carried a caveat — worth counting separately from a pin
@@ -1167,7 +1218,7 @@ onMounted(async () => {
   // under nearly every sign, so clearing here would undo a sign's own cue.
   // Leaving the lines clears it unless a sign is still under the pointer.
   m.on('mousemove', rulePickLayerIds, (e) => {
-    if (e.features?.some(f => isRowEnabled(f.sourceLayer as RuleLayer, f.properties.kind as string | undefined))) {
+    if (e.features?.some(f => isRowEnabled(f.sourceLayer as RuleLayer, rowValueOf(f.sourceLayer as RuleLayer, f.properties)))) {
       m.getCanvas().style.cursor = 'pointer'
     }
   })

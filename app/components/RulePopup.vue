@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ruleRows, ruleTitleKey, rowKeyFor, linkedSignCodes, ruleColor, SPEED_COLORS, NSR_VEH_COLORS, CUTOFF_COLOR, type NsrVehicle } from '~/composables/useRoadRules'
+import { ruleRows, ruleTitleKey, rowKeyFor, rowValueOf, linkedSignCodes, ruleColor, SPEED_COLORS, NSR_VEH_COLORS, CUTOFF_COLOR, type NsrVehicle, type RuleLayer } from '~/composables/useRoadRules'
 import { useRuleNotes } from '~/composables/useRuleNotes'
 import { formatLngLat } from '~/utils/format'
 
@@ -31,8 +31,9 @@ const color = computed(() => {
   const veh = r.properties.veh as NsrVehicle
   if (r.layer === 'nsr' && NSR_VEH_COLORS[veh]) return NSR_VEH_COLORS[veh]
   if (r.layer === 'cutoff') return CUTOFF_COLOR
-  const kind = typeof r.properties.kind === 'string' ? r.properties.kind : null
-  return ruleColor(rowKeyFor(r.layer, kind))
+  // A split layer resolves its row from its own property — `taxi` for a taxi
+  // band, `kind` for a prohibition — via the same helper the map picks with.
+  return ruleColor(rowKeyFor(r.layer, rowValueOf(r.layer, r.properties)))
 })
 
 const rows = computed(() =>
@@ -49,6 +50,16 @@ const notice = computed(() => {
   return typeof n === 'string' ? n : null
 })
 const NOTICES_URL = 'https://data.gov.hk/en-data/dataset/hk-td-tis_22-traffic-notices'
+
+// Where this reading comes from. Every layer but two is read straight off TD's
+// road network; the cut-off band is worked out from it, and the taxi bands are
+// curated from Cap. 374E and TD's published boundary map because no network
+// layer carries them. Saying so is the point — a reader deserves to know which
+// answers are TD's own geometry.
+const SOURCE_KEY: Partial<Record<RuleLayer, string>> = {
+  cutoff: 'rules.cutoffSource',
+  taxi: 'rules.taxiSource'
+}
 
 // "Show signs for this rule": the plates that announce it, added to the
 // sign-ID filter — the retain-all archive, so they are complete at every zoom
@@ -96,7 +107,7 @@ function onShowSigns() {
               class="underline decoration-dotted underline-offset-2"
             >{{ $t('rules.noticeSource', { n: notice }) }}</a>
             <template v-else>
-              {{ $t(rule.layer === 'cutoff' ? 'rules.cutoffSource' : 'rules.source') }}
+              {{ $t(SOURCE_KEY[rule.layer] ?? 'rules.source') }}
             </template>
           </p>
         </div>

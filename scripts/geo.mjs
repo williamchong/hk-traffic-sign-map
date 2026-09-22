@@ -155,3 +155,26 @@ export async function reprojectPoints(points) {
     return [+lng.toFixed(6), +lat.toFixed(6)]
   })
 }
+
+// Is [lng, lat] inside this closed WGS84 ring? Plain even-odd ray cast, no
+// spherical correction: every caller works at HK's scale, where the error of
+// treating degrees as a plane is far below the metres of slop already in a
+// hand-drawn boundary. Shared by the taxi-zone builder and its audit so both
+// classify a road the same way.
+export function pointInRing(lng, lat, ring) {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+
+// The same, against a GeoJSON Polygon / MultiPolygon: inside an outer ring and
+// outside every hole of that same part.
+export function pointInPolygon(lng, lat, geometry) {
+  const parts = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
+  return parts.some(([outer, ...holes]) =>
+    pointInRing(lng, lat, outer) && !holes.some(h => pointInRing(lng, lat, h)))
+}

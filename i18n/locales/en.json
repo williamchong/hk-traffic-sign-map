@@ -72,7 +72,10 @@
       "proh-all": "All motor vehicles prohibited",
       "proh-other": "Other prohibitions",
       "nsr": "No stopping",
-      "pedzone": "Pedestrian zones"
+      "pedzone": "Pedestrian zones",
+      "taxi-nt": "NT (green) taxi area",
+      "taxi-lantau": "Lantau (blue) taxi area",
+      "taxi-urban": "Urban (red) taxi — where it cannot go"
     },
     "chips": {
       "plbBan": "Prohibited",
@@ -85,7 +88,10 @@
       "proh-plb": "Public light buses prohibited",
       "nsr": "No stopping",
       "pedzone": "Pedestrian zone",
-      "cutoff": "Cut off for public light buses"
+      "cutoff": "Cut off for public light buses",
+      "taxi-nt": "New Territories (green) taxi",
+      "taxi-lantau": "Lantau (blue) taxi",
+      "taxi-urban": "Urban (red) taxi not permitted"
     },
     "appliesHere": "Applies here",
     "showSigns": "Show signs for this rule",
@@ -102,7 +108,10 @@
       "when": "When",
       "sealedBy": "Every way in is closed on",
       "areaLength": "Roads cut off",
-      "remarks": "Remarks"
+      "remarks": "Remarks",
+      "taxiAccess": "May serve",
+      "taxiRoute": "Route",
+      "taxiDest": "Destination"
     },
     "values": {
       "partTime": "Part-time",
@@ -148,7 +157,15 @@
     "source": "Road Network (2nd generation), Transport Department",
     "cutoffSource": "Worked out from the Transport Department's prohibitions and turn bans, not a posted rule",
     "noticeSource": "Designated by Transport Department traffic notice no. {n}; not yet in the road network data",
-    "close": "Close"
+    "close": "Close",
+    "taxiAccess": {
+      "area": "Permitted area",
+      "dest": "Fringe destination",
+      "route": "Designated route",
+      "none": "Not permitted"
+    },
+    "taxiRouteNo": "No. {n} on the Transport Department’s boundary map",
+    "taxiSource": "Cap. 374E Sch. 7 and the Transport Department’s operating-area map — not the road network data"
   },
   "theme": {
     "light": "Light",
@@ -182,7 +199,7 @@
     "h1": "About the HK Traffic Sign Map",
     "whatTitle": "What this is",
     "whatP2": "Hong Kong has hundreds of thousands of road signs. This project puts every one in the Transport Department’s open dataset onto a single fast, zoomable map so you can see exactly which signs stand on any street — useful for drivers and learner drivers, road-safety and town-planning research, accessibility audits, or simple curiosity.",
-    "whatP3": "Beyond the signs themselves, a road-rules overlay draws where each rule actually applies — speed-limit stretches, bus-only lanes with their hours, vehicle prohibitions, no-stopping restrictions and pedestrian zones — along with the roads public light buses cannot reach at all because every way in is closed to them.",
+    "whatP3": "Beyond the signs themselves, a road-rules overlay draws where each rule actually applies — speed-limit stretches, bus-only lanes with their hours, vehicle prohibitions, no-stopping restrictions and pedestrian zones — along with the roads public light buses cannot reach at all because every way in is closed to them, and which of Hong Kong’s three taxi colours may serve a given street.",
     "howTitle": "How to use it",
     "how1": "Pan and zoom to any street; signs spread apart as you zoom in.",
     "how2": "Click a sign or dot to inspect it. Click the same spot again to cycle through several overlapping signs.",
@@ -245,6 +262,10 @@
       {
         "q": "What are “Minibus no-go roads”?",
         "a": "Roads that public light buses may not use. Dashed lines are the routes the Transport Department prohibits them from; the wider shaded band marks roads that are cut off because every way in is closed by those prohibitions or by turn bans. The cut-off band is worked out by this site from the department’s own rules rather than published by it. Green minibuses running under route permits are not covered."
+      },
+      {
+        "q": "Which taxi colour can serve a street?",
+        "a": "Turn on one of the taxi rows. Green New Territories taxis get their permitted operating area, the thirteen designated routes the Transport Department numbers on its boundary map, and the fringe facilities they may serve — the airport, Disneyland, several stations, two hospitals and Sha Tin Racecourse. Blue Lantau taxis get Lantau and Chek Lap Kok. Red urban taxis serve almost everywhere, so their row draws only the exception: Tung Chung Road and the roads of South Lantau. Unlike every other row, this one is not read off the road network data — no such dataset exists — so it is compiled here from Schedule 7 to Cap. 374E and the department’s published operating-area map, and each line says so when you click it. Where the department names a destination but not the road to it, the map leaves the road blank rather than guess."
       },
       {
         "q": "Does it work on a phone?",

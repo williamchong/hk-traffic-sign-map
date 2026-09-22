@@ -25,6 +25,14 @@
 //   cutoff       DERIVED (road-cutoff.mjs): CENTERLINE routes public light
 //                buses cannot enter at all, because prohibitions and turn bans
 //                close every way in; each names the routes that seal its area.
+//   taxi         CURATED (taxi-zones.mjs): which colour of taxi may serve a
+//                road. The one reading here whose extent is NOT TD's own
+//                geometry, because none exists — PROHIBITION's `TX` code has
+//                no colour dimension and Cap. 374E Sch. 7 is prose plus a
+//                raster map. data/taxi-zones/areas.json carries the extent,
+//                classified onto CENTERLINE against HAD's district partition;
+//                the TS329 / TS569 terminators AUDIT that file and never feed
+//                it (audit-taxi-zones.mjs), so the rule below still holds.
 // The PROHIBITION rows lag TD's own prohibited-zone notices by 1–35 months
 // (both ways), so data/zone-notices/overrides.json — human-curated, each entry
 // citing a notice — closes or reopens named routes BEFORE the prohibition
@@ -35,7 +43,7 @@
 // joined from CENTERLINE — by ROAD_ROUTE_ID for every layer but NSR, which
 // names its roads by ST_CODE instead.
 
-import { mkdir, readFile, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { createWriteStream } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
@@ -46,16 +54,24 @@ import {
   RAW_DIR, TARGET_SRS, OUTPUT_PMTILES_RULES,
   RDNET_CENTERLINE_LAYER, RDNET_RULE_LAYERS, PROHIBITION_KINDS,
   NSR_VEHICLE_TYPES, NSR_TIME_ZONES, NSR_EFFECTIVE_DAYS,
-  RDNET_TURN_LAYER, CUTOFF_LAYER, CUTOFF_VEHICLE
+  RDNET_TURN_LAYER, CUTOFF_LAYER, CUTOFF_VEHICLE, TAXI_LAYER
 } from './sign-layers.mjs'
 import { requireTool, mergeTilesVersion, streamOgrGeoJSON } from './geo.mjs'
 import { DASHES } from './text-similarity.mjs'
 import { kindsOf, closesForCutoff, computeCutoff } from './road-cutoff.mjs'
 import { applyZoneOverrides, loadOverrides } from './zone-overrides.mjs'
+import {
+  TAXI_AREAS_FILE, DISTRICTS_FILE,
+  loadTaxiAreas, classifyRoute, representativePoint, straddles, shareableAreas
+} from './taxi-zones.mjs'
 
 const RDNET_ZIP = join(RAW_DIR, 'RdNet_IRNP.gdb.zip')
 const scratch = key => join(RAW_DIR, `_rules_${key}.geojsonl`)
-const TILE_LAYERS = [...Object.keys(RDNET_RULE_LAYERS), CUTOFF_LAYER]
+const TILE_LAYERS = [...Object.keys(RDNET_RULE_LAYERS), CUTOFF_LAYER, TAXI_LAYER]
+// The shareable resolved extent. It lives beside the file it is generated
+// from, NOT in app/data/ — nothing in app/ imports it, and every other file
+// there is a runtime import.
+const TAXI_AREAS_OUT = 'data/taxi-zones/taxiAreas.json'
 
 // One FGDB layer as WGS84 features. `-dim XY` is mandatory: every rule layer
 // but NSR is a *measured* (XYM) geometry and tippecanoe would otherwise read
@@ -89,6 +105,10 @@ async function writeFeature(out, geometry, properties, tippecanoe) {
 
 requireTool('ogr2ogr', 'brew install gdal')
 requireTool('tippecanoe', 'brew install tippecanoe')
+// Validated here rather than at its own pass below: loadTaxiAreas throws on an
+// unknown taxi class, access, district or ring name, and a typo in a
+// hand-edited file should abort at the preflight, not ten seconds in.
+const taxiAreas = await loadTaxiAreas(TAXI_AREAS_FILE, join(RAW_DIR, DISTRICTS_FILE))
 
 const t0 = Date.now()
 
@@ -347,6 +367,49 @@ for (const g of cutoff.groups) {
   }
 }
 
+// Taxi operating areas — the second derived layer, and the only reading in
+// this archive whose extent is not TD's own geometry (there is none to read;
+// see taxi-zones.mjs and data/taxi-zones/README.md). One feature per route ×
+// colour, as prohibitions emit per kind, so a legend row is a plain filter.
+// z10 up: a zone is a thing you read zoomed out, unlike the kerbside layers.
+const TAXI_TILE_ZOOM = { minzoom: 10 }
+const taxiTally = new Map()
+let taxiStraddling = 0
+// ONE unfiltered CENTERLINE read at 1 m, not the chunked `-where ROUTE_ID IN`
+// the prohibition and cut-off routes use: nearly half the network classifies
+// here, so nine more full-layer scans would cost more than a single pass — and
+// a wide translucent band has no use for the 1 cm geometry those layers need
+// (5.4 MB of WKT for all 36k routes at 1 m against 54 MB at 1 cm). Classified
+// and written as it streams, so no second copy of the network is ever held.
+const taxiRead = streamOgrGeoJSON(RDNET_CENTERLINE_LAYER, [
+  `/vsizip/${RDNET_ZIP}`, RDNET_CENTERLINE_LAYER,
+  '-t_srs', TARGET_SRS,
+  '-dim', 'XY',
+  '-simplify', '1.0',
+  '-select', 'ROUTE_ID,STREET_ENAME,ALIAS_ENAME'
+])
+for await (const f of taxiRead) {
+  const at = representativePoint(f.geometry)
+  if (!at) continue
+  const names = [street(f.properties.STREET_ENAME), street(f.properties.ALIAS_ENAME)]
+  const hits = classifyRoute(taxiAreas, at[0], at[1], names)
+  if (!hits.length) continue
+  if (straddles(taxiAreas, f.geometry, names)) taxiStraddling++
+  for (const h of hits) {
+    await writeFeature(outs.taxi, f.geometry, compact({
+      taxi: h.taxi,
+      access: h.access,
+      route_n: h.n,
+      // Bilingual like the street names — the popup picks by locale.
+      dest_en: h.dest?.en,
+      dest_zh: h.dest?.zh,
+      ...streetProps(f.properties.ROUTE_ID)
+    }), TAXI_TILE_ZOOM)
+    counts.taxi++
+    bump(taxiTally, `${h.taxi}/${h.access}`)
+  }
+}
+
 for (const out of Object.values(outs)) out.end()
 await Promise.all(Object.values(outs).map(out => once(out, 'finish')))
 
@@ -370,6 +433,21 @@ console.log(`  cutoff (${CUTOFF_VEHICLE}): ${stats.closedRoutes} closed routes, 
 for (const g of cutoff.groups.slice(0, 8)) {
   console.log(`    ${(g.lenM / 1000).toFixed(1)} km  ${joinNames(g.edges.map(e => e.routeId), 'st_en', 3) ?? '(unnamed)'}  ← ${joinNames(g.entryRouteIds, 'st_en') ?? '(unnamed)'}`)
 }
+// The curated layer's own tallies — review after every TD refresh AND after
+// every edit to areas.json. A clause that matched nothing is the failure mode
+// that hides: a street renamed by TD, or a typo, silently draws no band.
+console.log(`  taxi (${taxiAreas.asOf}, ${TAXI_AREAS_FILE}): ${tally(taxiTally)}`)
+console.log(`  taxi: ${taxiStraddling} route(s) straddle a boundary (classified by their midpoint)`)
+const deadClauses = taxiAreas.clauses.filter(c => !c.matched)
+if (deadClauses.length) {
+  console.warn(`  ⚠ taxi: ${deadClauses.length} clause(s) matched no road — check for a renamed street or a mis-drawn ring:`)
+  for (const c of deadClauses) console.warn(`      ${c.taxi} ${c.access}${c.n != null ? ` #${c.n}` : ''}: ${c.streets ? [...c.streets].join(', ') : (c.districts ?? []).join(', ')}`)
+}
+// The resolved extent, for any other project that needs the gazetted shape.
+// Compact, like signGroups.json: it is bulk generated data, and pretty-printing
+// nested coordinate arrays quadrupled it (398 kB against 102 kB).
+await writeFile(TAXI_AREAS_OUT, `${JSON.stringify(shareableAreas(taxiAreas))}\n`)
+console.log(`  taxi: shareable extent → ${TAXI_AREAS_OUT}`)
 
 if (Object.values(counts).every(n => n === 0)) {
   console.error('No rule features converted — aborting before tippecanoe.')
