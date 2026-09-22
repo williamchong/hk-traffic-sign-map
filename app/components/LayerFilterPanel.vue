@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { VisibleCategoryKey } from '~/composables/useSignCategories'
 import { DEFAULT_FILTER_MODE, type FilterMode } from '~/composables/useTrafficLayers'
-import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES, CUTOFF_COLOR, TAXI_CHIP_ACCESS, ruleColor } from '~/composables/useRoadRules'
+import { SPEED_VALUES, SPEED_COLORS, NSR_VEH_VALUES, NSR_VEH_COLORS, ROW_SIGN_CODES, CUTOFF_COLOR, ruleColor, type LegendEntry } from '~/composables/useRoadRules'
 
 const { categories, enabled, toggleAll, mapUnavailable, filterMode, addSigns, removeSigns } = useTrafficLayers()
-const { rows: ruleRows, rulesEnabled, anyRuleOn } = useRoadRules()
+const { legend: ruleLegend, rulesEnabled, anyRuleOn } = useRoadRules()
 const localePath = useLocalePath()
 const { track } = useAnalytics()
 const { t } = useI18n()
@@ -32,27 +32,39 @@ onMounted(() => {
   rulesOpen.value = anyRuleOn.value || desktop
 })
 
-// Legend chips for a row that draws more than ONE reading — by colour for
-// speed limits (km/h) and no-stopping (vehicle type), by source-layer for the
-// PLB row (TD's ban lines and the cut-off band behind them), and by `access`
-// for the NT taxi row, whose three readings share one hue and differ only in
-// width. `ink` overrides the chip's white text where the colour is too light.
+// Legend chips for a row that draws more than ONE reading: by colour for speed
+// limits (km/h) and no-stopping (vehicle type), by source-layer for the PLB row
+// (TD's ban lines and the cut-off band behind them). Descriptive only — a
+// GROUPED row's chips are interactive instead, and are built from its members.
+// `ink` overrides the chip's white text where the colour is too light for it.
 const ruleChips = computed<Record<string, { label: string, color: string, ink?: string }[]>>(() => ({
-  'speed': SPEED_VALUES.map(v => ({ label: String(v), color: SPEED_COLORS[v]! })),
-  'nsr': NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] })),
-  'plb': [
+  speed: SPEED_VALUES.map(v => ({ label: String(v), color: SPEED_COLORS[v]! })),
+  nsr: NSR_VEH_VALUES.map(v => ({ label: t(`rules.veh.${v}`), color: NSR_VEH_COLORS[v] })),
+  plb: [
     { label: t('rules.chips.plbBan'), color: ruleColor('plb') },
     { label: t('rules.chips.plbCutoff'), color: CUTOFF_COLOR, ink: '#134e4a' }
-  ],
-  // The NT row draws three readings of one colour: its operating area, the
-  // fringe facilities TD lets it serve, and the designated through-routes
-  // between them. One hue, three widths on the map — so the chips carry the
-  // wording rather than a colour scale, and only the row that has all three
-  // needs them (Lantau has only an area, urban only its exclusions).
-  'taxi-nt': TAXI_CHIP_ACCESS.map(a => ({
-    label: t(`rules.taxiAccess.${a}`), color: ruleColor('taxi-nt')
-  }))
+  ]
 }))
+
+// A grouped row's master checkbox. Off → on restores whichever chips were on
+// when it was last switched off, so unticking the row to clear the map and
+// ticking it back does not silently widen the reading; nothing remembered (a
+// first visit) turns all of them on. The memory is per session by design —
+// the members' own state is what localStorage persists.
+const groupMemory = new Map<string, string[]>()
+const groupOn = (entry: LegendEntry) => entry.rows.some(r => rulesEnabled.value[r.key])
+function onGroupToggle(entry: LegendEntry, value: boolean) {
+  const keys = entry.rows.map(r => r.key)
+  if (!value) {
+    groupMemory.set(entry.key, keys.filter(k => rulesEnabled.value[k]))
+    for (const k of keys) if (rulesEnabled.value[k]) onRuleToggle(k, false)
+    return
+  }
+  const remembered = groupMemory.get(entry.key)?.filter(k => keys.includes(k)) ?? []
+  for (const k of (remembered.length ? remembered : keys)) {
+    if (!rulesEnabled.value[k]) onRuleToggle(k, true)
+  }
+}
 
 // A rule row means "draw this reading, and show the plates that announce it":
 // its codes join the sign-ID allowlist, which is an OR, so several rows read
@@ -270,27 +282,53 @@ function onTabChange(value: string | number) {
                 {{ $t('rules.hint') }}
               </p>
               <template
-                v-for="r in ruleRows"
-                :key="r.key"
+                v-for="e in ruleLegend"
+                :key="e.key"
               >
                 <label class="flex cursor-pointer items-center gap-2 text-sm">
                   <UCheckbox
-                    :model-value="!!rulesEnabled[r.key]"
-                    @update:model-value="v => onRuleToggle(r.key, !!v)"
+                    :model-value="e.grouped ? groupOn(e) : !!rulesEnabled[e.key]"
+                    @update:model-value="v => e.grouped ? onGroupToggle(e, !!v) : onRuleToggle(e.key, !!v)"
                   />
-                  <span
-                    class="h-1 w-4 shrink-0 rounded-full"
-                    :style="{ backgroundColor: r.color }"
-                  />
-                  <span class="truncate">{{ $t(`rules.rows.${r.key}`) }}</span>
+                  <!-- A grouped row has no single colour, so its swatch is its
+                       members' side by side. -->
+                  <span class="flex h-1 w-4 shrink-0 overflow-hidden rounded-full">
+                    <span
+                      v-for="r in e.rows"
+                      :key="r.key"
+                      class="h-full flex-1"
+                      :style="{ backgroundColor: r.color }"
+                    />
+                  </span>
+                  <span class="truncate">{{ $t(`rules.rows.${e.key}`) }}</span>
                 </label>
-                <!-- A row whose lines are coloured by value shows its scale while on. -->
+                <!-- A grouped row's chips TOGGLE its members; every other row's
+                     chips just show the scale its lines are coloured by. -->
                 <div
-                  v-if="ruleChips[r.key] && rulesEnabled[r.key]"
+                  v-if="e.grouped && groupOn(e)"
+                  class="ml-6 flex flex-wrap gap-1"
+                >
+                  <button
+                    v-for="r in e.rows"
+                    :key="r.key"
+                    type="button"
+                    class="cursor-pointer rounded border px-1 text-[10px] font-medium transition-colors"
+                    :class="rulesEnabled[r.key]
+                      ? 'border-transparent text-white'
+                      : 'border-default text-dimmed hover:text-muted'"
+                    :style="rulesEnabled[r.key] ? { backgroundColor: r.color } : {}"
+                    :aria-pressed="!!rulesEnabled[r.key]"
+                    @click="onRuleToggle(r.key, !rulesEnabled[r.key])"
+                  >
+                    {{ $t(`rules.rows.${r.key}`) }}
+                  </button>
+                </div>
+                <div
+                  v-else-if="ruleChips[e.key] && rulesEnabled[e.key]"
                   class="ml-6 flex flex-wrap gap-1"
                 >
                   <span
-                    v-for="c in ruleChips[r.key]"
+                    v-for="c in ruleChips[e.key]"
                     :key="c.label"
                     class="rounded px-1 text-[10px] font-medium text-white"
                     :style="{ backgroundColor: c.color, color: c.ink }"

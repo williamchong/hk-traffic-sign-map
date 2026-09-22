@@ -73,9 +73,10 @@
       "proh-other": "Other prohibitions",
       "nsr": "No stopping",
       "pedzone": "Pedestrian zones",
-      "taxi-nt": "NT (green) taxi area",
-      "taxi-lantau": "Lantau (blue) taxi area",
-      "taxi-urban": "Urban (red) taxi — where it cannot go"
+      "taxi-nt": "NT (green)",
+      "taxi-lantau": "Lantau (blue)",
+      "taxi-urban": "Urban (red) no-go",
+      "taxi": "Taxi operating areas"
     },
     "chips": {
       "plbBan": "Prohibited",
@@ -265,7 +266,7 @@
       },
       {
         "q": "Which taxi colour can serve a street?",
-        "a": "Turn on one of the taxi rows. Green New Territories taxis get their permitted operating area, the thirteen designated routes the Transport Department numbers on its boundary map, and the fringe facilities they may serve — the airport, Disneyland, several stations, two hospitals and Sha Tin Racecourse. Blue Lantau taxis get Lantau and Chek Lap Kok. Red urban taxis serve almost everywhere, so their row draws only the exception: Tung Chung Road and the roads of South Lantau. Unlike every other row, this one is not read off the road network data — no such dataset exists — so it is compiled here from Schedule 7 to Cap. 374E and the department’s published operating-area map, and each line says so when you click it. Where the department names a destination but not the road to it, the map leaves the road blank rather than guess."
+        "a": "Turn on the taxi row and pick a colour with its chips. Green New Territories taxis get their permitted operating area, the thirteen designated routes the Transport Department numbers on its boundary map, and the fringe facilities they may serve — the airport, Disneyland, several stations, two hospitals and Sha Tin Racecourse. Blue Lantau taxis get Lantau and Chek Lap Kok. Red urban taxis serve almost everywhere, so their row draws only the exception: Tung Chung Road and the roads of South Lantau. Unlike every other row, this one is not read off the road network data — no such dataset exists — so it is compiled here from Schedule 7 to Cap. 374E and the department’s published operating-area map, and each line says so when you click it. Where the department names a destination but not the road to it, the map leaves the road blank rather than guess."
       },
       {
         "q": "Does it work on a phone?",

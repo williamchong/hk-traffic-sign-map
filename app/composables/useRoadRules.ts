@@ -24,7 +24,10 @@ export type ProhibitionKind = 'plb' | 'ld' | 'gv' | 'all' | 'other'
 // from Cap. 374E Sch. 7 and TD's own boundary map — which is why its popup
 // cites that instead of the network, as `cutoff`'s does.
 export type TaxiClass = 'nt' | 'lantau' | 'urban'
-export type TaxiAccess = 'area' | 'dest' | 'route' | 'none'
+// The tile prop `access` is `area` | `dest` | `route` | `none` (see
+// TAXI_ACCESS in scripts/sign-layers.mjs). Not typed here: nothing in the
+// runtime enumerates it — `ruleRows` only interpolates it into an i18n key —
+// so a union would be a cast off `Record<string, unknown>`, not a check.
 export type NsrVehicle = 'ALL' | 'TX' | 'PLB' | 'GV' | 'OTH'
 export type NsrTimeZone = '24h' | 'peaks' | 'day' | 'late' | 'other'
 export const RULE_SOURCE = 'rules'
@@ -42,6 +45,10 @@ export interface RuleRow {
   color: string
   // On for a visitor who has never touched the overlay (see rulesEnabled).
   defaultOn?: boolean
+  // Rows sharing a `group` are shown as ONE legend row whose chips toggle
+  // them individually. Only the panel folds them: state, colour, tile filter
+  // and sign codes all stay per row, so nothing downstream knows or cares.
+  group?: string
 }
 
 // Legend order. Colours are hex literals so the same value feeds the legend
@@ -74,14 +81,29 @@ export const RULE_ROWS: RuleRow[] = [
   // that is the only thing anyone knows about a HK taxi at a glance. The red
   // sits near `proh-all`'s rose: they stay apart because the urban row draws
   // only South Lantau and Tung Chung Road, where no prohibition dashes run.
-  { key: 'taxi-nt', layer: 'taxi', taxi: 'nt', color: '#16a34a' },
-  { key: 'taxi-lantau', layer: 'taxi', taxi: 'lantau', color: '#38bdf8' },
-  { key: 'taxi-urban', layer: 'taxi', taxi: 'urban', color: '#dc2626' }
+  // …and ONE legend row, because "which colour of taxi may serve this street"
+  // is one question. Three checkboxes for it crowded a panel that already has
+  // nine; folded, the reader still gets per-colour control from the chips.
+  { key: 'taxi-nt', layer: 'taxi', taxi: 'nt', color: '#16a34a', group: 'taxi' },
+  { key: 'taxi-lantau', layer: 'taxi', taxi: 'lantau', color: '#38bdf8', group: 'taxi' },
+  { key: 'taxi-urban', layer: 'taxi', taxi: 'urban', color: '#dc2626', group: 'taxi' }
 ]
+
+// What the legend renders, in order: either a plain row or a group of rows
+// folded into one. A group's own key labels it (`rules.rows.<group>`) and is
+// NOT a `rulesEnabled` key — there is no such state, only its members'.
+export interface LegendEntry {
+  key: string
+  rows: RuleRow[]
+  grouped: boolean
+}
+export const LEGEND_ENTRIES: LegendEntry[] = RULE_ROWS.reduce<LegendEntry[]>((out, r) => {
+  const open = r.group ? out.find(e => e.grouped && e.key === r.group) : undefined
+  if (open) open.rows.push(r)
+  else out.push({ key: r.group ?? r.key, rows: [r], grouped: !!r.group })
+  return out
+}, [])
 export const taxiColorStops = RULE_ROWS.filter(r => r.taxi).flatMap(r => [r.taxi!, r.color])
-// The readings the NT row draws, in legend-chip order. `none` is absent: it is
-// the urban row's only reading, and that row needs no chips to explain one.
-export const TAXI_CHIP_ACCESS: TaxiAccess[] = ['area', 'dest', 'route']
 
 // Speed-limit lines are coloured by value (the row colour is only its swatch
 // fallback). 50 km/h is the territory default and has no rows in the data.
@@ -375,7 +397,7 @@ export const ruleTitleKey = (layer: RuleLayer, p: Record<string, unknown>) => {
 
 export function useRoadRules() {
   return {
-    rows: RULE_ROWS,
+    legend: LEGEND_ENTRIES,
     rulesEnabled,
     anyRuleOn,
     enabledKinds,
