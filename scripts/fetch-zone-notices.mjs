@@ -60,8 +60,10 @@ const ARCHIVE = 'https://api.data.gov.hk/v1/historical-archive'
 const FEED_BASE = 'https://www.td.gov.hk/datagovhk_tis/traffic-notices'
 
 // The eight feeds the dataset publishes. Only the prohibited-zone one carries
-// reg 14(1)(a) designations, which is what an extent needs; the others are
-// harvestable with `--feed` but describe different instruments (a clearway, a
+// reg 14(1)(a) designations, which is what an extent needs; the expressway one
+// carries TD's "Determination and Delineation of Boundaries of Expressways"
+// advice, whose item list data/expressways/designation.json transcribes. The
+// others are harvestable with `--feed` but describe different instruments (a clearway, a
 // temporary closure, a restricted zone under 14(1)(b) — a stopping ban, not a
 // driving ban).
 const FEEDS = [
@@ -74,6 +76,13 @@ const FEEDS = [
   'Notices_on_Expressways',
   'Other_Notices'
 ]
+
+// The instrument each vendored feed is read for. A feed with no entry is
+// harvested without one rather than under the prohibited-zone regulation.
+const LEGAL_BASIS = {
+  Notices_on_Prohibited_Zone: 'Road Traffic (Traffic Control) Regulations (Cap. 374G) reg 14(1)(a)',
+  Notices_on_Expressways: 'Road Traffic Ordinance (Cap. 374) s.123 — designation and boundaries of expressways'
+}
 
 const CACHE = 'data/raw/.notice-cache'
 const OUT_DIR = 'data/zone-notices'
@@ -247,7 +256,7 @@ const out = {
     dataset: 'https://data.gov.hk/en-data/dataset/hk-td-tis_22-traffic-notices',
     feed: feedUrl,
     archive: ARCHIVE,
-    legalBasis: 'Road Traffic (Traffic Control) Regulations (Cap. 374G) reg 14(1)(a)'
+    legalBasis: LEGAL_BASIS[opts.feed] ?? null
   },
   harvestedAt: new Date().toISOString().slice(0, 10),
   snapshots: { count: timestamps.length, from: timestamps[0], to: timestamps.at(-1) },

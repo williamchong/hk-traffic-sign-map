@@ -156,6 +156,36 @@ export async function reprojectPoints(points) {
   })
 }
 
+// A 50 m bucket grid over points in HK1980 metres: the returned lookup gives
+// every item within `r` of (px, py) that passes `filter`, as [distance, item]
+// nearest first. Shared by the two cut-off / expressway audits, which each
+// ask it thousands of radius questions over a few thousand points.
+const CELL_M = 50
+export function pointIndex(items, x = v => v[0], y = v => v[1]) {
+  const g = new Map()
+  const cell = (px, py) => `${Math.floor(px / CELL_M)},${Math.floor(py / CELL_M)}`
+  for (const v of items) {
+    const k = cell(x(v), y(v))
+    g.has(k) ? g.get(k).push(v) : g.set(k, [v])
+  }
+  return (px, py, r, filter = () => true) => {
+    const out = []
+    const c = Math.ceil(r / CELL_M)
+    const cx = Math.floor(px / CELL_M)
+    const cy = Math.floor(py / CELL_M)
+    for (let i = -c; i <= c; i++) {
+      for (let j = -c; j <= c; j++) {
+        for (const v of g.get(`${cx + i},${cy + j}`) ?? []) {
+          if (!filter(v)) continue
+          const d = Math.hypot(x(v) - px, y(v) - py)
+          if (d <= r) out.push([d, v])
+        }
+      }
+    }
+    return out.sort((a, b) => a[0] - b[0])
+  }
+}
+
 // Is [lng, lat] inside this closed WGS84 ring? Plain even-odd ray cast, no
 // spherical correction: every caller works at HK's scale, where the error of
 // treating degrees as a plane is far below the metres of slop already in a

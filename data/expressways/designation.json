@@ -1,0 +1,310 @@
+{
+  "_readme": [
+    "The roads designated as expressways under s.123(1) of the Road Traffic Ordinance (Cap. 374), one clause per item of G.N. 8028 of 19 October 2018, as TD's traffic advice 'Determination and Delineation of Boundaries of Expressways' lists them (tnid 83396, 26 Oct 2025; vendored in data/zone-notices/notices_on_expressways.json). The legal boundary of each is a plan deposited in the Land Registry, which is not published; where an item names a stretch, the ring is drawn by hand at the junction the item names and the cite says where it was placed.",
+    "A clause matches a CENTERLINE route by STREET_ENAME, inside `only` (if given) and matched by no `except` entry (a ring; `tunnel: true` narrows it to routes with ELEVATION < 0). The FIRST clause a route matches is the one it takes. s.123(1) designates 'any access thereto or exit therefrom' with the road, but CENTERLINE's unnamed links cannot tell a ramp from a carriageway, so the ramps are withheld (expressways.mjs says why).",
+    "Cap. 374Q reg 4 lets onto an expressway only the vehicles it lists; a public light bus is not one of them, and reg 5 bars learner drivers. So every route here closes to PLBs in the cut-off search UNLESS its clause carries `plb`: the hours in which a reg 24 authorisation lets red minibuses use it. A `plb` entry needs evidence in TD's own data (a part-time PROHIBITION row) or a gazetted notice — published routings alone are listed by audit-expressways.mjs, never applied.",
+    "TS353 / TS354 (start / end of expressway, Cap. 374Q Sch. 1 figs 901/902) AUDIT this file through audit-expressways.mjs; no clause is computed from a plate, though three rings (e, m, o) were placed where the item names a point the network has no node for, and say so."
+  ],
+  "source": "https://www.td.gov.hk/filemanager/en/content_13/TNYL3/83396_ENG.pdf",
+  "designation": "G.N. 8028 of 19 October 2018",
+  "asOf": "2025-10-26",
+  "rings": {
+    "tmr-north-of-wong-chu-road": [
+      [113.97, 22.3866],
+      [113.985, 22.3866],
+      [113.985, 22.42],
+      [113.97, 22.42],
+      [113.97, 22.3866]
+    ],
+    "ylh-shap-pat-heung-to-pok-oi": [
+      [114.034, 22.434],
+      [114.0394, 22.434],
+      [114.0394, 22.441],
+      [114.034, 22.441],
+      [114.034, 22.434]
+    ],
+    "tptw-tolo-to-po-nga-road": [
+      [114.14, 22.44],
+      [114.1586, 22.44],
+      [114.1586, 22.46],
+      [114.14, 22.46],
+      [114.14, 22.44]
+    ],
+    "tpr-st-tolo-to-wo-che": [
+      [114.185, 22.3904],
+      [114.215, 22.3904],
+      [114.215, 22.41],
+      [114.185, 22.41],
+      [114.185, 22.3904]
+    ],
+    "nlh-east-of-tung-chung-eastern": [
+      [113.9478, 22.28],
+      [114.05, 22.28],
+      [114.05, 22.35],
+      [113.9478, 22.35],
+      [113.9478, 22.28]
+    ],
+    "tsh-eagles-nest-and-east": [
+      [114.1455, 22.344],
+      [114.2, 22.344],
+      [114.2, 22.39],
+      [114.1455, 22.39],
+      [114.1455, 22.344]
+    ],
+    "nam-wan-tunnel": [
+      [114.095, 22.3335],
+      [114.1075, 22.3335],
+      [114.1075, 22.3435],
+      [114.095, 22.3435],
+      [114.095, 22.3335]
+    ],
+    "tai-lam-tunnel": [
+      [114.0585, 22.376],
+      [114.0675, 22.376],
+      [114.0675, 22.409],
+      [114.0585, 22.409],
+      [114.0585, 22.376]
+    ],
+    "scenic-hill-tunnel": [
+      [113.931, 22.2915],
+      [113.9405, 22.2915],
+      [113.9405, 22.303],
+      [113.931, 22.303],
+      [113.931, 22.2915]
+    ],
+    "iec-ehc-to-chai-wan": [
+      [114.2105, 22.26],
+      [114.25, 22.26],
+      [114.25, 22.3],
+      [114.2105, 22.3],
+      [114.2105, 22.26]
+    ],
+    "mos-road-at-tates-cairn": [
+      [114.21, 22.4],
+      [114.2255, 22.4],
+      [114.2255, 22.4062],
+      [114.21, 22.4062],
+      [114.21, 22.4]
+    ]
+  },
+  "clauses": [
+    {
+      "item": "a",
+      "streets": [
+        "ISLAND EASTERN CORRIDOR"
+      ],
+      "only": "iec-ehc-to-chai-wan",
+      "plb": {
+        "en": "Mon–Fri 10am–4pm",
+        "zh": "星期一至五上午10時至下午4時",
+        "evidence": "PROHIBITION 279707"
+      },
+      "cite": "Same item, the Eastern Harbour Crossing–Chai Wan stretch (east of 114.2105, the crossing's junction at 114.2111). PROHIBITION row 279707 on it is a PART-TIME PLB ban ('Mon-Fri 4pm-10am, Saturdays & General Holidays'), which is TD's own record of the reg 24 authorisation there: red minibuses may use it Monday to Friday 10am-4pm. zh.wikipedia 東區走廊 says the same. Listed before the whole-corridor clause: the first clause a road matches is the one it takes."
+    },
+    {
+      "item": "a",
+      "streets": [
+        "ISLAND EASTERN CORRIDOR"
+      ],
+      "cite": "G.N. 8028/2018 (a): 東區走廊由其與維園道交界處起，至其與永泰道交界處止的路段 — Island Eastern Corridor from its junction with Victoria Park Road to its junction with Wing Tai Road. The corridor runs no further either way in CENTERLINE (114.1865–114.2395), so no ring."
+    },
+    {
+      "item": "b",
+      "streets": [
+        "KWUN TONG BYPASS"
+      ],
+      "plb": {
+        "en": "10am–1am",
+        "zh": "上午10時至凌晨1時",
+        "evidence": "PROHIBITION 101802, 101804, 101918, 101922"
+      },
+      "cite": "G.N. 8028/2018 (b): 觀塘繞道由其與鯉魚門道交界處起，至其與太子道東交界處止的路段 — the whole bypass. PROHIBITION rows 101802, 101804, 101918 and 101922 ban PLBs '0100 - 1000' only, which is TD's own record of the reg 24 authorisation: red minibuses may use it 10am–1am. Row 279845 at the Kowloon Bay end is unconditional and still closes its own route."
+    },
+    {
+      "item": "c",
+      "streets": [
+        "WEST KOWLOON HIGHWAY",
+        "TSING KWAI HIGHWAY"
+      ],
+      "cite": "G.N. 8028/2018 (c) + (q): 西九龍公路；及青葵公路由其與西九龍公路交界處起，至葵涌道及荃灣路; 青葵公路通往長青隧道的路段 — between them the whole of Tsing Kwai Highway."
+    },
+    {
+      "item": "d",
+      "streets": [
+        "TSUEN WAN ROAD"
+      ],
+      "cite": "G.N. 8028/2018 (d): 荃灣路由其與葵涌道交界處起，至其與屯門公路交界處止的路段 — the whole road. Published red-minibus routings run it between Tai Chung Road and Kwai Chung Road (known-zones.json), but no reg 24 notice and no timed PROHIBITION row says so, so it is NOT exempted here; audit-expressways.mjs lists it."
+    },
+    {
+      "item": "e",
+      "streets": [
+        "TUEN MUN ROAD"
+      ],
+      "except": [
+        {
+          "only": "tmr-north-of-wong-chu-road"
+        }
+      ],
+      "cite": "G.N. 8028/2018 (e) + (q): 屯門公路由其與荃灣路及青山公路(荃灣段)交界處起，至其與皇珠路交界處止的路段. CENTERLINE carries the name on through Tuen Mun town past Wong Chu Road; the ring drops the town section north of 22.3866, where TS353/TS354 stand at 113.979 on the Wong Chu Road junction (the notice names the junction, the plates only locate it)."
+    },
+    {
+      "item": "f",
+      "streets": [
+        "YUEN LONG HIGHWAY"
+      ],
+      "except": [
+        {
+          "only": "ylh-shap-pat-heung-to-pok-oi"
+        }
+      ],
+      "cite": "G.N. 8028/2018 (f) + (g): 元朗公路由藍地交匯處起，至十八鄉交匯處止的路段; 元朗公路通往青朗公路的路段. The stretch between Shap Pat Heung Interchange (TS353/TS354 at 114.035, 22.4357) and Pok Oi Interchange (at 114.039, 22.4410) is in neither item."
+    },
+    {
+      "item": "g",
+      "streets": [
+        "TSING LONG HIGHWAY"
+      ],
+      "except": [
+        {
+          "only": "tai-lam-tunnel",
+          "tunnel": true
+        }
+      ],
+      "cite": "G.N. 8028/2018 (g) + (q): 青朗公路由大欖隧道，至其與新田公路交界處; 青朗公路通往大欖隧道的路段 — both approaches, not the tunnel (CENTERLINE names it Tsing Long Highway; ELEVATION < 0 inside the ring)."
+    },
+    {
+      "item": "h",
+      "streets": [
+        "SAN TIN HIGHWAY"
+      ],
+      "cite": "G.N. 8028/2018 (h): 新田公路"
+    },
+    {
+      "item": "i",
+      "streets": [
+        "FANLING HIGHWAY"
+      ],
+      "cite": "G.N. 8028/2018 (i): 粉嶺公路"
+    },
+    {
+      "item": "j",
+      "streets": [
+        "TAI PO TAI WO ROAD"
+      ],
+      "only": "tptw-tolo-to-po-nga-road",
+      "cite": "G.N. 8028/2018 (j): 大埔太和路由其與吐露港公路交界處起，至其與寶雅路交界處止的路段 — west of the Po Nga Road junction (114.1585, where TS354 stand)."
+    },
+    {
+      "item": "k",
+      "streets": [
+        "TOLO HIGHWAY"
+      ],
+      "cite": "G.N. 8028/2018 (k): 吐露港公路"
+    },
+    {
+      "item": "l",
+      "streets": [
+        "YUEN SHIN ROAD"
+      ],
+      "cite": "G.N. 8028/2018 (l): 完善路由其與大埔太和路交界處起，至其與吐露港公路交界處止的路段 — the road runs no further in CENTERLINE."
+    },
+    {
+      "item": "m",
+      "streets": [
+        "TAI PO ROAD - SHA TIN"
+      ],
+      "only": "tpr-st-tolo-to-wo-che",
+      "cite": "G.N. 8028/2018 (m): 大埔公路-沙田段由其與吐露港公路交界處起，至禾輋邨止的路段. The notice ends it at an estate, not a junction; the ring's south edge (22.3904) is where TS353/TS354 stand beside Wo Che Estate."
+    },
+    {
+      "item": "n",
+      "streets": [
+        "SHA TIN ROAD"
+      ],
+      "cite": "G.N. 8028/2018 (n): 沙田路"
+    },
+    {
+      "item": "o",
+      "streets": [
+        "TATE'S CAIRN HIGHWAY",
+        "SHA LEK HIGHWAY"
+      ],
+      "cite": "G.N. 8028/2018 (o): 大老山公路；沙瀝公路"
+    },
+    {
+      "item": "o",
+      "streets": [
+        "MA ON SHAN ROAD"
+      ],
+      "only": "mos-road-at-tates-cairn",
+      "cite": "G.N. 8028/2018 (o): 部分馬鞍山路 — 'sections', which only deposited plan EX-NT-13a bounds. The ring takes Ma On Shan Road from Tate's Cairn Highway north to 22.4062, where three TS354 stand (114.2212); TS353 stand further north at the Sai Sha Road junction (22.4105–22.4123), so one carriageway may start there — withheld, since a ring cannot tell carriageways apart. Unreviewed against the plan."
+    },
+    {
+      "item": "p",
+      "streets": [
+        "TSING SHA HIGHWAY"
+      ],
+      "except": [
+        {
+          "only": "tsh-eagles-nest-and-east"
+        },
+        {
+          "only": "nam-wan-tunnel",
+          "tunnel": true
+        }
+      ],
+      "cite": "G.N. 8028/2018 (p): 青沙公路由其與長青公路交界處起，至尖山隧道止的路段 — up to Eagle's Nest Tunnel, so the tunnel and everything east of its south portal (114.1459, 22.3448) is out. Nam Wan Tunnel is also out: the Road Users' Code lists the item as 'excluding Nam Wan Tunnel' (the notice does not say, the deposited plan does)."
+    },
+    {
+      "item": "q",
+      "streets": [
+        "CHEUNG TSING HIGHWAY"
+      ],
+      "cite": "G.N. 8028/2018 (q): 長青公路 (the item's Tsing Kwai Highway, Tsing Long Highway and Tuen Mun Road sections ride their own clauses)."
+    },
+    {
+      "item": "r",
+      "streets": [
+        "LANTAU LINK",
+        "MA WAN ROAD"
+      ],
+      "cite": "G.N. 8028/2018 (r): 青嶼幹線及馬灣路"
+    },
+    {
+      "item": "s",
+      "streets": [
+        "NORTH LANTAU HIGHWAY"
+      ],
+      "only": "nlh-east-of-tung-chung-eastern",
+      "cite": "G.N. 8028/2018 (s): 北大嶼山公路由大嶼山繳費廣場起，至東涌東交匯處止的路段 — east of the Tung Chung Eastern Interchange junction (113.9478)."
+    },
+    {
+      "item": "s",
+      "streets": [
+        "PENNY'S BAY HIGHWAY"
+      ],
+      "cite": "G.N. 8028/2018 (s): 竹篙灣公路"
+    },
+    {
+      "item": "t",
+      "streets": [
+        "KONG SHAM WESTERN HIGHWAY",
+        "SHENZHEN BAY BRIDGE"
+      ],
+      "cite": "G.N. 8028/2018 (t): 港深西部公路及深圳灣與深圳灣口岸之間的路段 — the section to the port is Shenzhen Bay Bridge in CENTERLINE."
+    },
+    {
+      "item": "u",
+      "streets": [
+        "HONG KONG-ZHUHAI-MACAO BRIDGE HONG KONG LINK ROAD"
+      ],
+      "except": [
+        {
+          "only": "scenic-hill-tunnel",
+          "tunnel": true
+        }
+      ],
+      "cite": "G.N. 8028/2018 (u): 港珠澳大橋香港連接路，由香港口岸至觀景山隧道之間的部分路段及由觀景山隧道，至香港特別行政區邊界止的路段 — both sides of Scenic Hill Tunnel, not the tunnel (ELEVATION < 0 inside the ring)."
+    }
+  ]
+}

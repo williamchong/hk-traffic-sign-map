@@ -1,0 +1,193 @@
+{
+  "source": {
+    "dataset": "https://data.gov.hk/en-data/dataset/hk-td-tis_22-traffic-notices",
+    "feed": "https://www.td.gov.hk/datagovhk_tis/traffic-notices/Notices_on_Expressways.xml",
+    "archive": "https://api.data.gov.hk/v1/historical-archive",
+    "legalBasis": "Road Traffic Ordinance (Cap. 374) s.123 — designation and boundaries of expressways"
+  },
+  "harvestedAt": "2026-09-23",
+  "snapshots": {
+    "count": 40,
+    "from": "20211230-1804",
+    "to": "20260611-1443"
+  },
+  "counts": {
+    "notices": 9,
+    "plb": 0,
+    "plbDesignations": 0,
+    "plbRescissions": 0
+  },
+  "notices": [
+    {
+      "tnid": "57498",
+      "title": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "startEffectiveDate": "17.01.2020",
+      "districtId": "8",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "firstSeen": "20211230-1804",
+      "lastSeen": "20211230-1804"
+    },
+    {
+      "tnid": "68920",
+      "title": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "startEffectiveDate": "01.12.2022",
+      "districtId": "23",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Determination and Delineation of Boundaries of Expressways (01.12.2022)",
+        "tc": "快速公路界限的決定及劃定 (01.12.2022)"
+      },
+      "firstSeen": "20221221-2218",
+      "lastSeen": "20231208-1428"
+    },
+    {
+      "tnid": "73658",
+      "title": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "startEffectiveDate": "08.12.2023",
+      "districtId": "19",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Determination and Delineation of Boundaries of Expressways (08.12.2023)",
+        "tc": "快速公路界限的決定及劃定 (08.12.2023)"
+      },
+      "firstSeen": "20231209-1432",
+      "lastSeen": "20260611-1443"
+    },
+    {
+      "tnid": "74556",
+      "title": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "startEffectiveDate": "20.02.2024",
+      "districtId": "14",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "firstSeen": "20240221-1443",
+      "lastSeen": "20260611-1443"
+    },
+    {
+      "tnid": "80479",
+      "title": {
+        "en": "Temporary Traffic Arrangement on Sha Tin Road, Sha Tin",
+        "tc": "沙田沙田路臨時交通安排"
+      },
+      "startEffectiveDate": "25.04.2025",
+      "districtId": "14",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Transport Department Notice Temporary Traffic Arrangement on S ha Tin Road, Sha Tin Notice is hereby given that in order to facilitate road works, the slow lane or fast lane of Sha Tin Road northbound from its junction with Lion Rock Tunnel Road to a point about 800 metres north of the same junction will be intermittently closed to all vehicular traffic from 10 am to 4 pm from Mondays to Saturdays (except public holidays) from 25 April to 31 July 2025. Motorists could still make access to the remaining traffic lane. Appropriate traffic signs will be erected on site to guide motorists. LEE Chung-yan, Angela Commissioner for Transport",
+        "tc": "運輸署公告 沙田沙田路臨時交通安排 現公布，為配合道路工程，當局將於2025年4月25日至7月31日逢星期一至六（公眾假期除外）上午10時至下午4時，間歇性封閉沙田路（北行）由其與獅子山隧道公路交界處起，至同一交界以北約800米處止的慢線或快線。 駕駛人士仍可使用餘下的行車線。有關地點將設置適當交通標誌，指導駕駛人士。 運輸署署長李頌恩"
+      },
+      "firstSeen": "20250429-1411",
+      "lastSeen": "20250504-0323"
+    },
+    {
+      "tnid": "80627",
+      "title": {
+        "en": "Temporary Traffic Arrangement on Tsing Sha Highway, Sha Tin",
+        "tc": "沙田青沙公路臨時交通安排"
+      },
+      "startEffectiveDate": "10.05.2025",
+      "districtId": "14",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Traffic Advice Temporary Traffic Arrangement on Tsing Sha Highway, Sha Tin Motorists are advised that in order to facilitate road works, the following temporary traffic arrangement will be implemented on 10 May, 17 May, 24 May and 7 June 2025 from 1.00 am to 5.30 am: Road Closure The slip road of Tsing Sha Highway northbound leading to Che Kung Miu Road eastbound will be closed to all vehicular traffic. Traffic Diversion Affected vehicles on Tsing Sha Highway northbound heading for Hin Tin will be diverted via Tsing Sha Highway northbound, Mei Tin Road southbound, roundabout and Che Kung Miu Road westbound. Appropriate traffic signs will be erected on site to guide motorists.",
+        "tc": "交通通告 沙田 青沙公路臨時交通安排 駕駛人士請注意，為配合道路工程，當局將於2025年 5 月 10 日、5月17日、5月24日及6月7日凌晨 1 時至上午 5 時 30 分，實施下列臨時交通安排： 道路封 閉 青沙公路（北行）通往車公廟路（東行）的支路將會封閉，禁止所有車輛駛入。 交通改道 沿青沙公路（北行）前往顯田的受影響車輛需改經青沙公路（北行）、美田路（南行）、迴旋處及車公廟路（西行）。 有關地點將設置適當交通標誌，指導駕駛人士。"
+      },
+      "firstSeen": "20250504-0323",
+      "lastSeen": "20250504-0323"
+    },
+    {
+      "tnid": "83396",
+      "title": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "startEffectiveDate": "26.10.2025",
+      "districtId": "17",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Determination and Delineation of Boundaries of Expressways",
+        "tc": "快速公路界限的決定及劃定"
+      },
+      "firstSeen": "20251023-1408",
+      "lastSeen": "20260611-1443"
+    },
+    {
+      "tnid": "83712",
+      "title": {
+        "en": "Temporary Restricted Zones On Dundas Street, Mong Kok",
+        "tc": "旺角登打士街臨時限制區"
+      },
+      "startEffectiveDate": "21.11.2025",
+      "districtId": "8",
+      "kinds": [
+        "all"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "ROAD TRAFFIC (TRAFFIC CONTROL) REGULATIONS (CHAPTER 374G) TEMPORARY RESTRICTED ZONES ON DUNDAS STREET, MONG KOK In exercise of the powers vested in me under regulation 14(1)(b) of the Road Traffic (Traffic Control) Regulations, Chapter 374G, I hereby direct that with effect from 1.00 am to 5.00 am daily from 21 November 2025 to 31 December 2025, the section of Dundas Street from its junction with Fa Yuen Street to a point about 85 metres east of the same junction will be temporarily designated as restricted zones 24 hours daily. Within the restricted zones, drivers of all motor vehicles, except franchised buses and those with permits issued by the Commissioner for Transport, will be prohibited from: (a) picking up or setting down passengers; or (b) loading or unloading goods. The extent of the restricted zones will be indicated by appropriate traffic signs and road markings. At the same time, the existing restricted zones on the above road section will be rescinded. LEE Chung-yan, Angela Commissioner for Transport",
+        "tc": "道路交通(交通管制)規例(第374G章) 旺角登打士街臨時限制區 本人現行使《道路交通 ( 交通管制 ) 規例》 ( 第 374G 章 ) 第 14(1)(b) 條所賦予的權力，下令由 2025 年 11 月 21 日至2025年12月31日，每日凌晨 1 時至上午 5 時，登打士街由其與花園街交界處起，至同一交界以東約85米處止的路段將暫劃為全日24小時限制區。 除專利巴士及經由運輸署署長發給許可證者外，機動車輛司機一律禁止在限制區內 : (a) 上落乘客: 或 (b) 起卸貨物。 有關地點將設置適當交通標誌及道路標記，表明限制區範圍。 同時，現時在上述路段實施的限制區，將暫予撤銷。 運輸署署長李頌恩"
+      },
+      "firstSeen": "20251114-1353",
+      "lastSeen": "20251221-1352"
+    },
+    {
+      "tnid": "87124",
+      "title": {
+        "en": "Temporary Suspension of Parking Spaces on Fu Cheong Path, Tsuen Wan",
+        "tc": "暫時停用荃灣富昌徑的泊車位"
+      },
+      "startEffectiveDate": "15.06.2026",
+      "districtId": "19",
+      "kinds": [
+        "other"
+      ],
+      "rescission": false,
+      "content": {
+        "en": "Traffic Advice Temporary Suspension of Parking Spaces on Fu Cheong Path, Tsuen Wan Motorists are advised that to facilitate drainage works, the following arrangements will be implemented: two parking spaces on Fu Cheong Path (near lamp post no. AC4817) will be temporarily suspended from 8.00 a.m. on 15 June 2026 to 6.00 p.m. on 30 September 2026; and three parking spaces on Fu Cheong Path (near lamp post no. AC4842) will be temporarily suspended from 8.00 a.m. on 3 July 2026 to 6.00 p.m. on 30 October 2026. Appropriate traffic signs will be erected on site to guide motorists.",
+        "tc": "交通通告 暫時停用荃灣富昌徑的泊車位 駕駛人士請注意，為配合渠務工程， 當局將實施下列交通安排： 位於富昌徑(近燈柱編號AC4817)的2個泊車位將於2026年6月15日上午8時至2026年9月30日晚上6時暫時停用；及 位於富昌徑(近燈柱編號AC4842)的3個泊車位將於2026年7月3日上午8時至2026年10月30日晚上6時暫時停用。 有關地點將設置適當的交通標誌，指導駕駛人士。"
+      },
+      "firstSeen": "20260611-1443",
+      "lastSeen": "20260611-1443"
+    }
+  ]
+}

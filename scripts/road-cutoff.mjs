@@ -85,7 +85,27 @@ export function addressesCutoff(row) {
 }
 export const closesForCutoff = row => closesFor(row, addressesCutoff, CUTOFF_EXEMPT)
 
-const nodeKey = (x, y) => `${Math.round(x)},${Math.round(y)}`
+// A PROHIBITION-shaped row that closes one route to the cut-off class all
+// day — what zone-overrides.mjs adds for a notice and expressways.mjs for a
+// designated road, so both go through the unchanged closesFor. "E WP" because
+// nearly every real rule carries a permit exemption, which closesFor reads as
+// still closed. `tags` ride into the tile props (`notice` — RulePopup names
+// the notice instead of the network).
+export const closureRow = (id, routeId, bound, tags = {}) => ({
+  PROHIBITION_ID: id,
+  ROAD_ROUTE_ID: routeId,
+  INC_VEH_TYPE: CUTOFF_VEHICLE,
+  EXC_VEH_TYPE: 'NA',
+  PART_TIME_PROHIBITION: 'N',
+  EFF_ALL_DAYS: 'Y',
+  OTHER_REST_TYPE_GV: 'NA',
+  REMARKS: `${CUTOFF_VEHICLE} Proh/ E WP`,
+  BOUND: bound,
+  ...tags
+})
+
+// Shared with audit-expressways.mjs, which finds boundary nodes the same way.
+export const nodeKey = (x, y) => `${Math.round(x)},${Math.round(y)}`
 
 // The network as directed edge STATES: s = 2·edge + (0 digitised | 1 reverse),
 // from node keys a[i] → b[i] and whether each edge runs both ways. The reverse

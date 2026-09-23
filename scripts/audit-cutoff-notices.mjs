@@ -36,9 +36,10 @@ import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { RAW_DIR, RDNET_CENTERLINE_LAYER, RDNET_TURN_LAYER, RDNET_RULE_LAYERS, CUTOFF_VEHICLE } from './sign-layers.mjs'
-import { requireTool, streamOgrGeoJSON, readSignPoints } from './geo.mjs'
+import { requireTool, streamOgrGeoJSON, readSignPoints, pointIndex } from './geo.mjs'
 import { addressesCutoff, closesForCutoff, computeCutoff } from './road-cutoff.mjs'
 import { applyZoneOverrides, loadOverrides, NOTICES_FILE } from './zone-overrides.mjs'
+import { CLASSIFY_SQL_COLUMNS, loadDesignation, classifyExpressways, expresswayClosures } from './expressways.mjs'
 
 const { values: opts } = parseArgs({
   options: {
@@ -58,6 +59,7 @@ requireTool('ogr2ogr', 'brew install gdal')
 const notices = JSON.parse(await readFile(NOTICES_FILE, 'utf8')).notices
 const overrides = await loadOverrides()
 const known = JSON.parse(await readFile(KNOWN_FILE, 'utf8')).zones
+const designation = await loadDesignation()
 
 const routes = new Map() // ROUTE_ID → street
 const edges = []
@@ -69,14 +71,17 @@ let allSigns = []
 async function readCenterline() {
   const first = 'ST_GeometryN(SHAPE, 1)'
   const last = 'ST_GeometryN(SHAPE, ST_NumGeometries(SHAPE))'
-  const sql = `SELECT OBJECTID, ROUTE_ID, STREET_ENAME, TRAVEL_DIRECTION, SHAPE_Length,
+  const sql = `SELECT OBJECTID, ROUTE_ID, STREET_ENAME, TRAVEL_DIRECTION, SHAPE_Length, ${CLASSIFY_SQL_COLUMNS},
     ST_X(ST_StartPoint(${first})) AS sx, ST_Y(ST_StartPoint(${first})) AS sy,
     ST_X(ST_EndPoint(${last})) AS ex, ST_Y(ST_EndPoint(${last})) AS ey
     FROM ${RDNET_CENTERLINE_LAYER}`
   for await (const { properties: p } of streamOgrGeoJSON(RDNET_CENTERLINE_LAYER, [`/vsizip/${RDNET_ZIP}`, '-dialect', 'SQLite', '-sql', sql])) {
     const st = p.STREET_ENAME && p.STREET_ENAME !== '-99' ? p.STREET_ENAME : null
     routes.set(p.ROUTE_ID, st)
-    edges.push({ fid: p.OBJECTID, routeId: p.ROUTE_ID, dir: p.TRAVEL_DIRECTION, sx: p.sx, sy: p.sy, ex: p.ex, ey: p.ey, len: p.SHAPE_Length })
+    edges.push({
+      fid: p.OBJECTID, routeId: p.ROUTE_ID, dir: p.TRAVEL_DIRECTION, sx: p.sx, sy: p.sy, ex: p.ex, ey: p.ey, len: p.SHAPE_Length,
+      st_en: st, elevation: p.ELEVATION, mx: p.mx, my: p.my
+    })
     if (st) ends.push([p.sx, p.sy, st], [p.ex, p.ey, st])
   }
 }
@@ -105,37 +110,12 @@ const signs = allSigns.filter(s => CODES.includes(s[2]))
 console.log(`${routes.size} routes, ${proh.length} PROHIBITION rows, ${turns.length} TURN rows, ${signs.length} ${CODES.join('/')} plates (${allSigns.length} signs), ${notices.length} notices`)
 
 // --- helpers ----------------------------------------------------------------
-const CELL = 50
-const key = (x, y) => `${Math.floor(x / CELL)},${Math.floor(y / CELL)}`
-const index = (items, x = v => v[0], y = v => v[1]) => {
-  const g = new Map()
-  for (const v of items) {
-    const k = key(x(v), y(v))
-    g.has(k) ? g.get(k).push(v) : g.set(k, [v])
-  }
-  return (px, py, r, filter = () => true) => {
-    const out = []
-    const c = Math.ceil(r / CELL)
-    const cx = Math.floor(px / CELL)
-    const cy = Math.floor(py / CELL)
-    for (let i = -c; i <= c; i++) {
-      for (let j = -c; j <= c; j++) {
-        for (const v of g.get(`${cx + i},${cy + j}`) ?? []) {
-          if (!filter(v)) continue
-          const d = Math.hypot(x(v) - px, y(v) - py)
-          if (d <= r) out.push([d, v])
-        }
-      }
-    }
-    return out.sort((a, b) => a[0] - b[0])
-  }
-}
-const nearEnds = index(ends)
-const nearSigns = index(signs)
-const nearAny = index(allSigns)
+const nearEnds = pointIndex(ends)
+const nearSigns = pointIndex(signs)
+const nearAny = pointIndex(allSigns)
 const plbRows = proh.filter(addressesCutoff)
 const plbCoded = proh.filter(p => (p.INC_VEH_TYPE ?? '').split(',').map(s => s.trim()).includes(CUTOFF_VEHICLE))
-const nearPlbRows = index(plbRows, v => v.x, v => v.y)
+const nearPlbRows = pointIndex(plbRows, v => v.x, v => v.y)
 const rowsByStreet = new Map()
 for (const p of plbRows) {
   const st = routes.get(p.ROAD_ROUTE_ID)
@@ -210,12 +190,15 @@ for (const w of applied.warnings) console.log(`  ⚠ ${w}`)
 if (!applied.warnings.length) console.log('  all entries still bind')
 
 // --- 5. known zones ---------------------------------------------------------
-console.log('\n## 5. Known zones (data/zone-notices/known-zones.json) — status under the CURRENT data + overrides')
-const cutoff = computeCutoff({ edges, prohibitions: applied.rows, turns, closes: closesForCutoff })
+console.log('\n## 5. Known zones (data/zone-notices/known-zones.json) — status under the CURRENT data + overrides + expressways')
+// The build closes designated expressways to PLBs too (expressways.mjs), so
+// the status here reads the same rows the map does.
+const rowsWithExpressways = [...applied.rows, ...expresswayClosures(classifyExpressways(designation, edges))]
+const cutoff = computeCutoff({ edges, prohibitions: rowsWithExpressways, turns, closes: closesForCutoff })
 const cutStreets = new Set()
 for (const g of cutoff.groups) for (const e of g.edges) cutStreets.add(routes.get(e.routeId))
 const rowsNow = new Map()
-for (const p of applied.rows.filter(addressesCutoff)) {
+for (const p of rowsWithExpressways.filter(addressesCutoff)) {
   const st = routes.get(p.ROAD_ROUTE_ID)
   if (st) rowsNow.has(st) ? rowsNow.get(st).push(p) : rowsNow.set(st, [p])
 }
@@ -234,4 +217,4 @@ for (const z of known) {
 }
 console.log(changed ? `  ${changed} of ${known.length} changed — read the rows before touching known-zones.json` : `  all ${known.length} as recorded`)
 const km = cutoff.groups.reduce((s, g) => s + g.lenM, 0) / 1000
-console.log(`\ncut-off with overrides: ${cutoff.stats.closedRoutes} closed routes → ${km.toFixed(0)} km in ${cutoff.groups.length} areas`)
+console.log(`\ncut-off with overrides and expressways: ${cutoff.stats.closedRoutes} closed routes → ${km.toFixed(0)} km in ${cutoff.groups.length} areas`)

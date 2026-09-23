@@ -249,28 +249,33 @@ const signLayerIds = ['sign-points', 'sign-stack', ...TIER_LOD.map((_, t) => tie
 // tippecanoe.minzoom; see the lookup's own comment for what resolves where.
 // Rule ids stay OUT of signLayerIds: the click handler's featureKey assumes
 // point geometry.
-// Draw order: the two wide bands first — `taxi` under `cutoff`, both under
-// every rule line.
-const RULE_LAYERS: RuleLayer[] = ['taxi', 'cutoff', 'speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
+// Draw order: the three wide bands first — `taxi`, then `expressway`, then
+// `cutoff` — all under every rule line.
+const RULE_LAYERS: RuleLayer[] = ['taxi', 'expressway', 'cutoff', 'speed', 'buslane', 'prohibition', 'nsr', 'pedzone']
+// The bands. Butt caps on them: round caps of adjoining edges overlap at
+// every junction and stack into bright dots on a translucent line.
+const BAND_LAYERS: RuleLayer[] = ['taxi', 'expressway', 'cutoff']
 const ruleLayerId = (layer: RuleLayer) => `rule-${layer}`
 const ruleHitLayerId = (layer: RuleLayer) => `rule-${layer}-hit`
 // Five layers get an ALWAYS-ON 14 px transparent hit line. It is load-bearing
 // twice: click tolerance on a 1-6 px line, and keeping the source's tiles
 // resident so the sign popup's "applies here" lookup can query them even with
 // every overlay hidden (MapLibre only fetches tiles for non-hidden layers).
-const RULE_HIT_LAYERS: RuleLayer[] = RULE_LAYERS.filter(l => l !== 'cutoff' && l !== 'taxi')
+const RULE_HIT_LAYERS: RuleLayer[] = RULE_LAYERS.filter(l => !BAND_LAYERS.includes(l))
 // `cutoff` needs none: it is a 4-22 px band, so it is already its own target.
 // `taxi` is the awkward one — its `area` and `dest` features draw as bands,
 // but a designated ROUTE draws at exactly RULE_LINE_WIDTH, so it needs the
 // same tolerance every other thin line gets. It gets a hit line that FOLLOWS
 // ITS ROW rather than being always on, because nothing needs its tiles kept
-// resident: no taxi plate drives the "applies here" lookup (TAXI_ROW_CODES).
+// resident: no taxi plate drives the "applies here" lookup (CURATED_ROW_CODES).
+// `expressway` takes one on the same terms: a highway at z10 is a thin band,
+// and nothing looks its tiles up.
 // ⚠️ What that saves is a bucket and a hit-test per pointer move, NOT bytes.
 // An MVT tile carries every source-layer, and the always-on `rule-speed-hit`
 // already keeps this source's tiles coming from z9 — so the taxi features are
 // downloaded whether or not a taxi row is ticked, and hiding a layer never
 // changes that. The only lever on those bytes is a separate source.
-const TOGGLED_HIT_LAYERS: RuleLayer[] = ['taxi']
+const TOGGLED_HIT_LAYERS: RuleLayer[] = ['taxi', 'expressway']
 // What a click or hover hit-tests: the hit lines plus the cut-off band. A
 // hidden layer returns no features, so a toggled hit line and the band are
 // unpickable when their row is off; the always-on five need `isRowEnabled`
@@ -300,7 +305,7 @@ const NOTE_PIN_PX = 34
 // no-stopping's 20k kerb lines are a smear until the streets separate.
 // A taxi operating area is a thing you read zoomed OUT — it answers "can this
 // colour come here at all", which is a question about a district, not a kerb.
-const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12, cutoff: 11, taxi: 10 }
+const RULE_MINZOOM: Record<RuleLayer, number> = { speed: 9, buslane: 11, prohibition: 11, nsr: 12, pedzone: 12, cutoff: 11, taxi: 10, expressway: 10 }
 const RULE_LINE_WIDTH = expr(['interpolate', ['linear'], ['zoom'], 10, 1.5, 14, 3, 17, 6])
 // A bus lane's `bound` is its side of the centreline in the digitised
 // direction (1 left, -1 right, 0 both); `line-offset` is positive to the
@@ -347,6 +352,14 @@ const RULE_PAINT: Record<RuleLayer, LineLayerSpecification['paint']> = {
       14, ['match', ['get', 'access'], 'route', 3, 10],
       17, ['match', ['get', 'access'], 'route', 6, 22]]),
     'line-opacity': expr(['match', ['get', 'access'], 'route', 0.6, 'dest', 0.5, 0.3])
+  },
+  // A band between a route line and a taxi area: a designation covers the
+  // whole carriageway, not a kerb. A stretch a reg 24 authorisation opens to
+  // red minibuses for part of the day (`plb_en` set) draws fainter.
+  expressway: {
+    'line-color': ruleColor('expressway'),
+    'line-width': expr(['interpolate', ['linear'], ['zoom'], 10, 3, 14, 7, 17, 14]),
+    'line-opacity': expr(['case', ['has', 'plb_en'], 0.3, 0.5])
   },
   // A wide, faint band rather than a line: it marks roads no rule names, the
   // area behind the PLB prohibitions that seal it, not a rule of its own — so
@@ -846,9 +859,7 @@ onMounted(async () => {
         id: ruleLayerId(layer),
         type: 'line',
         ...common,
-        // Butt caps on the translucent cut-off band: round caps of adjoining
-        // edges overlap at every junction and stack into bright dots.
-        layout: { 'line-cap': layer === 'cutoff' || layer === 'taxi' ? 'butt' : 'round', 'line-join': 'round', 'visibility': 'none' },
+        layout: { 'line-cap': BAND_LAYERS.includes(layer) ? 'butt' : 'round', 'line-join': 'round', 'visibility': 'none' },
         paint: { 'line-width': RULE_LINE_WIDTH, 'line-opacity': 0.75, ...RULE_PAINT[layer] }
       }, 'sel-group-glow')
     }

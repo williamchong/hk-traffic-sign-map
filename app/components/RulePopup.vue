@@ -51,14 +51,16 @@ const notice = computed(() => {
 })
 const NOTICES_URL = 'https://data.gov.hk/en-data/dataset/hk-td-tis_22-traffic-notices'
 
-// Where this reading comes from. Every layer but two is read straight off TD's
-// road network; the cut-off band is worked out from it, and the taxi bands are
-// curated from Cap. 374E Sch. 7's list of permitted roads because no network
-// layer carries them. Saying so is the point — a reader deserves to know which
+// Where this reading comes from. Every layer but three is read straight off
+// TD's road network; the cut-off band is worked out from it, and the taxi and
+// expressway bands are curated from the law (Cap. 374E Sch. 7's list of
+// permitted roads; the G.N. 8028/2018 designation) because no network layer
+// carries them. Saying so is the point — a reader deserves to know which
 // answers are TD's own geometry.
 const SOURCE_KEY: Partial<Record<RuleLayer, string>> = {
   cutoff: 'rules.cutoffSource',
-  taxi: 'rules.taxiSource'
+  taxi: 'rules.taxiSource',
+  expressway: 'rules.expresswaySource'
 }
 
 // "Show signs for this rule": the plates that announce it, added to the

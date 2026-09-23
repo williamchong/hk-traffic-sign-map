@@ -73,6 +73,7 @@
       "proh-other": "其他禁止駛入限制",
       "nsr": "禁止停車",
       "pedzone": "行人專用區",
+      "expressway": "快速公路",
       "taxi": "的士營運範圍",
       "taxi-nt": "新界（綠色）",
       "taxi-lantau": "大嶼山（藍色）",
@@ -89,6 +90,7 @@
       "proh-plb": "禁止公共小巴駛入",
       "nsr": "禁止停車",
       "pedzone": "行人專用區",
+      "expressway": "快速公路",
       "cutoff": "公共小巴無法駛入的路段",
       "taxi-nt": "新界（綠色）的士",
       "taxi-lantau": "大嶼山（藍色）的士",
@@ -112,11 +114,15 @@
       "remarks": "備註",
       "taxiAccess": "可服務範圍",
       "taxiRoute": "路線",
-      "taxiDest": "目的地"
+      "taxiDest": "目的地",
+      "designation": "指定",
+      "notPermitted": "不准使用",
+      "plbPermitted": "小巴可使用"
     },
     "values": {
       "partTime": "部分時間",
-      "notAllDays": "非每日"
+      "notAllDays": "非每日",
+      "expresswayBarred": "公共小巴、學車人士、125 cc 以下的車輛、行人及單車"
     },
     "veh": {
       "ALL": "所有汽車",
@@ -156,7 +162,7 @@
       "other": "其他日子"
     },
     "source": "運輸署道路網絡（第二代）",
-    "cutoffSource": "根據運輸署的禁止駛入及禁止轉向限制推算，並非路牌列明的規則",
+    "cutoffSource": "根據運輸署的禁止駛入及禁止轉向限制，以及公共小巴不准使用的快速公路推算，並非路牌列明的規則",
     "noticeSource": "依據運輸署交通通告第 {n} 號劃定，道路網絡資料尚未收錄",
     "close": "關閉",
     "taxiAccess": {
@@ -166,7 +172,9 @@
       "none": "不可駛入"
     },
     "taxiRouteNo": "運輸署營運範圍圖第 {n} 號路線",
-    "taxiSource": "依據第374E章附表7所列的許可道路整理，並非道路網絡資料"
+    "taxiSource": "依據第374E章附表7所列的許可道路整理，並非道路網絡資料",
+    "expresswayItem": "第 8028 號公告（2018）第 ({item}) 項",
+    "expresswaySource": "根據《道路交通條例》（第 374 章）第 123 條指定 — 按運輸署的快速公路列表整理，並非道路網絡數據。不顯示支路。"
   },
   "theme": {
     "light": "淺色",

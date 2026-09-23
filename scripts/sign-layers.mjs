@@ -114,6 +114,12 @@ export const TAXI_CLASSES = ['nt', 'lantau', 'urban']
 //   none  — expressly excluded (urban only)
 export const TAXI_ACCESS = ['area', 'dest', 'route', 'none']
 
+// The third non-IRNP source-layer: the roads designated as expressways (Cap.
+// 374 s.123), curated in data/expressways/designation.json because no FGDB
+// field marks them — see expressways.mjs. Its routes also close to public
+// light buses in the cut-off search (Cap. 374Q reg 4).
+export const EXPRESSWAY_LAYER = 'expressway'
+
 // NSR (no-stopping restrictions) codes its three descriptive fields as small
 // integers, where BUS_ONLY_LANE prints free text — so unlike every other rule
 // layer these need the dataspec's tables (rdnet_dataspec.zip §7) to mean

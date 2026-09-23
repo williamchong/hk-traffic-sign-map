@@ -34,6 +34,15 @@
 //                by street name and HAD's district partition;
 //                the TS329 / TS569 terminators AUDIT that file and never feed
 //                it (audit-taxi-zones.mjs), so the rule below still holds.
+//   expressway   CURATED (expressways.mjs): the roads designated as
+//                expressways, one clause per item of G.N. 8028/2018 in
+//                data/expressways/designation.json (named routes; the
+//                unnamed ramps are withheld — see expressways.mjs).
+//                No FGDB field marks them, and the ban they carry for public
+//                light buses (Cap. 374Q reg 4) has almost no PROHIBITION rows,
+//                so their routes ALSO close to PLBs in the cut-off search —
+//                as synthetic rows that reach no other layer. TS353 / TS354
+//                audit it (audit-expressways.mjs).
 // The PROHIBITION rows lag TD's own prohibited-zone notices by 1–35 months
 // (both ways), so data/zone-notices/overrides.json — human-curated, each entry
 // citing a notice — closes or reopens named routes BEFORE the prohibition
@@ -55,7 +64,7 @@ import {
   RAW_DIR, TARGET_SRS, OUTPUT_PMTILES_RULES,
   RDNET_CENTERLINE_LAYER, RDNET_RULE_LAYERS, PROHIBITION_KINDS,
   NSR_VEHICLE_TYPES, NSR_TIME_ZONES, NSR_EFFECTIVE_DAYS,
-  RDNET_TURN_LAYER, CUTOFF_LAYER, CUTOFF_VEHICLE, TAXI_LAYER
+  RDNET_TURN_LAYER, CUTOFF_LAYER, CUTOFF_VEHICLE, TAXI_LAYER, EXPRESSWAY_LAYER
 } from './sign-layers.mjs'
 import { requireTool, mergeTilesVersion, streamOgrGeoJSON } from './geo.mjs'
 import { DASHES } from './text-similarity.mjs'
@@ -65,10 +74,14 @@ import {
   TAXI_AREAS_FILE, DISTRICTS_FILE,
   loadTaxiAreas, classifyRoute, representativePoint, straddles, shareableAreas
 } from './taxi-zones.mjs'
+import {
+  EXPRESSWAY_FILE, CLASSIFY_SQL_COLUMNS,
+  loadDesignation, classifyExpressways, expresswayClosures
+} from './expressways.mjs'
 
 const RDNET_ZIP = join(RAW_DIR, 'RdNet_IRNP.gdb.zip')
 const scratch = key => join(RAW_DIR, `_rules_${key}.geojsonl`)
-const TILE_LAYERS = [...Object.keys(RDNET_RULE_LAYERS), CUTOFF_LAYER, TAXI_LAYER]
+const TILE_LAYERS = [...Object.keys(RDNET_RULE_LAYERS), CUTOFF_LAYER, TAXI_LAYER, EXPRESSWAY_LAYER]
 // The shareable resolved extent. It lives beside the file it is generated
 // from, NOT in app/data/ — nothing in app/ imports it, and every other file
 // there is a runtime import.
@@ -110,6 +123,7 @@ requireTool('tippecanoe', 'brew install tippecanoe')
 // unknown taxi class, access, district or ring name, and a typo in a
 // hand-edited file should abort at the preflight, not ten seconds in.
 const taxiAreas = await loadTaxiAreas(TAXI_AREAS_FILE, join(RAW_DIR, DISTRICTS_FILE))
+const designation = await loadDesignation()
 
 const t0 = Date.now()
 
@@ -139,9 +153,12 @@ console.log(`  ${RDNET_RULE_LAYERS.speed}: ${speedRows.length}  ${RDNET_RULE_LAY
 //      codes aren't knowable here — and at ~5.8k distinct codes holding names
 //      for every street costs nothing.
 //    • as a directed graph, for the derived cut-off layer — every edge's
-//      endpoints and TRAVEL_DIRECTION (see road-cutoff.mjs).
-//    Names + endpoints are one SQLite-dialect read (1 s): its SELECT decodes
-//    geometry only for the four ST_ endpoint calls, never serialising a line
+//      endpoints and TRAVEL_DIRECTION (see road-cutoff.mjs) — plus each
+//      route's middle vertex in WGS84 and its ELEVATION, which is all the
+//      expressway classification needs (expressways.mjs).
+//    Names + endpoints are one SQLite-dialect read (~2 s, ~0.8 s of it the
+//    expressway midpoint's reprojection): its SELECT decodes
+//    geometry only for the ST_ endpoint and midpoint calls, never serialising a line
 //    (OGR SQL and `-nlt NONE` serialise every route). CENTERLINE's arcs arrive
 //    pre-stroked (~12M vertices), and a single full read decoded, reprojected
 //    and serialised all 36k routes' geometry (~400 MB of JSON, ~10 s) to keep
@@ -164,7 +181,7 @@ const turnRows = []
 async function readNamesAndGraph() {
   const first = 'ST_GeometryN(SHAPE, 1)'
   const last = 'ST_GeometryN(SHAPE, ST_NumGeometries(SHAPE))'
-  const sql = `SELECT OBJECTID, ROUTE_ID, ST_CODE, STREET_ENAME, STREET_CNAME, TRAVEL_DIRECTION, SHAPE_Length,
+  const sql = `SELECT OBJECTID, ROUTE_ID, ST_CODE, STREET_ENAME, STREET_CNAME, TRAVEL_DIRECTION, SHAPE_Length, ${CLASSIFY_SQL_COLUMNS},
     ST_X(ST_StartPoint(${first})) AS sx, ST_Y(ST_StartPoint(${first})) AS sy,
     ST_X(ST_EndPoint(${last})) AS ex, ST_Y(ST_EndPoint(${last})) AS ey
     FROM ${RDNET_CENTERLINE_LAYER}`
@@ -172,7 +189,10 @@ async function readNamesAndGraph() {
     const names = { st_en: street(p.STREET_ENAME), st_zh: street(p.STREET_CNAME) }
     if (p.ST_CODE != null && !streetsByCode.has(p.ST_CODE)) streetsByCode.set(p.ST_CODE, names)
     routes.set(p.ROUTE_ID, names)
-    graphEdges.push({ fid: p.OBJECTID, routeId: p.ROUTE_ID, dir: p.TRAVEL_DIRECTION, sx: p.sx, sy: p.sy, ex: p.ex, ey: p.ey, len: p.SHAPE_Length })
+    graphEdges.push({
+      fid: p.OBJECTID, routeId: p.ROUTE_ID, dir: p.TRAVEL_DIRECTION, sx: p.sx, sy: p.sy, ex: p.ex, ey: p.ey, len: p.SHAPE_Length,
+      st_en: names.st_en, elevation: p.ELEVATION, mx: p.mx, my: p.my
+    })
   }
 }
 
@@ -215,9 +235,14 @@ const overrides = applyZoneOverrides(prohRows.map(f => f.properties), new Map([.
 const prohProps = overrides.rows
 for (const w of overrides.warnings) console.warn(`  ⚠ override: ${w}`)
 
+// Expressways (expressways.mjs): classified from the graph read alone, and
+// closed to PLBs in the search below by rows that reach no other layer.
+const expressways = classifyExpressways(designation, graphEdges)
+const expresswayRows = expresswayClosures(expressways)
+
 const cutoff = computeCutoff({
   edges: graphEdges,
-  prohibitions: prohProps,
+  prohibitions: [...prohProps, ...expresswayRows],
   turns: turnRows,
   closes: closesForCutoff
 })
@@ -368,12 +393,14 @@ for (const g of cutoff.groups) {
   }
 }
 
-// Taxi operating areas — the second derived layer, and the only reading in
-// this archive whose extent is not TD's own geometry (there is none to read;
-// see taxi-zones.mjs and data/taxi-zones/README.md). One feature per route ×
-// colour, as prohibitions emit per kind, so a legend row is a plain filter.
-// z10 up: a zone is a thing you read zoomed out, unlike the kerbside layers.
+// Taxi operating areas and expressways — the two CURATED layers, whose
+// extent is not TD's own geometry (there is none to read; see taxi-zones.mjs,
+// expressways.mjs and the READMEs beside their data files). Taxi: one feature
+// per route × colour, as prohibitions emit per kind, so a legend row is a
+// plain filter. Both from z10: a zone or a highway is read zoomed out, unlike
+// the kerbside layers.
 const TAXI_TILE_ZOOM = { minzoom: 10 }
+const EXPRESSWAY_TILE_ZOOM = { minzoom: 10 }
 const taxiTally = new Map()
 let taxiStraddling = 0
 // ONE unfiltered CENTERLINE read at 1 m, not the chunked `-where ROUTE_ID IN`
@@ -382,6 +409,8 @@ let taxiStraddling = 0
 // a wide translucent band has no use for the 1 cm geometry those layers need
 // (5.4 MB of WKT for all 36k routes at 1 m against 54 MB at 1 cm). Classified
 // and written as it streams, so no second copy of the network is ever held.
+// The expressway routes, already classified above, take their geometry from
+// the same pass.
 const taxiRead = streamOgrGeoJSON(RDNET_CENTERLINE_LAYER, [
   `/vsizip/${RDNET_ZIP}`, RDNET_CENTERLINE_LAYER,
   '-t_srs', TARGET_SRS,
@@ -390,6 +419,16 @@ const taxiRead = streamOgrGeoJSON(RDNET_CENTERLINE_LAYER, [
   '-select', 'ROUTE_ID,STREET_ENAME,ALIAS_ENAME'
 ])
 for await (const f of taxiRead) {
+  const ex = expressways.get(f.properties.ROUTE_ID)
+  if (ex && f.geometry) {
+    await writeFeature(outs.expressway, f.geometry, compact({
+      item: ex.item,
+      plb_en: ex.plb?.en,
+      plb_zh: ex.plb?.zh,
+      ...streetProps(f.properties.ROUTE_ID)
+    }), EXPRESSWAY_TILE_ZOOM)
+    counts.expressway++
+  }
   const at = representativePoint(f.geometry)
   if (!at) continue
   const names = [street(f.properties.STREET_ENAME), street(f.properties.ALIAS_ENAME)]
@@ -443,6 +482,17 @@ const deadClauses = taxiAreas.clauses.filter(c => !c.matched)
 if (deadClauses.length) {
   console.warn(`  ⚠ taxi: ${deadClauses.length} clause(s) matched no road — check for a renamed street or a mis-drawn ring:`)
   for (const c of deadClauses) console.warn(`      ${c.taxi} ${c.access}${c.n != null ? ` #${c.n}` : ''}: ${c.streets ? [...c.streets].join(', ') : (c.districts ?? []).join(', ')}`)
+}
+// The expressway file's tallies, read like the taxi ones: per item, the km a
+// clause took, and any clause that took nothing.
+const exKm = new Map()
+for (const c of designation.clauses) exKm.set(c.item, (exKm.get(c.item) ?? 0) + c.lenM)
+console.log(`  expressway (${designation.designation}, ${EXPRESSWAY_FILE}): ${expressways.size} routes, ${([...exKm.values()].reduce((a, b) => a + b, 0) / 1000).toFixed(0)} km — ${[...exKm].map(([k, m]) => `${k} ${(m / 1000).toFixed(1)}`).join(' · ')}`)
+console.log(`  expressway: ${expresswayRows.length} routes closed to ${CUTOFF_VEHICLE} in the cut-off search; ${expressways.size - expresswayRows.length} left open by a clause's \`plb\` hours`)
+const deadEx = designation.clauses.filter(c => !c.matched)
+if (deadEx.length) {
+  console.warn(`  ⚠ expressway: ${deadEx.length} clause(s) matched no road — check for a renamed street or a mis-drawn ring:`)
+  for (const c of deadEx) console.warn(`      (${c.item}) ${[...c.streets].join(', ')}`)
 }
 // The resolved extent, for any other project that needs the gazetted shape.
 // Compact, like signGroups.json: it is bulk generated data, and pretty-printing

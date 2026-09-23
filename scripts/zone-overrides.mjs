@@ -21,7 +21,7 @@
 import { readFile } from 'node:fs/promises'
 
 import { CUTOFF_VEHICLE } from './sign-layers.mjs'
-import { addressesCutoff } from './road-cutoff.mjs'
+import { addressesCutoff, closureRow } from './road-cutoff.mjs'
 
 export const OVERRIDES_FILE = 'data/zone-notices/overrides.json'
 export const NOTICES_FILE = 'data/zone-notices/prohibited-zones.json'
@@ -91,18 +91,7 @@ export function applyZoneOverrides(rows, streetOf, overrides) {
     }
     for (const id of ids) {
       if (addressed.has(id)) continue
-      added.push({
-        PROHIBITION_ID: -Number(c.notice),
-        ROAD_ROUTE_ID: id,
-        INC_VEH_TYPE: CUTOFF_VEHICLE,
-        EXC_VEH_TYPE: 'NA',
-        PART_TIME_PROHIBITION: 'N',
-        EFF_ALL_DAYS: 'Y',
-        OTHER_REST_TYPE_GV: 'NA',
-        REMARKS: `${CUTOFF_VEHICLE} Proh/ E WP`,
-        BOUND: c.bound ?? 0,
-        notice: String(c.notice)
-      })
+      added.push(closureRow(-Number(c.notice), id, c.bound ?? 0, { notice: String(c.notice) }))
     }
   }
   return { rows: kept.concat(added), applied: { close: added.length, open: dropped.size }, warnings }

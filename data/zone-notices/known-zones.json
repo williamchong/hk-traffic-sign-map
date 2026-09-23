@@ -1,7 +1,7 @@
 {
   "_readme": [
     "Roads every Hong Kong driver knows the public-light-bus status of, with the status the cut-off build gave them when this list was verified (2026-09-22), so a TD data change on one of them is noticed by `node scripts/audit-cutoff-notices.mjs`.",
-    "status: `banned` = a closing PLB row sits on the street; `cutoff` = no closing row on it, but it lies in a cut-off area; `open` = neither. `timed` = rows exist but none closes (part-time / conditional).",
+    "status: `banned` = a closing PLB row sits on the street (TD's own, an overrides.json one, or a designated expressway's — scripts/expressways.mjs, since 2026-09-24); `cutoff` = no closing row on it, but it lies in a cut-off area; `open` = neither. `timed` = rows exist but none closes (part-time / conditional).",
     "Verified against published practice, not sign points: the Yuen Long-Jordan red minibus runs Castle Peak Road and joins Tsuen Wan Road only at Tai Chung Road (16seats r_kn68; zh.wikipedia 荃灣路); the Aberdeen red minibuses reach Kowloon by Pok Fu Lam Road and the Western Harbour Crossing (16seats r_kh70/r_kh71); the Kwun Tong-Sha Tin service uses Lion Rock Tunnel (16seats r_kn89); red minibuses may use only the Eastern Harbour Crossing-Chai Wan Road section of the Island Eastern Corridor, and TD's 2021 notice #62817 keeps every IEC slip road banned (zh.wikipedia 東區走廊); Kwun Tong Bypass is open to them 1000-0100 only (zh.wikipedia 觀塘繞道)."
   ],
   "zones": [
@@ -36,7 +36,7 @@
     { "st": "KWUN TONG BYPASS", "status": "banned", "note": "0100-1000 rows are part-time (open); one unconditional row at the Kowloon Bay end" },
     { "st": "TATE'S CAIRN HIGHWAY", "status": "banned" },
     { "st": "TATE'S CAIRN TUNNEL", "status": "cutoff", "note": "Kwun Tong-Sha Tin red minibus uses Lion Rock Tunnel" },
-    { "st": "LION ROCK TUNNEL ROAD", "status": "open" },
+    { "st": "LION ROCK TUNNEL ROAD", "status": "cutoff", "note": "only the ~0.3 km approach from Sha Tin Road (expressway item (n)) at the north portal; the tunnel and its other approaches stay open — the Kwun Tong-Sha Tin red minibus still runs it" },
     { "st": "KAI TAK TUNNEL", "status": "cutoff" },
     { "st": "WEST KOWLOON HIGHWAY", "status": "banned" },
     { "st": "LANTAU LINK", "status": "banned" },
@@ -49,8 +49,8 @@
     { "st": "TSUEN WAN ROAD", "status": "banned", "note": "only Tai Chung Road-Kwai Chung Road is open to red minibuses" },
     { "st": "KWAI CHUNG ROAD", "status": "timed" },
     { "st": "TOLO HIGHWAY", "status": "banned" },
-    { "st": "FANLING HIGHWAY", "status": "open" },
-    { "st": "YUEN LONG HIGHWAY", "status": "open" },
+    { "st": "FANLING HIGHWAY", "status": "banned", "note": "expressway, G.N. 8028/2018 (i): Cap. 374Q reg 4 bars PLBs, though TD posts no PLB row on it" },
+    { "st": "YUEN LONG HIGHWAY", "status": "banned", "note": "expressway, G.N. 8028/2018 (f)+(g) except the Shap Pat Heung-Pok Oi stretch; Cap. 374Q reg 4, no PLB row" },
     { "st": "SHING MUN TUNNEL ROAD", "status": "banned" },
     { "st": "ROUTE TWISK", "status": "banned" },
     { "st": "SHA TIN ROAD", "status": "banned" },

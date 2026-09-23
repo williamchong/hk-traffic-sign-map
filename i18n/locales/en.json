@@ -73,6 +73,7 @@
       "proh-other": "Other prohibitions",
       "nsr": "No stopping",
       "pedzone": "Pedestrian zones",
+      "expressway": "Expressways",
       "taxi": "Taxi operating areas",
       "taxi-nt": "NT (green)",
       "taxi-lantau": "Lantau (blue)",
@@ -89,6 +90,7 @@
       "proh-plb": "Public light buses prohibited",
       "nsr": "No stopping",
       "pedzone": "Pedestrian zone",
+      "expressway": "Expressway",
       "cutoff": "Cut off for public light buses",
       "taxi-nt": "New Territories (green) taxi",
       "taxi-lantau": "Lantau (blue) taxi",
@@ -112,11 +114,15 @@
       "remarks": "Remarks",
       "taxiAccess": "May serve",
       "taxiRoute": "Route",
-      "taxiDest": "Destination"
+      "taxiDest": "Destination",
+      "designation": "Designation",
+      "notPermitted": "Not permitted",
+      "plbPermitted": "Minibuses permitted"
     },
     "values": {
       "partTime": "Part-time",
-      "notAllDays": "Not every day"
+      "notAllDays": "Not every day",
+      "expresswayBarred": "Public light buses, learner drivers, vehicles under 125 cc, pedestrians and cyclists"
     },
     "veh": {
       "ALL": "All motor vehicles",
@@ -156,7 +162,7 @@
       "other": "Other days"
     },
     "source": "Road Network (2nd generation), Transport Department",
-    "cutoffSource": "Worked out from the Transport Department's prohibitions and turn bans, not a posted rule",
+    "cutoffSource": "Worked out from the Transport Department's prohibitions and turn bans and the expressways public light buses may not use — not a posted rule",
     "noticeSource": "Designated by Transport Department traffic notice no. {n}; not yet in the road network data",
     "close": "Close",
     "taxiAccess": {
@@ -166,7 +172,9 @@
       "none": "Not permitted"
     },
     "taxiRouteNo": "No. {n} on the Transport Department’s boundary map",
-    "taxiSource": "Cap. 374E Sch. 7, the legal list of permitted roads — not the road network data"
+    "taxiSource": "Cap. 374E Sch. 7, the legal list of permitted roads — not the road network data",
+    "expresswayItem": "G.N. 8028/2018 item ({item})",
+    "expresswaySource": "Designated under the Road Traffic Ordinance (Cap. 374 s.123) — curated from TD's list of expressways, not the road network data. Slip roads are not drawn."
   },
   "theme": {
     "light": "Light",

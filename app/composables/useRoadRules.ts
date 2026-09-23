@@ -16,7 +16,7 @@ import { str } from '~/utils/format'
 // `cutoff` is the one DERIVED layer: roads public light buses cannot enter at
 // all, because TD's prohibitions and turn bans close every way in
 // (scripts/road-cutoff.mjs) — its popup says so rather than citing a rule.
-export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone' | 'cutoff' | 'taxi'
+export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone' | 'cutoff' | 'taxi' | 'expressway'
 export type ProhibitionKind = 'plb' | 'ld' | 'gv' | 'all' | 'other'
 // `taxi` is the second DERIVED layer and the only CURATED one: which colour of
 // taxi may serve a road. No TD layer publishes it (PROHIBITION's `TX` code has
@@ -24,6 +24,13 @@ export type ProhibitionKind = 'plb' | 'ld' | 'gv' | 'all' | 'other'
 // clause per item of Cap. 374E Sch. 7's list of permitted roads — which is why
 // its popup cites the Schedule instead of the network, as `cutoff`'s does.
 export type TaxiClass = 'nt' | 'lantau' | 'urban'
+// `expressway` is the second CURATED layer: the roads designated under
+// Cap. 374 s.123, one clause per item of G.N. 8028/2018 in
+// data/expressways/designation.json, because no network field marks them.
+// Its routes also close to public light buses in the cut-off search (Cap.
+// 374Q reg 4), so a `cutoff` band can now be sealed by an expressway as well
+// as by TD's own rows. Its popup cites the designation, as `taxi`'s cites
+// the Schedule.
 // The tile prop `access` is `area` | `dest` | `route` | `none` (see
 // TAXI_ACCESS in scripts/sign-layers.mjs). Not typed here: nothing in the
 // runtime enumerates it — `ruleRows` only interpolates it into an i18n key —
@@ -76,6 +83,9 @@ export const RULE_ROWS: RuleRow[] = [
   // from the rows that carry `kind`, taxiColorStops from those with `taxi`.
   { key: 'nsr', layer: 'nsr', color: '#db2777' },
   { key: 'pedzone', layer: 'pedzone', color: '#65a30d' },
+  // Indigo: no other row or speed value uses it, and it stays apart from the
+  // PLB teal whose cut-off band an expressway now helps seal.
+  { key: 'expressway', layer: 'expressway', color: '#6366f1' },
   // One source-layer, three rows, split by `taxi` — the same shape as the
   // prohibition rows. The colours are the licence colours themselves, because
   // that is the only thing anyone knows about a HK taxi at a glance. The red
@@ -298,23 +308,25 @@ export const ROW_SIGN_CODES: Record<string, string[]> = Object.fromEntries(RULE_
     .filter(([, link]) => rowKeyFor(link.layer, link.layer === 'prohibition' ? link.kind : null) === r.key)
     .map(([code]) => code)
 ]))
-// The plates that announce a taxi row, added to ROW_SIGN_CODES by hand rather
-// than derived from SIGN_RULE_LINKS. They are NOT links: TS329 and TS569 are
-// end-of-zone plates, and the standing rule above is that a terminator says
-// where a zone stops, not where it applies, so neither may drive the sign
-// popup's "applies here" lookup. Ticking the row still shows them, which is
-// what a row means — "draw this reading, and show the plates that announce
-// it". The stand plates come too, because a rank is the clearest thing a
-// colour's area has on the ground.
+// The plates that announce a curated row, added to ROW_SIGN_CODES by hand
+// rather than derived from SIGN_RULE_LINKS. They are NOT links: TS329, TS569
+// and TS353/TS354 mark where a zone starts or stops, and the standing rule
+// above is that such a plate says where a zone begins or ends, not where it
+// applies, so none may drive the sign popup's "applies here" lookup. Ticking
+// the row still shows them, which is what a row means — "draw this reading,
+// and show the plates that announce it". The taxi stand plates come too,
+// because a rank is the clearest thing a colour's area has on the ground.
 //   TS329 END OF PERMITTED AREA FOR NT TAXIS · TS818 NT TAXIS (stand)
 //   TS569 END OF PERMITTED AREA FOR LANTAU TAXIS · TS566 LANTAU TAXIS
 //   TS567 URBAN TAXIS
-const TAXI_ROW_CODES: Record<string, string[]> = {
+//   TS353 START AND CONTINUATION OF AN EXPRESSWAY · TS354 END OF AN EXPRESSWAY
+const CURATED_ROW_CODES: Record<string, string[]> = {
   'taxi-nt': ['TS329', 'TS818'],
   'taxi-lantau': ['TS569', 'TS566'],
-  'taxi-urban': ['TS567']
+  'taxi-urban': ['TS567'],
+  'expressway': ['TS353', 'TS354']
 }
-for (const [row, codes] of Object.entries(TAXI_ROW_CODES)) ROW_SIGN_CODES[row] = codes
+for (const [row, codes] of Object.entries(CURATED_ROW_CODES)) ROW_SIGN_CODES[row] = codes
 
 // The 50 km/h plate: the default limit, which TD's data does not draw.
 export const DEFAULT_SPEED_CODES = new Set(['TS174'])
@@ -365,6 +377,11 @@ export function ruleRows(layer: RuleLayer, p: Record<string, unknown>, t: Transl
     // names the facility. Only one of the two is ever set.
     rows.push([t('rules.fields.taxiRoute'), p.route_n != null ? t('rules.taxiRouteNo', { n: p.route_n }) : null])
     rows.push([t('rules.fields.taxiDest'), pick(p.dest_zh, p.dest_en)])
+  } else if (layer === 'expressway') {
+    rows.push([t('rules.fields.designation'), str(p.item) ? t('rules.expresswayItem', { item: p.item }) : null])
+    rows.push([t('rules.fields.notPermitted'), t('rules.values.expresswayBarred')])
+    // Set only where TD's own part-time row records a reg 24 authorisation.
+    rows.push([t('rules.fields.plbPermitted'), pick(p.plb_zh, p.plb_en)])
   } else if (layer === 'cutoff') {
     rows.push([t('rules.fields.vehicles'), vehicles(p.veh, t)])
     rows.push([t('rules.fields.sealedBy'), pick(p.via_zh, p.via_en)])
