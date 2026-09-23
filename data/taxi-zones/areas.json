@@ -12,10 +12,14 @@
       [114.13, 22.47],
       [114.13, 22.4045]
     ],
-    "tseung-kwan-o": [
+    "sai-kung-outside": [
       [114.22, 22.25],
       [114.2755, 22.25],
       [114.2755, 22.339],
+      [114.236, 22.339],
+      [114.236, 22.365],
+      [114.2, 22.365],
+      [114.2, 22.339],
       [114.22, 22.339],
       [114.22, 22.25]
     ],
@@ -45,7 +49,7 @@
     "prince-of-wales-hospital": [[114.198, 22.376], [114.206, 22.376], [114.206, 22.384], [114.198, 22.384], [114.198, 22.376]],
     "sha-tin-racecourse": [[114.199, 22.395], [114.213, 22.395], [114.213, 22.407], [114.199, 22.407], [114.199, 22.395]],
 
-    "tsing-yi-road-west": [[114.083, 22.344], [114.105, 22.344], [114.105, 22.36], [114.083, 22.36], [114.083, 22.344]],
+    "tsing-yi-road-west": [[114.083, 22.34], [114.105, 22.34], [114.105, 22.3625], [114.083, 22.3625], [114.083, 22.34]],
     "yam-o-interchange": [[114.025, 22.325], [114.038, 22.325], [114.038, 22.338], [114.025, 22.338], [114.025, 22.325]],
     "tates-cairn-north": [[114.205, 22.398], [114.225, 22.398], [114.225, 22.408], [114.205, 22.408], [114.205, 22.398]],
     "sha-tin-road-north": [[114.195, 22.376], [114.205, 22.376], [114.205, 22.396], [114.195, 22.396], [114.195, 22.376]],
@@ -54,7 +58,8 @@
     "lantau-toll-plaza": [[114.043, 22.337], [114.053, 22.337], [114.053, 22.345], [114.043, 22.345], [114.043, 22.337]],
     "sham-tseng-interchange": [[114.058, 22.366], [114.066, 22.366], [114.066, 22.372], [114.058, 22.372], [114.058, 22.366]],
     "north-west-tsing-yi": [[114.082, 22.353], [114.086, 22.353], [114.086, 22.357], [114.082, 22.357], [114.082, 22.353]],
-    "shenzhen-bay-port": [[113.938, 22.47], [113.965, 22.47], [113.965, 22.5], [113.938, 22.5], [113.938, 22.47]]
+    "chuen-lung": [[114.1085, 22.3947], [114.1095, 22.3947], [114.1095, 22.3955], [114.1085, 22.3955], [114.1085, 22.3947]],
+    "shenzhen-bay-port": [[113.938, 22.47], [113.965, 22.47], [113.965, 22.505], [113.938, 22.505], [113.938, 22.47]]
   },
   "clauses": [
     {
@@ -74,13 +79,20 @@
       "taxi": "nt",
       "access": "area",
       "districts": ["Sai Kung District"],
-      "minus": "tseung-kwan-o",
-      "cite": "TD map: Sai Kung green excluding Tseung Kwan O New Town. Ring drawn east of Wan Po Road / LOHAS Park Road and west of Silverstrand"
+      "minus": "sai-kung-outside",
+      "cite": "TD: \"most areas of Sai Kung District (except Tseung Kwan O New Town)\". Ring drawn east of Wan Po Road / LOHAS Park Road and west of Silverstrand; its northern tongue takes out Kowloon Peak, which HAD puts in Sai Kung District but TD's map colours pink with Kowloon - Fei Ngo Shan Road climbs to it from Clear Water Bay Road at Shun Lee, so an NT taxi could never reach it on its own roads. The tongue's east edge (114.236) stops short of Ho Chung Road, green on the map"
     },
 
     { "taxi": "nt", "access": "route", "n": 1, "streets": ["TUEN MUN ROAD"] },
     { "taxi": "nt", "access": "route", "n": 2, "streets": ["TSING LONG HIGHWAY"] },
     { "taxi": "nt", "access": "route", "n": 3, "streets": ["ROUTE TWISK"] },
+    {
+      "taxi": "nt",
+      "access": "route",
+      "streets": ["(unnamed)"],
+      "only": "chuen-lung",
+      "cite": "TD map: route 3 through Chuen Lung, where Route Twisk's lay-by at the village is carried as an unnamed road"
+    },
     { "taxi": "nt", "access": "route", "n": 4, "streets": ["TEXACO ROAD", "TSING TSUEN ROAD"] },
     { "taxi": "nt", "access": "route", "n": 5, "streets": ["SHING MUN TUNNEL", "SHING MUN TUNNEL ROAD"] },
     { "taxi": "nt", "access": "route", "n": 6, "streets": ["TOLO HIGHWAY"] },
@@ -128,8 +140,8 @@
     {
       "taxi": "nt",
       "access": "route",
-      "streets": ["PENNY'S BAY HIGHWAY", "MAGIC ROAD"],
-      "cite": "TD map: unnumbered red line off the North Lantau Highway to Hong Kong Disneyland"
+      "streets": ["PENNY'S BAY HIGHWAY", "MAGIC ROAD", "FANTASY ROAD"],
+      "cite": "TD map: unnumbered red line off the North Lantau Highway to Hong Kong Disneyland. Fantasy Road is the one-way loop that returns from the resort's transport interchange to Magic Road"
     },
     {
       "taxi": "nt",
@@ -181,7 +193,7 @@
     },
 
     { "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong International Airport; HZMB Hong Kong Port PTI", "zh": "香港國際機場；港珠澳大橋香港口岸公共運輸交匯處" }, "districts": ["Islands District"], "only": "hkia-hzmb" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong Disneyland", "zh": "香港迪士尼樂園" }, "districts": ["Islands District"], "only": "disneyland" },
+    { "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong Disneyland", "zh": "香港迪士尼樂園" }, "districts": ["Islands District", "Tsuen Wan District"], "only": "disneyland" },
     { "taxi": "nt", "access": "dest", "dest": { "en": "Shenzhen Bay Port Hong Kong Port Area", "zh": "深圳灣口岸香港口岸區" }, "streets": ["SHENZHEN BAY BRIDGE", "(unnamed)"], "only": "shenzhen-bay-port" },
     { "taxi": "nt", "access": "dest", "dest": { "en": "Tsing Yi Station", "zh": "青衣站" }, "districts": ["Kwai Tsing District"], "only": "tsing-yi-station" },
     { "taxi": "nt", "access": "dest", "dest": { "en": "Tsuen Wan Station", "zh": "荃灣站" }, "districts": ["Tsuen Wan District"], "only": "tsuen-wan-station" },
