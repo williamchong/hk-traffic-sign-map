@@ -52,8 +52,11 @@
     "tsing-yi-road-west": [[114.083, 22.34], [114.105, 22.34], [114.105, 22.3625], [114.083, 22.3625], [114.083, 22.34]],
     "yam-o-interchange": [[114.025, 22.325], [114.038, 22.325], [114.038, 22.338], [114.025, 22.338], [114.025, 22.325]],
     "tates-cairn-north": [[114.205, 22.398], [114.225, 22.398], [114.225, 22.408], [114.205, 22.408], [114.205, 22.398]],
+    "tates-cairn-east-leg": [[114.205, 22.3828], [114.225, 22.3828], [114.225, 22.398], [114.205, 22.398], [114.205, 22.3828]],
+    "sha-lek-highway": [[114.2025, 22.379], [114.2135, 22.379], [114.2135, 22.389], [114.2025, 22.389], [114.2025, 22.379]],
     "sha-tin-road-north": [[114.195, 22.376], [114.205, 22.376], [114.205, 22.396], [114.195, 22.396], [114.195, 22.376]],
     "tsuen-wan-road-west": [[114.1, 22.362], [114.124, 22.362], [114.124, 22.378], [114.1, 22.378], [114.1, 22.362]],
+    "tsuen-wan-loop": [[114.106, 22.369], [114.1235, 22.369], [114.1235, 22.377], [114.106, 22.377], [114.106, 22.369]],
     "cheung-pei-shan-road": [[114.118, 22.372], [114.145, 22.372], [114.145, 22.385], [114.118, 22.385], [114.118, 22.372]],
     "lantau-toll-plaza": [[114.043, 22.337], [114.053, 22.337], [114.053, 22.345], [114.043, 22.345], [114.043, 22.337]],
     "sham-tseng-interchange": [[114.058, 22.366], [114.066, 22.366], [114.066, 22.372], [114.058, 22.372], [114.058, 22.366]],
@@ -126,6 +129,13 @@
     {
       "taxi": "nt",
       "access": "route",
+      "streets": ["CASTLE PEAK ROAD - TSUEN WAN", "CHEUNG PEI SHAN ROAD", "SAI LAU KOK ROAD", "WAI TSUEN ROAD", "SHING MUN ROAD", "MIU KONG STREET"],
+      "only": "tsuen-wan-loop",
+      "cite": "TD map: the closed red loop around Tsuen Wan Station. The raster cannot say which streets it takes; the plates do - TS818 stands on Castle Peak Road - Tsuen Wan (3), Cheung Pei Shan Road (1), Sai Lau Kok Road (6), Wai Tsuen Road (4), Shing Mun Road (3) and Miu Kong Street (3), and a ring of TS329 closes them off: at Tsuen King Circuit and Tai Chung Road to the west (114.110), at Shek Wai Kok and Kwok Shui Roads to the east (114.123), and at every side street between. The ring runs west to 114.106 so the loop meets route 1 where Tuen Mun Road ends on Castle Peak Road, as the red line does"
+    },
+    {
+      "taxi": "nt",
+      "access": "route",
       "streets": ["CHEUNG PEI SHAN ROAD"],
       "only": "cheung-pei-shan-road",
       "cite": "TD map: route 5's solid line from the Tsuen Wan loop up to the Shing Mun Tunnels portal"
@@ -183,6 +193,20 @@
       "streets": ["SHA TIN ROAD"],
       "only": "sha-tin-road-north",
       "cite": "TD map: unnumbered red branch from the route 5-6 line down the river to Prince of Wales Hospital"
+    },
+    {
+      "taxi": "nt",
+      "access": "route",
+      "streets": ["TATE'S CAIRN HIGHWAY"],
+      "only": "tates-cairn-east-leg",
+      "cite": "TD map: the east leg of the red loop down to Prince of Wales Hospital, the twin of the Sha Tin Road leg. Streets read from the TS329 ring that bounds it: at Shek Mun Interchange (22.392-22.394), Ngau Pei Sha Street and Siu Lek Yuen Road, where Tate's Cairn Highway goes on south to the tunnel (22.383)"
+    },
+    {
+      "taxi": "nt",
+      "access": "route",
+      "streets": ["SHA LEK HIGHWAY"],
+      "only": "sha-lek-highway",
+      "cite": "TD map: the same east leg, from Tate's Cairn Highway west along Sha Lek Highway to the hospital"
     },
     {
       "taxi": "nt",
