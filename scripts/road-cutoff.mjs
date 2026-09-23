@@ -87,9 +87,60 @@ export const closesForCutoff = row => closesFor(row, addressesCutoff, CUTOFF_EXE
 
 const nodeKey = (x, y) => `${Math.round(x)},${Math.round(y)}`
 
+// The network as directed edge STATES: s = 2·edge + (0 digitised | 1 reverse),
+// from node keys a[i] → b[i] and whether each edge runs both ways. The reverse
+// state of a one-way edge still has an index but `exists` says it is not a
+// real movement. Shared with audit-taxi-zones.mjs, which walks the same graph
+// in WGS84 (its node keys are its own; only the shape of the search is common).
+export function stateGraph(a, b, twoWay) {
+  const edgeOf = s => s >> 1
+  const tail = s => (s & 1 ? b : a)[edgeOf(s)]
+  const head = s => (s & 1 ? a : b)[edgeOf(s)]
+  const exists = s => !(s & 1) || twoWay[edgeOf(s)]
+  const leaving = new Map()
+  const add = (node, s) => leaving.has(node) ? leaving.get(node).push(s) : leaving.set(node, [s])
+  for (let i = 0; i < a.length; i++) {
+    add(a[i], 2 * i)
+    if (twoWay[i]) add(b[i], 2 * i + 1)
+  }
+  return { edgeOf, tail, head, exists, leaving }
+}
+
+// Edge indices joined through shared nodes into connected groups, each in
+// visit order; `nodesOf(i)` names the nodes edge i touches. The cut-off's
+// areas and the taxi audit's stranded islands are both this.
+export function componentsByNodes(indices, nodesOf) {
+  const at = new Map()
+  for (const i of indices) {
+    for (const node of nodesOf(i)) at.has(node) ? at.get(node).push(i) : at.set(node, [i])
+  }
+  const done = new Set()
+  const components = []
+  for (const start of indices) {
+    if (done.has(start)) continue
+    const members = []
+    const queue = [start]
+    done.add(start)
+    while (queue.length) {
+      const i = queue.pop()
+      members.push(i)
+      for (const node of nodesOf(i)) {
+        for (const j of at.get(node)) {
+          if (!done.has(j)) {
+            done.add(j)
+            queue.push(j)
+          }
+        }
+      }
+    }
+    components.push(members)
+  }
+  return components
+}
+
 // Largest strongly connected component of a directed graph over 0..n-1, by
 // iterative Tarjan (a recursive one overflows on a 70k-state road network).
-function largestScc(n, successors) {
+export function largestScc(n, successors) {
   const index = new Int32Array(n).fill(-1)
   const low = new Int32Array(n)
   const onStack = new Uint8Array(n)
@@ -150,17 +201,7 @@ export function computeCutoff({ edges, prohibitions, turns, closes }) {
   const a = edges.map(e => nodeKey(e.sx, e.sy))
   const b = edges.map(e => nodeKey(e.ex, e.ey))
 
-  // State s = 2·edge + (0 digitised | 1 reverse). Tail/head are the nodes it
-  // leaves from and arrives at.
-  const edgeOf = s => s >> 1
-  const tail = s => (s & 1 ? b : a)[edgeOf(s)]
-  const head = s => (s & 1 ? a : b)[edgeOf(s)]
-  const leaving = new Map()
-  for (let i = 0; i < n; i++) {
-    const add = (node, s) => leaving.has(node) ? leaving.get(node).push(s) : leaving.set(node, [s])
-    add(a[i], 2 * i)
-    if (edges[i].dir === 1) add(b[i], 2 * i + 1)
-  }
+  const { edgeOf, tail, head, exists, leaving } = stateGraph(a, b, edges.map(e => e.dir === 1))
 
   const bannedTurns = new Set()
   let turnsSkipped = 0
@@ -207,7 +248,7 @@ export function computeCutoff({ edges, prohibitions, turns, closes }) {
     const succ = successorsWith(blocked)
     // States that can't exist (the reverse of a one-way edge) or are closed
     // are isolated here, so they never form the largest component.
-    const seeds = largestScc(2 * n, s => (s & 1 && edges[edgeOf(s)].dir !== 1) || blocked.has(s) ? [] : succ(s))
+    const seeds = largestScc(2 * n, s => !exists(s) || blocked.has(s) ? [] : succ(s))
     const seen = new Uint8Array(2 * n)
     const reached = new Uint8Array(n)
     const queue = [...seeds]
@@ -234,38 +275,24 @@ export function computeCutoff({ edges, prohibitions, turns, closes }) {
 
   // Areas: cut edges joined through shared nodes, each with the closed routes
   // that touch it — the bans a popup names as sealing it.
-  const cutAt = new Map()
-  for (const i of cut) {
-    for (const node of [a[i], b[i]]) cutAt.has(node) ? cutAt.get(node).push(i) : cutAt.set(node, [i])
-  }
   const closedAt = new Map()
   for (const id of closedRoutes) {
     const i = byRoute.get(id)
     for (const node of [a[i], b[i]]) closedAt.has(node) ? closedAt.get(node).add(id) : closedAt.set(node, new Set([id]))
   }
-  const done = new Set()
-  const groups = []
-  for (const start of cut) {
-    if (done.has(start)) continue
-    const members = []
+  const groups = componentsByNodes(cut, i => [a[i], b[i]]).map((members) => {
     const entry = new Set()
-    const queue = [start]
-    done.add(start)
-    while (queue.length) {
-      const i = queue.pop()
-      members.push(edges[i])
+    for (const i of members) {
       for (const node of [a[i], b[i]]) {
         for (const id of closedAt.get(node) ?? []) entry.add(id)
-        for (const j of cutAt.get(node)) {
-          if (!done.has(j)) {
-            done.add(j)
-            queue.push(j)
-          }
-        }
       }
     }
-    groups.push({ edges: members, lenM: Math.round(members.reduce((s, e) => s + e.len, 0)), entryRouteIds: [...entry] })
-  }
+    return {
+      edges: members.map(i => edges[i]),
+      lenM: Math.round(members.reduce((sum, i) => sum + edges[i].len, 0)),
+      entryRouteIds: [...entry]
+    }
+  })
   groups.sort((x, y) => y.lenM - x.lenM)
 
   return {

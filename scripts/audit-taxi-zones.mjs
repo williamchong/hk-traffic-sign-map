@@ -28,6 +28,13 @@
 //                         green area means the area is drawn wrong.
 //   4. dead clauses       clauses in areas.json that matched no road at all —
 //                         a street TD renamed, or a typo.
+//   5. reachability       roads a colour may serve that it cannot DRIVE to (or
+//                         back from) without leaving its own roads, over the
+//                         directed network. A destination drawn as an island
+//                         means a connecting route is missing from areas.json —
+//                         the gap every other section only hints at, because a
+//                         plate cannot say a road between two areas is absent.
+//                         The network checks the file here; it never feeds it.
 //
 // Usage:
 //   node scripts/audit-taxi-zones.mjs [--radius 40] [--show 12]
@@ -38,6 +45,7 @@ import { existsSync } from 'node:fs'
 
 import { RAW_DIR, TARGET_SRS, RDNET_CENTERLINE_LAYER } from './sign-layers.mjs'
 import { requireTool, streamOgrGeoJSON, readSignPoints, reprojectPoints } from './geo.mjs'
+import { stateGraph, largestScc, componentsByNodes } from './road-cutoff.mjs'
 import {
   TAXI_AREAS_FILE, DISTRICTS_FILE,
   loadTaxiAreas, classifyRoute, classifyPoint, representativePoint
@@ -103,7 +111,7 @@ const roads = []
 for await (const f of streamOgrGeoJSON(RDNET_CENTERLINE_LAYER, [
   `/vsizip/${RDNET_ZIP}`, RDNET_CENTERLINE_LAYER,
   '-t_srs', TARGET_SRS, '-dim', 'XY', '-simplify', '1.0',
-  '-select', 'ROUTE_ID,STREET_ENAME,ALIAS_ENAME'
+  '-select', 'ROUTE_ID,STREET_ENAME,ALIAS_ENAME,TRAVEL_DIRECTION'
 ])) {
   const at = representativePoint(f.geometry)
   if (!at) continue
@@ -113,7 +121,17 @@ for await (const f of streamOgrGeoJSON(RDNET_CENTERLINE_LAYER, [
   // Both names are kept: a `streets` clause matches either, so probing a
   // road's ends with the primary name alone would make an alias-bound road
   // read as a boundary crossing here and as an unexplained plate above.
-  const road = { st: names[0], names, hits, ends: [parts[0][0], parts[parts.length - 1].at(-1)] }
+  let metres = 0
+  for (const part of parts) {
+    for (let i = 1; i < part.length; i++) {
+      metres += Math.hypot((part[i][0] - part[i - 1][0]) * M_PER_DEG_LNG, (part[i][1] - part[i - 1][1]) * M_PER_DEG_LAT)
+    }
+  }
+  const road = {
+    st: names[0], names, hits, metres, at,
+    ends: [parts[0][0], parts[parts.length - 1].at(-1)],
+    twoWay: f.properties.TRAVEL_DIRECTION === 1
+  }
   roads.push(road)
   for (const part of parts) {
     for (let i = 0; i < part.length - 1; i++) {
@@ -265,4 +283,84 @@ const dead = areas.clauses.filter(c => !c.matched)
 if (!dead.length) console.log(`   none — all ${areas.clauses.length} clauses bind`)
 for (const c of dead) {
   console.log(`   ${c.taxi} ${c.access}${c.n != null ? ` #${c.n}` : ''}: ${c.streets ? [...c.streets].join(', ') : (c.districts ?? []).join(', ')}`)
+}
+
+// --- 5. reachability --------------------------------------------------------
+// The same edge × direction states the cut-off search walks (road-cutoff.mjs),
+// keyed here by WGS84 endpoints rounded to ~1 m: the 1 m simplify keeps every
+// endpoint, and the two edges meeting at a junction reproject the same source
+// coordinate, so they still coincide. A colour's own roads are every road it
+// may serve (area, dest or route); its CORE is their largest strongly
+// connected piece, and a road is reachable when some state of it can be
+// driven to from the core AND back. Turn bans are not applied — an unapplied
+// ban can only hide a gap here, never invent one. `urban` has no roads of its
+// own in this file (it is drawn only where red may NOT go), so it has nothing
+// to walk.
+console.log(`\n5. Roads a colour may serve but cannot drive to and back from on its own roads`)
+const nodeKey = ([x, y]) => `${x.toFixed(5)},${y.toFixed(5)}`
+const graph = stateGraph(roads.map(r => nodeKey(r.ends[0])), roads.map(r => nodeKey(r.ends[1])), roads.map(r => r.twoWay))
+const arriving = new Map()
+for (let s = 0; s < 2 * roads.length; s++) {
+  if (!graph.exists(s)) continue
+  const node = graph.head(s)
+  arriving.has(node) ? arriving.get(node).push(s) : arriving.set(node, [s])
+}
+function walk(seeds, next) {
+  const seen = new Uint8Array(2 * roads.length)
+  const queue = [...seeds]
+  for (const s of seeds) seen[s] = 1
+  while (queue.length) {
+    for (const t of next(queue.pop())) {
+      if (!seen[t]) {
+        seen[t] = 1
+        queue.push(t)
+      }
+    }
+  }
+  return seen
+}
+const labelOf = (road, hit) => hit.access === 'dest'
+  ? `dest ${hit.dest?.en}`
+  : `${hit.access}${hit.n != null ? ` #${hit.n}` : ''} ${road.st ?? '(unnamed)'}`
+for (const taxi of Object.values(TERMINATORS)) {
+  const own = roads.map(r => r.hits.find(h => h.taxi === taxi && h.access !== 'none'))
+  const usable = s => graph.exists(s) && own[graph.edgeOf(s)]
+  const forward = s => (graph.leaving.get(graph.head(s)) ?? []).filter(usable)
+  const backward = s => (arriving.get(graph.tail(s)) ?? []).filter(usable)
+  const core = largestScc(2 * roads.length, s => (usable(s) ? forward(s) : []))
+  const into = walk(core, forward)
+  const outOf = walk(core, backward)
+  const statesOf = i => (graph.exists(2 * i + 1) ? [2 * i, 2 * i + 1] : [2 * i])
+  // A stranded road is one no state of which is both reachable from the core
+  // and able to return to it.
+  const stranded = new Set()
+  let total = 0
+  own.forEach((hit, i) => {
+    if (!hit) return
+    total++
+    if (!statesOf(i).some(s => into[s] && outOf[s])) stranded.add(i)
+  })
+  // Stranded roads joined through shared nodes into ISLANDS, ranked by length:
+  // a missing corridor strands kilometres at once, while a footprint ring that
+  // clips a car park's aisles strands a few metres, and the two must not read
+  // alike. Each island is named by the reading it carries most of.
+  const islands = componentsByNodes([...stranded], i => [graph.tail(2 * i), graph.head(2 * i)]).map((members) => {
+    const label = new Map()
+    let metres = 0
+    let longest = members[0]
+    for (const i of members) {
+      metres += roads[i].metres
+      if (roads[i].metres > roads[longest].metres) longest = i
+      const k = labelOf(roads[i], own[i])
+      label.set(k, (label.get(k) ?? 0) + roads[i].metres)
+    }
+    return { metres, label: [...label].sort((a, b) => b[1] - a[1])[0][0], at: roads[longest].at }
+  })
+  islands.sort((a, b) => b.metres - a.metres)
+  const km = m => (m / 1000).toFixed(1)
+  console.log(`   ${taxi}: ${total} routes, ${stranded.size} stranded in ${islands.length} island(s), ${km(islands.reduce((a, b) => a + b.metres, 0))} km`)
+  for (const { metres, label, at } of islands.slice(0, SHOW)) {
+    console.log(`      ${km(metres).padStart(6)} km  ${label}  @ ${at[0].toFixed(4)},${at[1].toFixed(4)}`)
+  }
+  if (islands.length > SHOW) console.log(`           … and ${islands.length - SHOW} more`)
 }
