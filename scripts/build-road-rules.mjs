@@ -28,9 +28,10 @@
 //   taxi         CURATED (taxi-zones.mjs): which colour of taxi may serve a
 //                road. The one reading here whose extent is NOT TD's own
 //                geometry, because none exists — PROHIBITION's `TX` code has
-//                no colour dimension and Cap. 374E Sch. 7 is prose plus a
-//                raster map. data/taxi-zones/areas.json carries the extent,
-//                classified onto CENTERLINE against HAD's district partition;
+//                no colour dimension. Cap. 374E Sch. 7 lists the permitted
+//                roads street by street; data/taxi-zones/areas.json carries
+//                that list, one clause per item, classified onto CENTERLINE
+//                by street name and HAD's district partition;
 //                the TS329 / TS569 terminators AUDIT that file and never feed
 //                it (audit-taxi-zones.mjs), so the rule below still holds.
 // The PROHIBITION rows lag TD's own prohibited-zone notices by 1–35 months

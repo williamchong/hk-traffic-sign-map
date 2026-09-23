@@ -1,8 +1,28 @@
 {
-  "source": "Cap. 374E Sch. 7 (Road Traffic (Registration and Licensing of Vehicles) Regulations); Transport Department, \"Permitted operating areas of NT and Lantau taxis\", taxiboundarymap202608eng.pdf",
-  "asOf": "2026-08-11",
+  "source": "Cap. 374E Sch. 7 (Road Traffic (Registration and Licensing of Vehicles) Regulations), \"Permitted areas for New Territories and Lantau taxis\", as at 31/07/2026; Transport Department, \"Permitted operating areas of NT and Lantau taxis\", taxiboundarymap202608eng.pdf / chi.pdf, and the 2005 map cmaptaxi.pdf for the Tseung Kwan O New Town outline",
+  "asOf": "2026-07-31",
   "districts": "hksar_18_district_boundary.json (Home Affairs Department, via DATA.GOV.HK)",
   "rings": {
+    "shun-lee-ncwb-east": [[114.2205, 22.3295], [114.231, 22.3295], [114.231, 22.34], [114.2205, 22.34], [114.2205, 22.3333], [114.2225, 22.3333], [114.2225, 22.3321], [114.2205, 22.3321], [114.2205, 22.3295]],
+    "shun-lee-tsuen-road-seg": [[114.2252, 22.3298], [114.2263, 22.3298], [114.2263, 22.3312], [114.2252, 22.3312], [114.2252, 22.3298]],
+
+    "tko-new-town": [
+      [114.243, 22.26],
+      [114.283, 22.26],
+      [114.283, 22.305],
+      [114.2765, 22.31],
+      [114.2735, 22.3175],
+      [114.2685, 22.3205],
+      [114.2685, 22.333],
+      [114.243, 22.333],
+      [114.243, 22.26]
+    ],
+    "cwb-west-of-ncwb": [[114.19, 22.32], [114.2269, 22.32], [114.2269, 22.35], [114.19, 22.35], [114.19, 22.32]],
+    "anderson-road-south": [[114.2275, 22.31], [114.2435, 22.31], [114.2435, 22.3322], [114.2275, 22.3322], [114.2275, 22.31]],
+    "wan-po-road-seg": [[114.2645, 22.2952], [114.2745, 22.2952], [114.2745, 22.3125], [114.2645, 22.3125], [114.2645, 22.2952]],
+    "sheung-ning-road-north": [[114.26, 22.3156], [114.268, 22.3156], [114.268, 22.325], [114.26, 22.325], [114.26, 22.3156]],
+    "pui-shing-road-south": [[114.26, 22.31], [114.27, 22.31], [114.27, 22.3164], [114.26, 22.3164], [114.26, 22.31]],
+
     "ma-on-shan": [
       [114.13, 22.4045],
       [114.215, 22.4045],
@@ -12,16 +32,49 @@
       [114.13, 22.47],
       [114.13, 22.4045]
     ],
-    "sai-kung-outside": [
-      [114.22, 22.25],
-      [114.2755, 22.25],
-      [114.2755, 22.339],
-      [114.236, 22.339],
-      [114.236, 22.365],
-      [114.2, 22.365],
-      [114.2, 22.339],
-      [114.22, 22.339],
-      [114.22, 22.25]
+    "sha-tin-racecourse": [[114.199, 22.395], [114.2082, 22.395], [114.2082, 22.407], [114.199, 22.407], [114.199, 22.395]],
+    "sha-tin-road-north": [[114.195, 22.3776], [114.205, 22.3776], [114.205, 22.396], [114.195, 22.396], [114.195, 22.3776]],
+    "sha-tin-wai-road-seg": [[114.199, 22.376], [114.2106, 22.376], [114.2106, 22.385], [114.199, 22.385], [114.199, 22.376]],
+    "ngan-shing-street-seg": [[114.202, 22.3786], [114.205, 22.3786], [114.205, 22.3818], [114.202, 22.3818], [114.202, 22.3786]],
+    "chap-wai-kon-street-west": [[114.199, 22.378], [114.2026, 22.378], [114.2026, 22.386], [114.199, 22.386], [114.199, 22.378]],
+    "tates-cairn-north": [[114.205, 22.383], [114.225, 22.383], [114.225, 22.416], [114.205, 22.416], [114.205, 22.383]],
+    "sha-lek-links-north": [[114.2095, 22.3826], [114.2135, 22.3826], [114.2135, 22.389], [114.2095, 22.389], [114.2095, 22.3826]],
+
+    "sham-tseng": [[113.99, 22.358], [114.0778, 22.358], [114.0778, 22.43], [113.99, 22.43], [113.99, 22.358]],
+    "castle-peak-road-tsuen-wan-seg": [[114.1065, 22.369], [114.1172, 22.369], [114.1172, 22.378], [114.1065, 22.378], [114.1065, 22.369]],
+    "shing-mun-road-seg": [[114.1212, 22.37], [114.1229, 22.37], [114.1229, 22.3718], [114.1212, 22.3718], [114.1212, 22.37]],
+    "tsuen-wan-road-west": [[114.1, 22.362], [114.118, 22.362], [114.118, 22.378], [114.1, 22.378], [114.1, 22.362]],
+    "chuen-lung": [[114.1085, 22.3947], [114.1095, 22.3947], [114.1095, 22.3955], [114.1085, 22.3955], [114.1085, 22.3947]],
+    "lantau-toll-plaza": [[114.043, 22.337], [114.053, 22.337], [114.053, 22.345], [114.043, 22.345], [114.043, 22.337]],
+    "yam-o-interchange": [[114.025, 22.325], [114.038, 22.325], [114.038, 22.338], [114.025, 22.338], [114.025, 22.325]],
+
+    "fung-shue-wo-road-seg": [[114.101, 22.357], [114.1032, 22.357], [114.1032, 22.3598], [114.101, 22.3598], [114.101, 22.357]],
+    "tsing-yi-road-west-seg": [[114.094, 22.3452], [114.1025, 22.3452], [114.1025, 22.3578], [114.094, 22.3578], [114.094, 22.3452]],
+    "north-west-tsing-yi": [[114.082, 22.349], [114.088, 22.349], [114.088, 22.3585], [114.082, 22.3585], [114.082, 22.349]],
+    "tsing-king-road-seg": [[114.1025, 22.355], [114.1105, 22.355], [114.1105, 22.3625], [114.1025, 22.3625], [114.1025, 22.355]],
+
+    "cheong-tat-road-seg": [[113.935, 22.319], [113.9365, 22.319], [113.9365, 22.3202], [113.935, 22.3202], [113.935, 22.319]],
+    "east-coast-road-seg": [[113.9385, 22.3098], [113.942, 22.3098], [113.942, 22.3141], [113.9385, 22.3141], [113.9385, 22.3098]],
+    "chek-lap-kok-road-south": [[113.93, 22.3], [113.96, 22.3], [113.96, 22.3087], [113.93, 22.3087], [113.93, 22.3]],
+    "tm-clk-airport-end": [[113.945, 22.304], [113.963, 22.304], [113.963, 22.3145], [113.945, 22.3145], [113.945, 22.304]],
+
+    "shenzhen-bay-port": [[113.938, 22.47], [113.965, 22.47], [113.965, 22.505], [113.938, 22.505], [113.938, 22.47]],
+
+    "lantau-and-chek-lap-kok": [
+      [113.82, 22.19],
+      [114.013, 22.19],
+      [114.013, 22.27],
+      [114.033, 22.27],
+      [114.033, 22.35],
+      [113.82, 22.35],
+      [113.82, 22.19]
+    ],
+    "north-east-lantau": [
+      [113.99, 22.28],
+      [114.0495, 22.28],
+      [114.0495, 22.3435],
+      [113.99, 22.3435],
+      [113.99, 22.28]
     ],
     "south-lantau": [
       [113.8, 22.15],
@@ -31,213 +84,195 @@
       [113.97, 22.266],
       [113.8, 22.266],
       [113.8, 22.15]
-    ],
-    "north-east-lantau": [
-      [113.99, 22.28],
-      [114.0495, 22.28],
-      [114.0495, 22.3435],
-      [113.99, 22.3435],
-      [113.99, 22.28]
-    ],
-
-    "hkia-hzmb": [[113.913, 22.302], [113.96, 22.302], [113.96, 22.33], [113.913, 22.33], [113.913, 22.302]],
-    "disneyland": [[114.038, 22.308], [114.05, 22.308], [114.05, 22.318], [114.038, 22.318], [114.038, 22.308]],
-    "tsing-yi-station": [[114.104, 22.355], [114.1105, 22.355], [114.1105, 22.361], [114.104, 22.361], [114.104, 22.355]],
-    "tsuen-wan-station": [[114.115, 22.3705], [114.1205, 22.3705], [114.1205, 22.3765], [114.115, 22.3765], [114.115, 22.3705]],
-    "shun-lee-estate": [[114.2215, 22.327], [114.23, 22.327], [114.23, 22.335], [114.2215, 22.335], [114.2215, 22.327]],
-    "hang-hau-tko-hospital": [[114.26, 22.312], [114.27, 22.312], [114.27, 22.321], [114.26, 22.321], [114.26, 22.312]],
-    "prince-of-wales-hospital": [[114.198, 22.376], [114.206, 22.376], [114.206, 22.384], [114.198, 22.384], [114.198, 22.376]],
-    "sha-tin-racecourse": [[114.199, 22.395], [114.213, 22.395], [114.213, 22.407], [114.199, 22.407], [114.199, 22.395]],
-
-    "tsing-yi-road-west": [[114.083, 22.34], [114.105, 22.34], [114.105, 22.3625], [114.083, 22.3625], [114.083, 22.34]],
-    "yam-o-interchange": [[114.025, 22.325], [114.038, 22.325], [114.038, 22.338], [114.025, 22.338], [114.025, 22.325]],
-    "tates-cairn-north": [[114.205, 22.398], [114.225, 22.398], [114.225, 22.408], [114.205, 22.408], [114.205, 22.398]],
-    "tates-cairn-east-leg": [[114.205, 22.3828], [114.225, 22.3828], [114.225, 22.398], [114.205, 22.398], [114.205, 22.3828]],
-    "sha-lek-highway": [[114.2025, 22.379], [114.2135, 22.379], [114.2135, 22.389], [114.2025, 22.389], [114.2025, 22.379]],
-    "sha-tin-road-north": [[114.195, 22.376], [114.205, 22.376], [114.205, 22.396], [114.195, 22.396], [114.195, 22.376]],
-    "tsuen-wan-road-west": [[114.1, 22.362], [114.124, 22.362], [114.124, 22.378], [114.1, 22.378], [114.1, 22.362]],
-    "tsuen-wan-loop": [[114.106, 22.369], [114.1235, 22.369], [114.1235, 22.377], [114.106, 22.377], [114.106, 22.369]],
-    "cheung-pei-shan-road": [[114.118, 22.372], [114.145, 22.372], [114.145, 22.385], [114.118, 22.385], [114.118, 22.372]],
-    "lantau-toll-plaza": [[114.043, 22.337], [114.053, 22.337], [114.053, 22.345], [114.043, 22.345], [114.043, 22.337]],
-    "sham-tseng-interchange": [[114.058, 22.366], [114.066, 22.366], [114.066, 22.372], [114.058, 22.372], [114.058, 22.366]],
-    "north-west-tsing-yi": [[114.082, 22.353], [114.086, 22.353], [114.086, 22.357], [114.082, 22.357], [114.082, 22.353]],
-    "chuen-lung": [[114.1085, 22.3947], [114.1095, 22.3947], [114.1095, 22.3955], [114.1085, 22.3955], [114.1085, 22.3947]],
-    "shenzhen-bay-port": [[113.938, 22.47], [113.965, 22.47], [113.965, 22.505], [113.938, 22.505], [113.938, 22.47]]
+    ]
   },
   "clauses": [
-    {
-      "taxi": "nt",
-      "access": "area",
-      "districts": ["Tuen Mun District", "Yuen Long District", "North District", "Tai Po District"],
-      "cite": "TD map: whole districts inside the green area; no TS329 stands in any of the four"
-    },
-    {
-      "taxi": "nt",
-      "access": "area",
-      "districts": ["Sha Tin District"],
-      "only": "ma-on-shan",
-      "cite": "TD map: Ma On Shan green, Sha Tin town pink. Ring anchored on the TS329 line at Tai Po Road - Sha Tin (22.4044), Tsun King Road (22.4049) and A Kung Kok Street (22.4064)"
-    },
-    {
-      "taxi": "nt",
-      "access": "area",
-      "districts": ["Sai Kung District"],
-      "minus": "sai-kung-outside",
-      "cite": "TD: \"most areas of Sai Kung District (except Tseung Kwan O New Town)\". Ring drawn east of Wan Po Road / LOHAS Park Road and west of Silverstrand; its northern tongue takes out Kowloon Peak, which HAD puts in Sai Kung District but TD's map colours pink with Kowloon - Fei Ngo Shan Road climbs to it from Clear Water Bay Road at Shun Lee, so an NT taxi could never reach it on its own roads. The tongue's east edge (114.236) stops short of Ho Chung Road, green on the map"
-    },
-
-    { "taxi": "nt", "access": "route", "n": 1, "streets": ["TUEN MUN ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 2, "streets": ["TSING LONG HIGHWAY"] },
-    { "taxi": "nt", "access": "route", "n": 3, "streets": ["ROUTE TWISK"] },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["(unnamed)"],
-      "only": "chuen-lung",
-      "cite": "TD map: route 3 through Chuen Lung, where Route Twisk's lay-by at the village is carried as an unnamed road"
-    },
-    { "taxi": "nt", "access": "route", "n": 4, "streets": ["TEXACO ROAD", "TSING TSUEN ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 5, "streets": ["SHING MUN TUNNEL", "SHING MUN TUNNEL ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 6, "streets": ["TOLO HIGHWAY"] },
-    { "taxi": "nt", "access": "route", "n": 7, "streets": ["SAI SHA ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 8, "streets": ["HIRAM'S HIGHWAY", "NEW HIRAM'S HIGHWAY"] },
-    { "taxi": "nt", "access": "route", "n": 9, "streets": ["CLEAR WATER BAY ROAD", "NEW CLEAR WATER BAY ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 10, "streets": ["YING YIP ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 11, "streets": ["HANG HAU ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 12, "streets": ["WAN PO ROAD", "SHEK KOK ROAD"] },
-    { "taxi": "nt", "access": "route", "n": 13, "streets": ["TUEN MUN CHEK LAP KOK TUNNEL ROAD"] },
+    { "taxi": "nt", "access": "area", "districts": ["North District"], "cite": "Sch. 7 §1(b): 北區 — 所有道路" },
+    { "taxi": "nt", "access": "area", "districts": ["Tai Po District"], "cite": "Sch. 7 §1(e): 大埔區 — 所有道路" },
+    { "taxi": "nt", "access": "area", "districts": ["Tuen Mun District"], "cite": "Sch. 7 §1(g): 屯門區 — 所有道路" },
+    { "taxi": "nt", "access": "area", "districts": ["Yuen Long District"], "cite": "Sch. 7 §1(h): 元朗區 — 所有道路" },
 
     {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["TSUEN KAM INTERCHANGE", "TEXACO ROAD NORTH", "TEXACO ROAD FLYOVER", "TEXACO INTERCHANGE"],
-      "cite": "TD map: unnumbered red line joining routes 1 and 3 to route 4 around Tsuen Wan Station"
+      "taxi": "nt", "access": "route", "n": 9,
+      "streets": ["NEW CLEAR WATER BAY ROAD"], "only": "shun-lee-ncwb-east",
+      "cite": "Sch. 7 §1(a)(i): 由觀塘區界線至順清街的一段新清水灣道 — from the Sai Kung boundary west to the Shun Ching Street junction (114.2243). The ring takes the whole interchange at the Lee On Road junction (114.2217): the westbound way in drops to it and the eastbound return climbs back from it, both west of Shun Ching Street, and without them §1(a)(iv) would end at a road the Schedule does not permit. The one piece it must not take is the carriageway from Kowloon, classified at 22.3331 between the ring's two lips"
     },
     {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["NORTH WEST TSING YI INTERCHANGE", "TSING YI NORTH COASTAL ROAD", "LANTAU LINK", "NORTH LANTAU HIGHWAY", "AIRPORT ROAD"],
-      "cite": "TD map: unnumbered red line from routes 2 and 4 across north Tsing Yi and Lantau to the airport and HZMB loop"
+      "taxi": "nt", "access": "dest", "dest": { "en": "Shun Lee Estate", "zh": "順利邨" },
+      "streets": ["SHUN LEE TSUEN ROAD"], "only": "shun-lee-tsuen-road-seg",
+      "cite": "Sch. 7 §1(a)(ii): 順清街與順景街之間的一段順利邨道 (junctions 114.2255,22.3309 and 114.2260,22.3301)"
     },
     {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["TSUEN WAN ROAD"],
-      "only": "tsuen-wan-road-west",
-      "cite": "TD map: route 1's red line runs on past its end into the loop around Tsuen Wan Station, along Tsuen Wan Road to Texaco Interchange"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["CASTLE PEAK ROAD - TSUEN WAN", "CHEUNG PEI SHAN ROAD", "SAI LAU KOK ROAD", "WAI TSUEN ROAD", "SHING MUN ROAD", "MIU KONG STREET"],
-      "only": "tsuen-wan-loop",
-      "cite": "TD map: the closed red loop around Tsuen Wan Station. The raster cannot say which streets it takes; the plates do - TS818 stands on Castle Peak Road - Tsuen Wan (3), Cheung Pei Shan Road (1), Sai Lau Kok Road (6), Wai Tsuen Road (4), Shing Mun Road (3) and Miu Kong Street (3), and a ring of TS329 closes them off: at Tsuen King Circuit and Tai Chung Road to the west (114.110), at Shek Wai Kok and Kwok Shui Roads to the east (114.123), and at every side street between. The ring runs west to 114.106 so the loop meets route 1 where Tuen Mun Road ends on Castle Peak Road, as the red line does"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["CHEUNG PEI SHAN ROAD"],
-      "only": "cheung-pei-shan-road",
-      "cite": "TD map: route 5's solid line from the Tsuen Wan loop up to the Shing Mun Tunnels portal"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["(unnamed)"],
-      "only": "lantau-toll-plaza",
-      "cite": "TD map: the Lantau Link red line, through the unnamed links at the toll plaza where it becomes the North Lantau Highway"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["PENNY'S BAY HIGHWAY", "MAGIC ROAD", "FANTASY ROAD"],
-      "cite": "TD map: unnumbered red line off the North Lantau Highway to Hong Kong Disneyland. Fantasy Road is the one-way loop that returns from the resort's transport interchange to Magic Road"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["(unnamed)"],
-      "only": "yam-o-interchange",
-      "cite": "TD map: the same Disneyland branch, through the unnamed ramps where it leaves the North Lantau Highway"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["TSING YI ROAD WEST", "FUNG SHUE WO ROAD", "TAM KON SHAN INTERCHANGE", "TSING KING ROAD"],
-      "only": "tsing-yi-road-west",
-      "cite": "TD map: unnumbered red loop from route 2 down west Tsing Yi to Tsing Yi Station. Streets read under the line where TS818 plates run from Tsing Yi Road West (31) by Fung Shue Wo Road (5) along Tsing King Road (14) to the station; Cheung Tsing Highway, beside it, leads only into the Tsing Sha Control Area"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["(unnamed)"],
-      "only": "north-west-tsing-yi",
-      "cite": "TD map: the same loop, through the unnamed link where it leaves North West Tsing Yi Interchange"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["(unnamed)"],
-      "only": "sham-tseng-interchange",
-      "cite": "TD map: route 1's red line, through the stretch at the Sham Tseng interchange that TD carries as unnamed slip roads"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["TAI PO ROAD - SHA TIN"],
-      "cite": "TD map: unnumbered red line joining route 5 to route 6 past Sha Tin Racecourse; TD: NT taxis crossing Sha Tin to Tsuen Wan, Tsing Yi, Disneyland or the airport must use Shing Mun Tunnels"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["SHA TIN ROAD"],
-      "only": "sha-tin-road-north",
-      "cite": "TD map: unnumbered red branch from the route 5-6 line down the river to Prince of Wales Hospital"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["TATE'S CAIRN HIGHWAY"],
-      "only": "tates-cairn-east-leg",
-      "cite": "TD map: the east leg of the red loop down to Prince of Wales Hospital, the twin of the Sha Tin Road leg. Streets read from the TS329 ring that bounds it: at Shek Mun Interchange (22.392-22.394), Ngau Pei Sha Street and Siu Lek Yuen Road, where Tate's Cairn Highway goes on south to the tunnel (22.383)"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["SHA LEK HIGHWAY"],
-      "only": "sha-lek-highway",
-      "cite": "TD map: the same east leg, from Tate's Cairn Highway west along Sha Lek Highway to the hospital"
-    },
-    {
-      "taxi": "nt",
-      "access": "route",
-      "streets": ["TATE'S CAIRN HIGHWAY"],
-      "only": "tates-cairn-north",
-      "cite": "TD map: unnumbered red line from route 6 across the river to Ma On Shan. Ring ends on the TS329 pair at 22.398-22.399"
+      "taxi": "nt", "access": "dest", "dest": { "en": "Shun Lee Estate", "zh": "順利邨" },
+      "streets": ["SHUN KING STREET", "LEE ON ROAD"],
+      "cite": "Sch. 7 §1(a)(iii) 順景街 and (iv) 順景街與新清水灣道之間的一段利安道 — Lee On Road runs only between those two junctions"
     },
 
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong International Airport; HZMB Hong Kong Port PTI", "zh": "香港國際機場；港珠澳大橋香港口岸公共運輸交匯處" }, "districts": ["Islands District"], "only": "hkia-hzmb" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong Disneyland", "zh": "香港迪士尼樂園" }, "districts": ["Islands District", "Tsuen Wan District"], "only": "disneyland" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Shenzhen Bay Port Hong Kong Port Area", "zh": "深圳灣口岸香港口岸區" }, "streets": ["SHENZHEN BAY BRIDGE", "(unnamed)"], "only": "shenzhen-bay-port" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Tsing Yi Station", "zh": "青衣站" }, "districts": ["Kwai Tsing District"], "only": "tsing-yi-station" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Tsuen Wan Station", "zh": "荃灣站" }, "districts": ["Tsuen Wan District"], "only": "tsuen-wan-station" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Shun Lee Estate", "zh": "順利邨" }, "districts": ["Kwun Tong District"], "only": "shun-lee-estate" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Hang Hau Station; Tseung Kwan O Hospital A&E", "zh": "坑口站；將軍澳醫院急症室" }, "districts": ["Sai Kung District"], "only": "hang-hau-tko-hospital" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Prince of Wales Hospital", "zh": "威爾斯親王醫院" }, "districts": ["Sha Tin District"], "only": "prince-of-wales-hospital" },
-    { "taxi": "nt", "access": "dest", "dest": { "en": "Sha Tin Racecourse", "zh": "沙田馬場" }, "districts": ["Sha Tin District"], "only": "sha-tin-racecourse" },
-
     {
-      "taxi": "lantau",
-      "access": "area",
-      "districts": ["Islands District"],
-      "cite": "TD: available for hire on Lantau Island, Chek Lap Kok and the HZMB Hong Kong Port PTI"
+      "taxi": "nt", "access": "area",
+      "districts": ["Sai Kung District"], "minus": "tko-new-town",
+      "except": [
+        { "streets": ["FEI NGO SHAN ROAD"] },
+        { "streets": ["CLEAR WATER BAY ROAD"], "only": "cwb-west-of-ncwb" },
+        { "streets": ["ANDERSON ROAD"] },
+        { "only": "anderson-road-south" }
+      ],
+      "cite": "Sch. 7 §1(c)(i): 將軍澳新市鎮以外的所有道路，但不包括 (A) 飛鵝山道 (B) 清水灣道在它與新清水灣道的交匯處以西的路段 (C) 安達臣道 (D) 由安達臣道在它與清水灣道的交匯處以南的路段通往其他地方的所有道路. The Schedule does not bound Tseung Kwan O New Town; the ring follows the dashed outline on TD's 2005 map, its north edge at 22.333 between Ngan Ying Road (inside) and University Road (outside). The Clear Water Bay Road / New Clear Water Bay Road junction is at 114.2272; the exclusion ring stops at 114.2269 because TD carries the junction's own short links as two-point lines classified at their west end (114.2270)"
+    },
+    { "taxi": "nt", "access": "route", "n": 10, "streets": ["YING YIP ROAD"], "cite": "Sch. 7 §1(c)(ii)(A): 影業路" },
+    { "taxi": "nt", "access": "route", "n": 11, "streets": ["HANG HAU ROAD"], "cite": "Sch. 7 §1(c)(ii)(B): 坑口道" },
+    {
+      "taxi": "nt", "access": "route", "n": 12,
+      "streets": ["WAN PO ROAD"], "only": "wan-po-road-seg",
+      "cite": "Sch. 7 §1(c)(ii)(D): 環保大道在昭信路與石角路之間的路段 (junctions 114.2656,22.3122 and 114.2733,22.2956)"
+    },
+    { "taxi": "nt", "access": "route", "n": 12, "streets": ["SHEK KOK ROAD"], "cite": "Sch. 7 §1(c)(ii)(E): 石角路" },
+    { "taxi": "nt", "access": "route", "n": 9, "streets": ["CLEAR WATER BAY ROAD"], "except": [{ "only": "cwb-west-of-ncwb" }], "cite": "Sch. 7 §1(c)(ii)(K): 清水灣道 inside the new town, and outside it §1(c)(i) less (B). Unbounded by district on purpose: the last metres east of the junction, which TD carries as Clear Water Bay Road inside Kwun Tong District, are the approach §1(a)(i) starts from" },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Hang Hau Station; Tseung Kwan O Hospital A&E", "zh": "坑口站；將軍澳醫院急症室" },
+      "streets": ["CHIU SHUN ROAD", "CHUNG WA ROAD", "NGAN O ROAD", "MING SHING STREET"],
+      "cite": "Sch. 7 §1(c)(ii)(C) 昭信路在坑口道與環保大道之間的路段 (the whole of the road), (G) 重華路, (I) 銀澳路, (J) 名成街"
     },
     {
-      "taxi": "lantau",
-      "access": "area",
-      "districts": ["Tsuen Wan District"],
-      "only": "north-east-lantau",
-      "cite": "TD map: the Lantau hatching covers all of Lantau, but HAD puts its north-east corner (Yam O, Sunny Bay, Penny's Bay, the Lantau Link toll plaza) in Tsuen Wan District. Ring's east edge sits on the TS569 pair at the toll plaza, the last point before the Lantau Link; TS566 stands at Sunny Bay agree"
+      "taxi": "nt", "access": "dest", "dest": { "en": "Hang Hau Station; Tseung Kwan O Hospital A&E", "zh": "坑口站；將軍澳醫院急症室" },
+      "streets": ["SHEUNG NING ROAD"], "only": "sheung-ning-road-north",
+      "cite": "Sch. 7 §1(c)(ii)(F): 常寧路在它與培成路的交匯處以北的路段 (junction 114.2633,22.3155)"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Hang Hau Station; Tseung Kwan O Hospital A&E", "zh": "坑口站；將軍澳醫院急症室" },
+      "streets": ["PUI SHING ROAD"], "only": "pui-shing-road-south",
+      "cite": "Sch. 7 §1(c)(ii)(H): 培成路在它與重華路的交匯處以南的路段 (junction 114.2665,22.3163)"
+    },
+
+    {
+      "taxi": "nt", "access": "area",
+      "districts": ["Sha Tin District"], "only": "ma-on-shan",
+      "except": [{ "streets": ["KAU TO SHAN ROAD", "YUEN WO ROAD"] }],
+      "cite": "Sch. 7 §1(d)(i) the access roads off Tai Po Road north of its Sha Tin Road junction, but not 九肚山路 or the links to 源和路 (TD: 源禾路); (ii) the access roads off Tolo Highway north of its Tai Po Road junction by the racecourse; (x) 馬鞍山的所有道路. The Schedule does not bound these; the ring is anchored on the TS329 line at Tai Po Road - Sha Tin (22.4044), Tsun King Road (22.4049) and A Kung Kok Street (22.4064)"
+    },
+    { "taxi": "nt", "access": "route", "streets": ["TAI PO ROAD - SHA TIN", "TAI PO ROAD - MA LIU SHUI"], "cite": "Sch. 7 §1(d)(i) 大埔公路 north of its Sha Tin Road junction and (xiii) between 城門隧道公路 and 沙田路 — together the whole of Tai Po Road - Sha Tin, whose south end is the Shing Mun Tunnel Road junction. TD: NT taxis carrying passengers through Sha Tin to Tsuen Wan Station, Tsing Yi Station, Disneyland or Terminal 1 must use the Shing Mun Tunnels" },
+    { "taxi": "nt", "access": "route", "n": 6, "streets": ["TOLO HIGHWAY"], "cite": "Sch. 7 §1(d)(ii): 吐露港公路" },
+    { "taxi": "nt", "access": "route", "n": 5, "streets": ["SHING MUN TUNNEL", "SHING MUN TUNNEL ROAD"], "cite": "Sch. 7 §1(d)(xi)-(xii) and §1(f)(xi): 城門隧道, 城門隧道公路" },
+    { "taxi": "nt", "access": "route", "streets": ["MA ON SHAN ROAD"], "cite": "Sch. 7 §1(d)(ix): 馬鞍山路" },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Sha Tin Racecourse", "zh": "沙田馬場" },
+      "districts": ["Sha Tin District"], "only": "sha-tin-racecourse",
+      "cite": "Sch. 7 §1(d)(iii): 將大埔公路與沙田馬場連接起來的通路 — the racecourse's own footprint, stopping west of Shek Mun Interchange"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Prince of Wales Hospital", "zh": "威爾斯親王醫院" },
+      "streets": ["SHA TIN ROAD"], "only": "sha-tin-road-north",
+      "cite": "Sch. 7 §1(d)(iv) the two links from 沙田圍路, which TD carries as Sha Tin Road (22.378-22.379), and (v) 沙田路 north of them"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Prince of Wales Hospital", "zh": "威爾斯親王醫院" },
+      "streets": ["SHA TIN WAI ROAD"], "only": "sha-tin-wai-road-seg",
+      "cite": "Sch. 7 §1(d)(vi): 沙田圍路通往沙田路的北行連接路與小瀝源路之間的一段沙田圍路 (114.199 to the Siu Lek Yuen Road junction at 114.2103)"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Prince of Wales Hospital", "zh": "威爾斯親王醫院" },
+      "streets": ["NGAN SHING STREET"], "only": "ngan-shing-street-seg",
+      "cite": "Sch. 7 §1(d)(vii): 沙田圍路與插桅杆街之間的一段銀城街 (junctions 114.2046,22.3788 and 114.2025,22.3817)"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Prince of Wales Hospital", "zh": "威爾斯親王醫院" },
+      "streets": ["CHAP WAI KON STREET"], "only": "chap-wai-kon-street-west",
+      "cite": "Sch. 7 §1(d)(viii): 插桅杆街與銀城街交匯處以西的一段插桅杆街"
+    },
+    {
+      "taxi": "nt", "access": "route",
+      "streets": ["TATE'S CAIRN HIGHWAY"], "only": "tates-cairn-north",
+      "cite": "Sch. 7 §1(d)(xiv) the links to 馬鞍山路 and (xvi) 大老山公路 between 吐露港公路 and the (xv) links, which meet it north of Siu Lek Yuen Road (22.383-22.388); south of them it runs on to the tunnel, which is not permitted"
+    },
+    {
+      "taxi": "nt", "access": "route",
+      "streets": ["SHA LEK HIGHWAY"], "only": "sha-lek-links-north",
+      "cite": "Sch. 7 §1(d)(xv): 將沙田圍路與小瀝源路以北的大老山公路連接起來的2條連接路 — the two Sha Lek Highway links from the east end of Sha Tin Wai Road north to Tate's Cairn Highway (22.383-22.388). The Sha Lek Highway links further south are not permitted"
+    },
+
+    {
+      "taxi": "nt", "access": "area",
+      "districts": ["Tsuen Wan District"], "only": "sham-tseng",
+      "cite": "Sch. 7 §1(f)(i): 屯門與汀九橋下的麗都停車場之間的一段青山公路，以及由該段青山公路通往其他地方的區內通路 — Sham Tseng, Tsing Lung Tau and Ting Kau west of the car park. Ting Kau Bridge (Tsing Long Highway) crosses Castle Peak Road - Ting Kau at 114.0778, where six TS329 stand; the ring's south edge (22.358) keeps Ma Wan out"
+    },
+    { "taxi": "nt", "access": "route", "n": 1, "streets": ["TUEN MUN ROAD"], "cite": "Sch. 7 §1(f)(iii): 屯門公路" },
+    { "taxi": "nt", "access": "route", "n": 2, "streets": ["TSING LONG HIGHWAY"], "cite": "Sch. 7 §1(f)(xx)-(xxi) and §1(j)(xi): 汀九橋, 大欖隧道 — TD carries both as Tsing Long Highway" },
+    { "taxi": "nt", "access": "route", "n": 3, "streets": ["ROUTE TWISK"], "cite": "Sch. 7 §1(f)(iv): 荃錦公路" },
+    { "taxi": "nt", "access": "route", "n": 3, "streets": ["(unnamed)"], "only": "chuen-lung", "cite": "Sch. 7 §1(f)(iv): 荃錦公路's lay-by at Chuen Lung, which TD carries as an unnamed road" },
+    { "taxi": "nt", "access": "route", "streets": ["TAI MO SHAN ROAD"], "cite": "Sch. 7 §1(f)(v): 大帽山道" },
+    { "taxi": "nt", "access": "route", "n": 5, "streets": ["CHEUNG PEI SHAN ROAD", "TSUEN KAM INTERCHANGE"], "cite": "Sch. 7 §1(f)(x) 象鼻山道 (TD: 象鼻山路) and (xii) 荃錦交匯處" },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Tsuen Wan Station", "zh": "荃灣站" },
+      "streets": ["CASTLE PEAK ROAD - TSUEN WAN"], "only": "castle-peak-road-tsuen-wan-seg",
+      "cite": "Sch. 7 §1(f)(ii): 柴灣角屯門公路與大河道之間的一段青山公路 (junctions 114.1070,22.3757 and 114.1168,22.3732)"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Tsuen Wan Station", "zh": "荃灣站" },
+      "streets": ["SAI LAU KOK ROAD", "WAI TSUEN ROAD", "MIU KONG STREET"],
+      "cite": "Sch. 7 §1(f)(vi) 西樓角路, (vii) 蕙荃路, (viii) 廟岡街 (TD: 廟崗街)"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Tsuen Wan Station", "zh": "荃灣站" },
+      "streets": ["SHING MUN ROAD"], "only": "shing-mun-road-seg",
+      "cite": "Sch. 7 §1(f)(ix): 廟岡街與西樓角路之間的一段城門道 (junctions 114.1226,22.3716 and 114.1215,22.3703)"
+    },
+    {
+      "taxi": "nt", "access": "route", "n": 1,
+      "streets": ["TSUEN WAN ROAD"], "only": "tsuen-wan-road-west",
+      "cite": "Sch. 7 §1(f)(xiii): 屯門公路與荃青交匯處之間的一段荃灣路 (junctions 114.1015,22.3737 and 114.1175,22.3630)"
+    },
+    { "taxi": "nt", "access": "route", "n": 4, "streets": ["TEXACO ROAD NORTH", "TEXACO ROAD", "TSUEN TSING INTERCHANGE", "TSING TSUEN ROAD"], "cite": "Sch. 7 §1(f)(xiv)-(xvii) and §1(j)(i)-(iii): 德士古道北, 德士古道, 荃青交匯處, 青荃路" },
+    { "taxi": "nt", "access": "route", "streets": ["LANTAU LINK"], "cite": "Sch. 7 §1(f)(xviii) and §1(j)(x): 青嶼幹線" },
+    { "taxi": "nt", "access": "route", "streets": ["(unnamed)"], "only": "lantau-toll-plaza", "cite": "Sch. 7 §1(f)(xviii)-(xix): the Lantau Link toll plaza, where TD carries the links between 青嶼幹線 and 北大嶼山公路 as unnamed roads" },
+    { "taxi": "nt", "access": "route", "streets": ["NORTH LANTAU HIGHWAY"], "cite": "Sch. 7 §1(f)(xix) and §1(i)(i): 北大嶼山公路" },
+    { "taxi": "nt", "access": "route", "streets": ["PENNY'S BAY HIGHWAY"], "cite": "Sch. 7 §1(f)(xxii): 竹篙灣公路" },
+    { "taxi": "nt", "access": "route", "streets": ["(unnamed)"], "only": "yam-o-interchange", "cite": "Sch. 7 §1(f)(xxiii): 連接北大嶼山公路與竹篙灣公路的4條連接路" },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong Disneyland", "zh": "香港迪士尼樂園" },
+      "streets": ["MAGIC ROAD", "INSPIRATION DRIVE", "FANTASY ROAD", "CHAK YAN ROAD", "LONG YAN ROAD", "SEA POINT ROAD"],
+      "cite": "Sch. 7 §1(f)(xxiv)-(xxviii) 神奇道, 迪欣路, 幻想道, 澤欣路, 朗欣路 and §1(i)(ix)-(x) 神奇道, 海鳴路"
+    },
+
+    { "taxi": "nt", "access": "route", "streets": ["TAM KON SHAN INTERCHANGE", "NORTH WEST TSING YI INTERCHANGE", "TSING YI NORTH COASTAL ROAD", "CHEUNG TSING HIGHWAY"], "cite": "Sch. 7 §1(j)(iv) 担杆山交匯處, (viii) 長青公路 between the link from 青衣西路 and 青衣西北交匯處 (the whole of what TD carries under that name), (ix) 青衣西北交匯處, (xiii) 青衣北岸公路" },
+    { "taxi": "nt", "access": "route", "streets": ["FUNG SHUE WO ROAD"], "only": "fung-shue-wo-road-seg", "cite": "Sch. 7 §1(j)(v): 担杆山交匯處與青衣西路之間的一段楓樹窩路 (junctions 114.1026,22.3594 and 114.1016,22.3575)" },
+    { "taxi": "nt", "access": "route", "streets": ["TSING YI ROAD WEST"], "only": "tsing-yi-road-west-seg", "cite": "Sch. 7 §1(j)(vi): 楓樹窩路與長青公路之間的一段青衣西路 (junctions 114.1016,22.3575 and 114.0966,22.3456). North of Fung Shue Wo Road it is not permitted. §1(j)(vii)'s link to 長青公路 is the stub TD carries under the two roads' own names at 114.0966,22.3456" },
+    { "taxi": "nt", "access": "route", "streets": ["(unnamed)"], "only": "north-west-tsing-yi", "cite": "Sch. 7 §1(j)(ix): 青衣西北交匯處's unnamed ramps" },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Tsing Yi Station", "zh": "青衣站" },
+      "streets": ["TSING KING ROAD"], "only": "tsing-king-road-seg",
+      "cite": "Sch. 7 §1(j)(xii): 担杆山交匯處與機場鐵路青衣站之間的一段青敬路"
+    },
+
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong International Airport; HZMB Hong Kong Port PTI", "zh": "香港國際機場；港珠澳大橋香港口岸公共運輸交匯處" },
+      "streets": ["AIRPORT ROAD", "CHEONG HONG ROAD", "CHEONG HING ROAD", "AIRPORT SOUTH INTERCHANGE", "AIRPORT NORTH INTERCHANGE", "SHUN FAI ROAD", "SHUN WUI ROAD", "SHUN MING ROAD", "SHUN LIN ROAD", "SHUN CHIT ROAD", "TUNG WING ROAD", "SKY CITY INTERCHANGE", "CHEONG LIN ROAD", "CHEONG KING ROAD", "SHUN LONG ROAD", "CHEONG SHUN ROAD"],
+      "cite": "Sch. 7 §1(i)(ii)-(v), (vii)-(viii), (xiv)-(xxviii): 機場路, 暢航路, 暢興路, 機場南/北交匯處, 順暉路, 順匯路, 順明路, 順連路, 順捷路, 東榮路, 航天城交匯處, 暢連路 (drawn whole; the Schedule names three stretches of it), 暢景路, 順朗路, 暢順路. 暢旺路 (iv) and 翔天路 (xi) are not in TD's network under those names"
+    },
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong International Airport; HZMB Hong Kong Port PTI", "zh": "香港國際機場；港珠澳大橋香港口岸公共運輸交匯處" },
+      "streets": ["CHEK LAP KOK ROAD"], "except": [{ "only": "chek-lap-kok-road-south" }],
+      "cite": "Sch. 7 §1(i)(xiii): 赤鱲角路 but not (A) its southbound carriageway south of 東榮路 — ringed, which also withholds the northbound one there — nor (B) the northbound carriageway between 東岸路 and the link from 航天城交匯處, which is not withheld"
+    },
+    { "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong International Airport; HZMB Hong Kong Port PTI", "zh": "香港國際機場；港珠澳大橋香港口岸公共運輸交匯處" }, "streets": ["CHEONG TAT ROAD"], "only": "cheong-tat-road-seg", "cite": "Sch. 7 §1(i)(xii): 機場北交匯處與暢興路之間的一段暢達路西行路" },
+    { "taxi": "nt", "access": "dest", "dest": { "en": "Hong Kong International Airport; HZMB Hong Kong Port PTI", "zh": "香港國際機場；港珠澳大橋香港口岸公共運輸交匯處" }, "streets": ["EAST COAST ROAD"], "only": "east-coast-road-seg", "cite": "Sch. 7 §1(i)(xxiv): 在暢景路與航天城交匯處之間的一段東岸路北行車路 — ringed, so the southbound carriageway beside it is drawn too" },
+    { "taxi": "nt", "access": "route", "n": 13, "streets": ["TUEN MUN CHEK LAP KOK TUNNEL ROAD"], "cite": "Sch. 7 §1(l): 直接連接龍門路／龍富路與順朗路／赤鱲角路的所有道路 — the Tuen Mun-Chek Lap Kok Link" },
+    { "taxi": "nt", "access": "route", "n": 13, "streets": ["(unnamed)"], "only": "tm-clk-airport-end", "cite": "Sch. 7 §1(l): the Link's unnamed ramps where it lands on the port island and joins 順朗路 and 赤鱲角路 (south of 22.3145). The island's other unnamed roads, further north, are not in the Schedule" },
+
+    {
+      "taxi": "nt", "access": "dest", "dest": { "en": "Shenzhen Bay Port Hong Kong Port Area", "zh": "深圳灣口岸港方口岸區" },
+      "streets": ["SHENZHEN BAY BRIDGE", "(unnamed)"], "only": "shenzhen-bay-port",
+      "cite": "Sch. 7 §1(k): 深圳灣口岸港方口岸區之內的所有道路"
+    },
+
+    {
+      "taxi": "lantau", "access": "area",
+      "districts": ["Islands District"], "only": "lantau-and-chek-lap-kok",
+      "cite": "Sch. 7 §2(a)-(b): 大嶼山的所有道路, 赤鱲角的所有道路. The ring keeps Cheung Chau, Peng Chau and Hei Ling Chau, which are in Islands District but not on Lantau, out"
+    },
+    {
+      "taxi": "lantau", "access": "area",
+      "districts": ["Tsuen Wan District"], "only": "north-east-lantau",
+      "cite": "Sch. 7 §2(a): 大嶼山的所有道路 — HAD puts Lantau's north-east corner (Yam O, Sunny Bay, Penny's Bay, the toll plaza, Disneyland) in Tsuen Wan District. Ring's east edge sits on the TS569 pair at the toll plaza"
     },
 
     {

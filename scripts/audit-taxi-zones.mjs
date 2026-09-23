@@ -66,7 +66,7 @@ const GML = join(RAW_DIR, 'DTAD_TS_ABV_PT.gml')
 const WHY_INSIDE_AREA = 'inside the permitted area'
 const WHY_NO_CLAUSE = 'road no clause touches'
 const WHY_NO_ROAD = 'no road in reach'
-const WHY_DEST = 'at a fringe destination'
+const WHY_DEST = 'on a facility\'s listed roads'
 const WHY_ROUTE = 'end of a designated route'
 const WHY_BOUNDARY = 'on a boundary road'
 const UNEXPLAINED = [WHY_INSIDE_AREA, WHY_NO_CLAUSE, WHY_NO_ROAD]
@@ -161,23 +161,39 @@ function segMetres(lng, lat, [ax, ay], [bx, by]) {
   return Math.hypot(px - t * dx, py - t * dy)
 }
 
-function nearestRoad(lng, lat) {
-  let best = Infinity
-  let road = null
+// Every indexed segment in the 3x3 window of cells around a point — complete
+// for any radius up to CELL (see the index above). The one copy of the window
+// arithmetic, so the nearest-road and within-radius tests cannot drift apart.
+function* segmentsNear(lng, lat) {
   const gx0 = Math.floor(lng / CELL)
   const gy0 = Math.floor(lat / CELL)
   for (let gx = gx0 - 1; gx <= gx0 + 1; gx++) {
     for (let gy = gy0 - 1; gy <= gy0 + 1; gy++) {
-      for (const [a, b, r] of grid.get(`${gx},${gy}`) ?? []) {
-        const d = segMetres(lng, lat, a, b)
-        if (d < best) {
-          best = d
-          road = r
-        }
-      }
+      yield* (grid.get(`${gx},${gy}`) ?? [])
+    }
+  }
+}
+
+function nearestRoad(lng, lat) {
+  let best = Infinity
+  let road = null
+  for (const [a, b, r] of segmentsNear(lng, lat)) {
+    const d = segMetres(lng, lat, a, b)
+    if (d < best) {
+      best = d
+      road = r
     }
   }
   return { road, metres: best }
+}
+
+// Is any road within OFF_STREET_M one that `taxi` may serve?
+const OFF_STREET_M = 30
+function servedWithin(lng, lat, taxi) {
+  for (const [a, b, r] of segmentsNear(lng, lat)) {
+    if (segMetres(lng, lat, a, b) <= OFF_STREET_M && r.hits.some(h => h.taxi === taxi && h.access !== 'none')) return true
+  }
+  return false
 }
 
 // --- the plates -------------------------------------------------------------
@@ -262,6 +278,7 @@ for (const [code, taxi] of Object.entries(STANDS)) {
   const mine = plates.filter(p => p.code === code)
   if (!mine.length) continue
   const bad = []
+  let offStreet = 0
   for (const p of mine) {
     const { road, metres } = nearestRoad(p.lng, p.lat)
     if (!road || metres > RADIUS_M) continue
@@ -269,12 +286,21 @@ for (const [code, taxi] of Object.entries(STANDS)) {
     // urban is emitted only where red may NOT go, so for it a hit is the
     // contradiction; for nt / lantau the ABSENCE of one is.
     const wrong = taxi === 'urban' ? access === 'none' : access == null
-    if (wrong) bad.push(road.st ?? '(unnamed)')
+    if (!wrong) continue
+    // A rank inside a station's public transport interchange stands on an
+    // unnamed aisle that Sch. 7 never lists — it lists roads — while the
+    // permitted road it opens off runs past a few metres away. That is not
+    // the extent contradicting the plate, so it is counted apart.
+    if (taxi !== 'urban' && !road.st && servedWithin(p.lng, p.lat, taxi)) {
+      offStreet++
+      continue
+    }
+    bad.push(road.st ?? '(unnamed)')
   }
   const byStreet = new Map()
   for (const s of bad) bump(byStreet, s)
   const verdict = bad.length ? `${bad.length} of ${mine.length} — ${tally(byStreet).split(' · ').slice(0, SHOW).join(' · ')}` : `none of ${mine.length}`
-  console.log(`   ${code} (${taxi}): ${verdict}`)
+  console.log(`   ${code} (${taxi}): ${verdict}${offStreet ? ` (+${offStreet} on an unnamed interchange aisle beside a road it may serve)` : ''}`)
 }
 
 // --- 4. dead clauses --------------------------------------------------------

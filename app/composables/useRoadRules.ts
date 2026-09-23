@@ -20,9 +20,9 @@ export type RuleLayer = 'speed' | 'buslane' | 'prohibition' | 'nsr' | 'pedzone' 
 export type ProhibitionKind = 'plb' | 'ld' | 'gv' | 'all' | 'other'
 // `taxi` is the second DERIVED layer and the only CURATED one: which colour of
 // taxi may serve a road. No TD layer publishes it (PROHIBITION's `TX` code has
-// no colour dimension), so the extent is data/taxi-zones/areas.json, drawn
-// from Cap. 374E Sch. 7 and TD's own boundary map — which is why its popup
-// cites that instead of the network, as `cutoff`'s does.
+// no colour dimension), so the extent is data/taxi-zones/areas.json, one
+// clause per item of Cap. 374E Sch. 7's list of permitted roads — which is why
+// its popup cites the Schedule instead of the network, as `cutoff`'s does.
 export type TaxiClass = 'nt' | 'lantau' | 'urban'
 // The tile prop `access` is `area` | `dest` | `route` | `none` (see
 // TAXI_ACCESS in scripts/sign-layers.mjs). Not typed here: nothing in the

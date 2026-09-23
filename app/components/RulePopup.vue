@@ -53,7 +53,7 @@ const NOTICES_URL = 'https://data.gov.hk/en-data/dataset/hk-td-tis_22-traffic-no
 
 // Where this reading comes from. Every layer but two is read straight off TD's
 // road network; the cut-off band is worked out from it, and the taxi bands are
-// curated from Cap. 374E and TD's published boundary map because no network
+// curated from Cap. 374E Sch. 7's list of permitted roads because no network
 // layer carries them. Saying so is the point — a reader deserves to know which
 // answers are TD's own geometry.
 const SOURCE_KEY: Partial<Record<RuleLayer, string>> = {

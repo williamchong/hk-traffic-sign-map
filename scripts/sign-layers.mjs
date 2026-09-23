@@ -102,12 +102,15 @@ export const TAXI_LAYER = 'taxi'
 // drawing the ~3,900 km it CAN use would say nothing.
 export const TAXI_CLASSES = ['nt', 'lantau', 'urban']
 // How a road relates to that colour, as the tile prop `access`:
-//   area  — inside the permitted operating area; may ply for hire
-//   dest  — a named facility on the fringe that TD lets the colour serve from
-//           its own rank, in territory otherwise closed to it: the airport and
-//           the HZMB port, Disneyland, three stations, two hospitals, an
-//           estate and the racecourse
-//   route — a designated through-route only; may carry, may not pick up
+//   area  — a Sch. 7 item that permits "all roads" in a district or area
+//   dest  — the roads Sch. 7 lists to reach a named facility in territory
+//           otherwise closed to the colour: the airport and the HZMB port,
+//           Disneyland, three stations, two hospitals, an estate, the
+//           racecourse and the Shenzhen Bay port
+//   route — a listed through road: one of the thirteen TD numbers on its
+//           boundary map, or a link between them. Sch. 7 draws no line
+//           between these and the rest — every road it lists is permitted
+//           area — so this is a drawing distinction, not a legal one
 //   none  — expressly excluded (urban only)
 export const TAXI_ACCESS = ['area', 'dest', 'route', 'none']
 

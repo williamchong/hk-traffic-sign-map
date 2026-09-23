@@ -12,42 +12,98 @@ This one cannot be, because no published extent exists:
 - The Road Network v2 FGDB has **no taxi layer**. `PROHIBITION.INC_VEH_TYPE` carries a `TX` code, but
   it has no colour dimension — the colours appear only as free text in `REMARKS` ("E NT Taxis",
   "E Urban Taxis", "E Fleet Taxis") on a handful of the ~180 taxi-related rows.
-- The authority is **legal, not geospatial**: Cap. 374E Schedule 7.
-- TD draws it as `taxiboundarymap202608eng.pdf`, which is a **raster collage** — seven DCT JPEGs, no
-  vector boundary, about 60 m/px. There is nothing in it to trace, so the extractor machinery that
-  reads the Index Plan sheets is no help here.
+- The authority is **Cap. 374E Schedule 7**, "Permitted areas for New Territories and Lantau taxis",
+  and it is **a list of roads**, district by district: "all roads" in North, Tai Po, Tuen Mun and
+  Yuen Long; all roads in Sai Kung outside Tseung Kwan O New Town *but not* Fei Ngo Shan Road,
+  Anderson Road and Clear Water Bay Road west of its New Clear Water Bay Road junction; and
+  elsewhere named roads and "between X and Y" stretches — 28 items in Tsuen Wan District alone.
+  §2 gives Lantau taxis all roads on Lantau and Chek Lap Kok.
+- TD's boundary maps (`taxiboundarymap202608eng.pdf` / `chi.pdf`, a raster collage at ~60 m/px, and the
+  2005 `cmaptaxi.pdf`) **illustrate** the Schedule. They are not it: the "fringe facilities" they
+  mark with green dots are not items of the Schedule, and their red lines are the Schedule's
+  listed roads drawn at a scale that cannot say which of two parallel streets is meant.
 
-So the extent is assembled from two things that *are* published: the Home Affairs Department's 18
-district boundaries, and TD's own description of the areas — its prose, and the red "permitted
-routes" its map draws: the thirteen it numbers, the **unnumbered links that join them** (the Lantau
-Link to the airport, the branches to Disneyland and Tsing Yi Station, the Sha Tin crossing), and the
-fringe facilities it marks with a green dot.
+An earlier version of this file was built from the maps and TD's summary prose, on the belief that
+the Schedule was prose too. It was not, and reading it item by item corrected the map in both
+directions: Sham Tseng, Tsing Lung Tau, Tseng Lan Shue, HKUST and Silverstrand are permitted; the
+facility rings round Hang Hau, Shun Lee, Prince of Wales Hospital and the two stations took whole
+blocks the Schedule never lists; Clear Water Bay Road and New Clear Water Bay Road were drawn on
+into Kowloon, Wan Po Road past both its junctions, Tate's Cairn Highway down to the tunnel.
+
+So the file is **one clause per item of the Schedule**, each citing it (`Sch. 7 §1(f)(xiii)`) with
+the Schedule's own Chinese wording, and matched onto the network by the street's English name —
+TD's Chinese names drift from the Schedule's (廟崗街 for 廟岡街, 象鼻山路 for 象鼻山道, 源禾路 for
+源和路), so matching on them would silently miss.
 
 ## Shape of the file
 
 - `rings` — hand-drawn WGS84 rings, used only to clip or subtract. They may run outside the district
   (or past the street) freely; only the intersection matters, which is why each is a coarse polygon
-  rather than a traced boundary.
+  rather than a traced boundary. On a street, a ring takes the stretch between the two junctions the
+  Schedule names; each such clause records the junction coordinates it was drawn round.
 - `clauses` — each names a `taxi` colour (`nt` | `lantau` | `urban`), an `access`
-  (`area` | `dest` | `route` | `none`) and a selector, either `districts` or `streets` (matched on
-  `CENTERLINE.STREET_ENAME` / `ALIAS_ENAME`), either one clipped by an optional `only` / `minus`
-  ring — on a street, that takes the stretch of a long street a red line actually follows. The
-  street name `"(unnamed)"` matches a road with no `STREET_ENAME` (TD aliases most ramps just "Slip
-  Road"), and is refused without an `only` ring: it exists for the ramps of one interchange that a
-  red line runs through, and unringed it would claim every unnamed road in the territory. A
-  clause carries a `cite`, or — for a `dest` — the bilingual `dest` name, which IS its citation: it
-  is a facility TD names on its map.
-- Precedence within a colour is the most permissive: `area` > `dest` > `route` > `none`. A
-  designated route that happens to run through permitted territory is simply permitted territory,
-  and a route that reaches a fringe facility is that facility, where the colour may work a rank
-  rather than merely pass through.
+  (`area` | `dest` | `route` | `none`), and `districts`, `streets` (matched on
+  `CENTERLINE.STREET_ENAME` / `ALIAS_ENAME`) or both — a road must then satisfy both. Either may be
+  clipped by an optional `only` ring or have one subtracted by `minus`, and `except` lists the
+  Schedule's own exclusions: a street list, a ring, or a street list inside a ring. The street name
+  `"(unnamed)"` matches a road with no `STREET_ENAME` (TD aliases most ramps just "Slip Road") and is
+  refused without an `only` ring: unringed it would claim every unnamed road in the territory.
+- **Districts are used only for the Schedule's district-wide items.** A street clause names no
+  district even where the Schedule does, because HAD's boundaries are coarse enough to drop a
+  street's end into the next district — Cheung Pei Shan Road's tunnel-portal pieces fell out that
+  way and stranded 7.6 km of Shing Mun Tunnel Road. Where a street runs on past the permitted
+  stretch (Clear Water Bay Road into Kowloon), a ring bounds it instead.
+- `access` is a drawing distinction, not a legal one — every road the Schedule lists is permitted
+  area. `area` is a district-wide item; `dest` the roads the Schedule lists to reach a facility, and
+  named after it for the popup; `route` a through road, numbered when it is one of the thirteen TD
+  numbers on its map. Precedence within a colour is the most permissive: `area` > `dest` > `route` >
+  `none`.
 
-## The district boundaries are a classifier, not a drawing
+## What the Schedule does not say
 
-`hksar_18_district_boundary.json` is an **administrative** partition: its outer edge runs through the
-sea in straight lines, and Islands District is 93 vertices for the whole of Lantau. That is exactly
-right for asking "which district is this road edge in" and useless as something to draw — which is
-why the overlay renders road bands and never a filled polygon.
+The Schedule is precise about roads and silent about three boundaries, which the file therefore
+draws by hand and says so in the clause:
+
+- **Tseung Kwan O New Town.** §1(c) permits all of Sai Kung *outside* it and eleven named roads
+  inside it, but never bounds it. `tko-new-town` follows the dashed outline on TD's 2005 map, its
+  north edge at 22.333 between Ngan Ying Road (inside) and University Road (outside). The `TS329` in
+  Tseung Kwan O all stand where one of the eleven roads ends, which agrees with the list and says
+  nothing about the outline.
+- **The access roads off Tai Po Road and Tolo Highway in north Sha Tin**, and "all roads in Ma On
+  Shan" (§1(d)(i), (ii), (x)). `ma-on-shan` is anchored on the `TS329` line at Tai Po Road – Sha Tin
+  (22.4044), Tsun King Road (22.4049) and A Kung Kok Street (22.4064), with Kau To Shan Road excepted
+  by name as the Schedule does.
+- **"From Tuen Mun to the Lido car park beneath Ting Kau Bridge, and the access roads leading off
+  that section"** (§1(f)(i)). Ting Kau Bridge — carried in the network as Tsing Long Highway —
+  crosses Castle Peak Road – Ting Kau at 114.0778, exactly where six `TS329` stand, so `sham-tseng`
+  takes Tsuen Wan District west of that line and north of Ma Wan.
+
+And the file cannot follow the Schedule exactly in a few places, where it underdraws or overdraws a
+little and says which:
+
+- §1(i)(xiii) and (xxiv) permit single **carriageways** of Chek Lap Kok Road and East Coast Road. A
+  ring cannot tell carriageways apart, so the first is withheld both ways south of Tung Wing Road and
+  the second drawn both ways; Cheong Lin Road, whose three listed stretches cover nearly all of it, is
+  drawn whole.
+- 暢旺路 and 翔天路 (§1(i)(iv), (xi)) are not in TD's network under those names, and neither are the
+  Huanggang port roads (§1(m), added 2026).
+- A **rank inside a station's public transport interchange** stands on an unnamed aisle that the
+  Schedule never lists — it lists roads. The map does not draw it; the audit counts such a stand
+  apart when a road the colour may serve runs within 30 m.
+
+## District-map traps
+
+HAD's partition is administrative, and it disagrees with a taxi licence in two places the file
+corrects by ring:
+
+- **North-east Lantau is in Tsuen Wan District** — Yam O, Sunny Bay, Penny's Bay, the Lantau Link toll
+  plaza and Disneyland. §2 gives Lantau taxis all of Lantau, so `north-east-lantau` adds it back.
+- **Islands District is not Lantau.** Cheung Chau, Peng Chau and Hei Ling Chau are in it but are not
+  "Lantau or Chek Lap Kok", so `lantau-and-chek-lap-kok` keeps them out of the Lantau-taxi area.
+
+Red taxis are not in Sch. 7. They serve the whole territory "except Tung Chung Road and roads in
+South Lantau" (TD), and `south-lantau` stops short of Tung Chung town, where red taxis do serve:
+its north edge drops to 22.266 west of Mui Wo, which cleared the `TS567` stands at Yat Tung.
 
 ## The signs audit this file; they never feed it
 
@@ -56,12 +112,12 @@ are unusually good evidence — but they stay an oracle, because "rule extents n
 points" (CLAUDE.md) and a terminator only says where something *stops*.
 
 To be precise about what that rule does and does not forbid: **no road's classification is computed
-from a plate.** What TD's map says — which districts are green, which are not — is the source, and
-the classifier never looks at a sign. Where a boundary runs *inside* a district, though, TD's raster
-gives no better than a kilometre, so a human placed the ring; for `ma-on-shan` that human read the
-latitudes off the TS329 line before drawing it, and the clause says so. That is verification
+from a plate.** The Schedule is the source and the classifier never looks at a sign. Where the
+Schedule leaves a boundary unstated, a human placed the ring; for `ma-on-shan` that human read the
+latitudes off the `TS329` line before drawing it, and the clause says so. That is verification
 steering a hand-drawn line, not an extent derived from points, and it is the only place in this file
-where a plate position influenced a coordinate.
+where a plate position influenced a coordinate. (The Ting Kau limit is the Schedule's own "beneath
+Ting Kau Bridge", located from the network; that six `TS329` stand there confirms it.)
 
 Territory-wide, at the time of writing:
 
@@ -73,119 +129,56 @@ Territory-wide, at the time of writing:
 | `TS567` | URBAN TAXIS (stand plate) | 178 |
 | `TS566` | LANTAU TAXIS (stand plate) | 28 |
 
-Two independent facts fell out of those positions and are worth keeping written down:
+Facts worth keeping written down:
 
-- **Zero `TS329` stand in Tuen Mun, Yuen Long, North or Tai Po District.** A terminator marks a
-  boundary, so four districts without one are four districts wholly inside the area — which is
-  precisely the whole-district model the file uses.
-- **Most `TS329` are not on the area boundary at all.** Tsuen Wan (68), Kwai Tsing (44), Islands (34)
-  and Kwun Tong (5) are wholly *outside* the NT area, so their 151 plates mark where a **designated
-  route or a fringe destination ends** inside excluded territory — at Tsuen Wan Station, Tsing Yi
-  Station, the airport, Disneyland, Shun Lee Estate.
-- **A plate cannot show a missing link.** The terminators and stands say where a colour stops and
-  where it waits; neither says that a road *between* two green roads is missing. The audit's
-  reachability section is the check for that — see below.
+- **Zero `TS329` stand in Tuen Mun, Yuen Long, North or Tai Po District** — the four districts the
+  Schedule gives whole.
+- **Most `TS329` stand on the road they forbid**, a side street leaving a listed road. The audit
+  counts those as "road no clause touches", which with a street-by-street extent is the normal case,
+  not a finding.
+- **A stand plate can stand where the Schedule says no.** Three `TS818` stand on Castle Peak Road –
+  Ting Kau east of the Lido car park limit, one at Siu Lek Yuen Road south of the Sha Lek Highway
+  links. The Schedule is the authority, so the map follows it; the plates are listed, not drawn.
+- **A plate cannot show a missing link.** The audit's reachability section is the check for that.
 
-## What the map draws, and what it leaves out
-
-`clauses` lists the **thirteen numbered routes from TD's own map legend**, the **unnumbered red links**
-that join them to each other and to the facilities, and a ring around each fringe facility TD marks
-— the airport terminals and the HZMB Hong Kong Port PTI, the Shenzhen Bay Port Hong Kong Port Area,
-Tsing Yi Station, Tsuen Wan Station, Prince of Wales Hospital, Tseung Kwan O Hospital A&E, Sha Tin
-Racecourse, Shun Lee Estate, Disneyland and Hang Hau Station. Each ring is that facility's **own
-footprint**, not an envelope sized to make plates pass: a ±1 km box around Tsuen Wan Station was tried
-and reverted, because it marked most of Tsuen Wan town as NT-servable, which is a claim TD does not
-make. TD's map also marks the Huanggang port, but its port-area roads are not in the road network,
-and the approach to it already lies inside the green area.
-
-An earlier version of this file said TD names the facilities but **publishes no road to them**. That
-was wrong: the red lines on TD's map run unbroken from the permitted area over the Lantau Link to
-the airport, off the North Lantau Highway to Disneyland, round west Tsing Yi to Tsing Yi Station,
-through Tsuen Wan to route 4, and across Sha Tin to Ma On Shan and down both legs of the loop to
-Prince of Wales Hospital. TD
-numbers only thirteen of them and names none of the rest, so each unnumbered clause is a human
-reading of which street lies under a red line, cited to the line it follows. Where the map is too
-coarse to say which of two streets a line takes, a plate on one of them (a run of `TS818`, a pair of
-`TS329`) is what settled it, and the clause says so. That is the `ma-on-shan` precedent — verification
-steering a hand-drawn reading — and never an extent computed from plates.
-
-The Tsuen Wan Station loop is the largest case. TD draws a closed loop round the station, but at
-60 m/px it could be any of three parallel streets. The plates settle it: 20 `TS818` stand on six
-streets (Castle Peak Road – Tsuen Wan, Cheung Pei Shan Road, Sai Lau Kok Road, Wai Tsuen Road, Shing
-Mun Road, Miu Kong Street), and a ring of `TS329` closes them off at every side street, with its
-outer edges at Tsuen King Circuit / Tai Chung Road (114.110) and Shek Wai Kok / Kwok Shui Roads
-(114.123). The clause names those six streets inside a ring. It does not take every road in a box:
-that would repeat the reverted ±1 km envelope.
-
-The map cannot say, and so the file does not claim:
-
-- **Sham Tseng and Ting Kau.** TD's green fill appears to reach the coast south of Tuen Mun Road in
-  western Tsuen Wan District, which this file (whole district excluded) does not draw. The plates
-  contradict each other there. Three `TS818` stand on Castle Peak Road – Ting Kau at 114.081–114.084,
-  but six `TS329` stand *west* of them at 114.078 (Castle Peak Road – Ting Kau, Castle Peak Road –
-  New Ting Kau, Ting Yat Road), so the stand is on the far side of an "end of area" line. The edge
-  needs a closer reading, or a newer map, before it is drawn. Until then these are the three
-  `TS818` that audit section 3 still lists, and the two one-way Castle Peak Road – Tai Lam stubs that
-  stop at the Tuen Mun District line are section 5's reminder of the same question.
-
-## Two district-map traps
-
-HAD's partition is administrative, and three times it disagrees with where a taxi licence stops:
-
-- **North-east Lantau is in Tsuen Wan District** — Yam O, Sunny Bay, Penny's Bay and the Lantau Link
-  toll plaza. TD hatches all of Lantau for Lantau taxis, so `north-east-lantau` adds it back; the
-  `TS566` stands at Sunny Bay were the ones the audit had flagged as outside the Lantau area. The
-  same line puts Disneyland's transport interchange in Tsuen Wan District too, so the Disneyland
-  destination takes both districts.
-- **Kowloon Peak is in Sai Kung District.** TD's map colours it pink with Kowloon, and TD's prose
-  says only "most areas" of Sai Kung. Fei Ngo Shan Road climbs to it from Clear Water Bay Road at Shun
-  Lee, so drawn green it was a 4 km island that no NT taxi could reach. The Sai Kung exclusion ring
-  (`sai-kung-outside`) grows a tongue over it that stops short of Ho Chung Road, which the map shows
-  green.
-- **"Roads in South Lantau"** must stop short of Tung Chung town, where red taxis do serve: the
-  `south-lantau` ring's north edge drops to 22.266 west of Mui Wo, which cleared the `TS567` stands
-  at Yat Tung.
-
-## Measured (2026-09-23)
+## Measured (2026-09-24)
 
 | Finding | Result |
 |---|---|
-| Terminators explained | 171 of 249 — 86 at the end of a designated route, 74 at a fringe destination, 11 on a boundary road |
-| Terminators unexplained | 78, mostly on side roads leaving a route (the plate stands on the road it forbids, which no clause draws) and 11 just inside an area on the ramp that leaves it |
-| Boundary roads with no terminator within 40 m | 201 of 259 — ramps and slip roads are genuinely unsigned |
-| `TS818` NT stands outside the NT area | 5 of 358 (was 71, then 35): the three at Ting Kau (see above), one at the Siu Lek Yuen terminator, and one 4 m from an unnamed link on west Tsing Yi but 5 m from the route |
-| `TS566` Lantau stands outside the Lantau area | none of 28 (was 6) |
-| `TS567` urban stands inside the urban exclusion | none of 178 (was 2) |
-| Clauses matching no road | none; all 46 bind |
-| NT roads stranded (cannot drive there and back on NT roads) | 86 km in 277 islands (was 117 km) |
-| Lantau roads stranded | 26 km in 30 islands |
+| `TS818` NT stands where NT taxis may not serve | 8 of 358 (was 71, then 35, then 5 under the map-based file): Ting Kau 3 and Siu Lek Yuen 1, both past the Schedule's limit; 2 in Disneyland's transport interchange more than 30 m from a named road; 2 at junction corners (Tai Ho Road North beside Sai Lau Kok Road, Tsing Yi Road West at Cheung Tsing Highway). Another 12 stand on an interchange aisle beside a permitted road — Tsuen Wan Station 8, Hang Hau 2, Tsing Yi Station 1, west Tsing Yi 1 |
+| `TS566` Lantau stands outside the Lantau area | none of 28 |
+| `TS567` urban stands inside the urban exclusion | none of 178 |
+| Terminators | 148 of 249 explained — 72 at the end of a listed route, 60 at a facility's roads, 16 on a boundary road; 101 not, 93 of them standing on the side road they forbid and 8 just inside an area on the ramp that leaves it |
+| Boundary roads with no terminator within 40 m | 108 of 148 — ramps and slip roads are genuinely unsigned |
+| Clauses matching no road | none; all 62 bind |
+| NT roads stranded (cannot drive there and back on NT roads) | 62 km in 252 islands (was 117 km) |
+| Lantau roads stranded | 27 km in 32 islands |
 
 **Reading the stranded islands** (audit section 5). A colour's roads are walked over the directed
 network from their largest strongly connected piece; an island is a group of its roads that cannot
-be driven to *and* back from there without leaving them. Before the unnumbered links were added,
-Ma On Shan, Sai Kung, Tseung Kwan O and every facility south of the Tuen Mun–Tai Po core were
-islands — the same gaps the map showed as disconnected green. What remains is of two kinds, and
-neither is a missing link:
+be driven to *and* back from there without leaving them. What remains is of four kinds, and none is
+a missing link:
 
-- **One-way stubs out of an area** with no turnaround in TD's network: the HZMB Link Road toward
-  Zhuhai, the Shenzhen Bay Bridge into the port (the network has no loop there), the Tuen Mun–Chek Lap
-  Kok tunnel for Lantau taxis, the Lantau Link approach past the toll plaza.
-- **Scraps of a facility's footprint ring** — car-park aisles and service roads reached only through
-  streets outside the ring. They are ranked by length so they sink below any real gap. The largest
-  are all one-way streets leaving a ring: Tseung Kwan O Tunnel Road and Po Shun Road at Hang Hau
-  (3.0 km), Shun Lee Tsuen Road (1.6 km), and the north half of Shek Mun Interchange inside the
-  racecourse ring (1.6 km), whose south half a `TS329` pair closes.
-
-Kam Tai Road at Shek Kong (1.8 km) is neither kind. It lies wholly inside Yuen Long District, with no
-non-green road touching it, so the gap is in TD's network, not in this file.
+- **One-way stubs at a legal limit**, where the Schedule stops a road the network runs on: Castle
+  Peak Road at the Lido car park (2.5 km), the Cheung Tsing Highway carriageways that continue to
+  Tsing Sha Highway (2.2 km twice), the Shenzhen Bay port's exit lanes, and for Lantau taxis the
+  HZMB Link Road toward Zhuhai and the Lantau Link approach past the toll plaza.
+- **Scraps of an interchange** — the unnamed ramps where the Tuen Mun–Chek Lap Kok Link lands on the
+  port island, a short loop of the Shun Lee interchange, the racecourse's access aisles.
+- **Roads the Schedule permits but that only excluded roads reach** — the unnamed tracks beside Fei
+  Ngo Shan Road, the unnamed roads on Junk Bay's west shore (114.242, 22.289) just outside the
+  new-town outline. Legally in, so drawn, and unreachable by design.
+- **Kam Tai Road at Shek Kong** (1.8 km) lies wholly inside Yuen Long District with no non-green road
+  touching it, so the gap is in TD's network, not in this file.
 
 A new island of more than a kilometre or two after an edit or a TD refresh is the thing to look at.
 
 ## Using `taxiAreas.json` elsewhere
 
-The build also writes `taxiAreas.json` beside this README: the same clauses with the district polygons inlined and thinned to
-~33 m (198 KB). It needs no library and no other file — `../should-i-take-taxi` can drop its three
-`NT_TAXI_BOXES` rectangles for it. The whole consumer is a ray cast:
+The build also writes `taxiAreas.json` beside this README: the same clauses with the district
+polygons inlined and thinned to ~33 m (155 KB). It needs no library and no other file —
+`../should-i-take-taxi` can drop its three `NT_TAXI_BOXES` rectangles for it. For a point, only the
+district-wide clauses can answer, and the consumer is a ray cast:
 
 ```js
 const RANK = { area: 0, dest: 1, route: 2, none: 3 }
@@ -197,16 +190,19 @@ function serve(lng, lat) {                 // → { nt: 'area', lantau: 'area', 
     if (!(c.polygons ?? []).some(g => pointInPolygon(lng, lat, g))) continue
     if (c.only && !pointInRing(lng, lat, c.only)) continue
     if (c.minus && pointInRing(lng, lat, c.minus)) continue
+    if ((c.except ?? []).some(e => !e.streets && pointInRing(lng, lat, e.only))) continue
     if (!(c.taxi in best) || RANK[c.access] < RANK[best[c.taxi]]) best[c.taxi] = c.access
   }
   return best
 }
 ```
 
-Checked against twelve known points (2026-09-22), including both internal cuts: Yuen Long, Tai Po,
-Ma On Shan and Sai Kung return `nt: area`; Sha Tin town, Tsuen Wan and Tseung Kwan O return nothing;
-Tsuen Wan Station returns `nt: dest`; Tung Chung returns `lantau: area`; Mui Wo returns
-`lantau: area` **and** `urban: none`; the airport returns `nt: dest` and `lantau: area`.
+Checked against fifteen known points (2026-09-24): Yuen Long, Tai Po, Ma On Shan, Sai Kung, HKUST
+and Sham Tseng return `nt: area`; Sha Tin town, Tsuen Wan, Tseung Kwan O and the Anderson Road
+quarry return nothing; Tung Chung and the airport return `lantau: area`; Mui Wo returns
+`lantau: area` **and** `urban: none`; Cheung Chau returns nothing.
 
 A point in Kowloon or on Hong Kong Island returns `{}` — correct, and worth handling explicitly: an
-empty result means "no colour is called out here", which for red taxis means they may serve it.
+empty result means "no colour is called out here", which for red taxis means they may serve it. A
+point on a station forecourt, the airport or Shun Lee also returns no NT entry, because those are
+reached by named roads, and only a road name can test a street clause.
