@@ -13,6 +13,8 @@
     "collapse": "Collapse panel",
     "expand": "Expand panel",
     "tabs": {
+      "rules": "Road rules",
+      "signs": "Signs · advanced",
       "category": "By category",
       "signId": "By sign ID"
     },
@@ -59,10 +61,15 @@
     "showAgain": "Show this sign"
   },
   "rules": {
-    "title": "Road rules",
-    "hint": "Where a rule applies, from the Transport Department's road network data. Each row also shows the signs that announce it.",
-    "collapse": "Collapse road rules",
-    "expand": "Expand road rules",
+    "hint": "Lines come from the Transport Department's road network data; taxi areas and expressways are drawn from the law. Ticking a row also shows the signs that announce it.",
+    "filtered": "Showing only the signs for your picks.",
+    "showAllSigns": "Show all signs",
+    "onCount": "No road rules on | 1 road rule on | {n} road rules on",
+    "edit": "Edit",
+    "sections": {
+      "access": "Where can I drive?",
+      "road": "What applies along the road?"
+    },
     "rows": {
       "speed": "Speed limits",
       "buslane": "Bus-only lanes",
@@ -78,6 +85,19 @@
       "taxi-nt": "NT (green)",
       "taxi-lantau": "Lantau (blue)",
       "taxi-urban": "Urban (red) no-go"
+    },
+    "desc": {
+      "plb": "Roads minibuses are banned from, or can't reach at all",
+      "taxi": "Where NT and Lantau taxis may serve, and where urban taxis may not",
+      "expressway": "Designated expressways, closed to minibuses and learners",
+      "proh-all": "Roads closed to all motor vehicles",
+      "proh-gv": "Roads closed to goods vehicles",
+      "proh-ld": "Roads closed to learner drivers",
+      "proh-other": "Bans on other vehicles, such as buses or dangerous goods",
+      "speed": "Limits other than the default 50 km/h",
+      "nsr": "Kerbs where stopping is banned, by vehicle and hours",
+      "buslane": "Lanes reserved for buses, with their hours",
+      "pedzone": "Streets given over to pedestrians, with their hours"
     },
     "chips": {
       "plbBan": "Prohibited",
@@ -212,9 +232,9 @@
     "howTitle": "How to use it",
     "how1": "Pan and zoom to any street; signs spread apart as you zoom in.",
     "how2": "Click a sign or dot to inspect it. Click the same spot again to cycle through several overlapping signs.",
-    "how3": "Use the Categories panel to toggle sign classes on or off, or switch to “By sign ID” to search for particular signs by number or meaning; a matched sign brings the rest of its signpost with it. Fold the panel away for a larger map.",
+    "how3": "In the “Signs · advanced” tab, toggle sign classes on or off, or switch to “By sign ID” to search for particular signs by number or meaning; a matched sign brings the rest of its signpost with it. Fold the panel away for a larger map.",
     "how4": "Each plate is turned the way it faces on the street and drawn as if laid flat on the ground, so it reads upright from the side its drivers approach. Signs sharing a post hang together in one column.",
-    "how5": "Turn on a Road rules row to draw where that rule applies, and click a line for its details. “Show signs for this rule” narrows the map to the signs that announce it.",
+    "how5": "The panel opens on the Road rules tab: turn on a row to draw where that rule applies and narrow the map to the signs that announce it, and use “Show all signs” to bring the rest back. Click a line for its details; “Show signs for this rule” narrows the map to that one rule’s signs.",
     "dataTitle": "Data & attribution",
     "attribution": "Sign data is from the Hong Kong Transport Department’s {tad} and road-rule extents from its {roadNetwork} open datasets on data.gov.hk, used under the {terms}. Chinese sign names are from the department’s {ruc}. The basemap is © {osm} contributors.",
     "tadLabel": "Traffic Aids Drawings (2nd generation)",
@@ -262,11 +282,11 @@
       },
       {
         "q": "Can I filter which signs are shown?",
-        "a": "Yes. Use the Categories panel to toggle any sign class on or off, or hide them all at once. The “By sign ID” tab searches signs by number or meaning and shows only the ones you pick, each with the rest of its signpost. The panel can be folded away to give the map more room."
+        "a": "Yes. The “Signs · advanced” tab toggles any sign class on or off, or hides them all at once, and its “By sign ID” switch searches signs by number or meaning and shows only the ones you pick, each with the rest of its signpost. The panel can be folded away to give the map more room."
       },
       {
         "q": "What are the coloured lines on the roads?",
-        "a": "The Road rules section of the panel draws where a rule applies, straight from the Transport Department’s road network data: speed limits, bus-only lanes, vehicle prohibitions, no-stopping restrictions and pedestrian zones. Click a line for its details, including hours and days, and use “Show signs for this rule” to see the signs that announce it. The default 50 km/h limit has no line of its own."
+        "a": "The Road rules tab, which the panel opens on, draws where a rule applies, straight from the Transport Department’s road network data: speed limits, bus-only lanes, vehicle prohibitions, no-stopping restrictions and pedestrian zones. Click a line for its details, including hours and days, and use “Show signs for this rule” to see the signs that announce it. The default 50 km/h limit has no line of its own."
       },
       {
         "q": "What are “Minibus no-go roads”?",

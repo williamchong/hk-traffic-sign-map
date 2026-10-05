@@ -6,11 +6,12 @@ import { categoryKeyExpr } from '~/composables/useSignCatalogue'
 // Singleton state (module scope) so the filter panel, popup and the map
 // component all share one source of truth without prop drilling.
 
-// Two filter modes, exposed as tabs in the panel. They're MUTUALLY EXCLUSIVE —
+// Two filter modes, switched in the panel's Signs tab (and flipped to sign-id by
+// a ticked road-rules row). They're MUTUALLY EXCLUSIVE —
 // only the active mode's expression feeds the map's setFilter. Keeping both
 // modes' state alive (rather than wiping on switch) means toggling tabs is
 // non-destructive: a user's sign-ID picks survive a detour through the
-// category tab and vice versa.
+// category view and vice versa.
 export type FilterMode = 'category' | 'sign-id'
 // The mode SSR/prerender falls back to (no localStorage on the server). The
 // panel seeds its hydration-safe tab mirror with the same value, so keep this

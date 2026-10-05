@@ -99,7 +99,7 @@ const { selectedRule } = useRoadRules()
 // What the highlight draws: the clicked pin, else the notes covering the
 // clicked rule line. So "click the pin" and "click the segment" light up the
 // same roads and show the same words, which is the point of the feature.
-// Module scope, like useRoadRules' anyRuleOn and useTrafficLayers' mapFilter:
+// Module scope, like useRoadRules' rulesOnCount and useTrafficLayers' mapFilter:
 // every caller shares the one computed rather than building its own.
 const activeNotes = computed<RuleNote[]>(() => {
   if (selectedNote.value) return [selectedNote.value]

@@ -13,6 +13,9 @@ interface AnalyticsEvents {
   sign_select: { sign_id: string | null, category: CategoryKey, cluster_size: number, zoom: number }
   filter_category_toggle: { category: CategoryKey, enabled: boolean }
   filter_toggle_all: { enabled: boolean }
+  // The panel's top-level tabs (Road rules | Signs), which are presentation
+  // only; `filter_mode_switch` is the map's filter mode inside the Signs tab.
+  panel_tab_switch: { tab: 'rules' | 'signs' }
   filter_mode_switch: { mode: FilterMode }
   filter_signid_toggle: { sign_id: string, enabled: boolean }
   filter_signid_bulk: { count: number, enabled: boolean }
@@ -27,6 +30,8 @@ interface AnalyticsEvents {
   rule_group_toggle: { group: string, enabled: boolean, rows: number }
   rule_select: { layer: string, kind: string | null, zoom: number }
   rule_note_select: { note_id: string, from: 'pin' | 'rule' }
+  // The Road rules tab's "Show all signs": back to category mode, rule picks kept.
+  rules_show_all_signs: undefined
   filter_rule_signs: { layer: string, count: number, from: 'popup' }
   locale_switch: { from: string, to: string }
   theme_change: { mode: ThemeMode }

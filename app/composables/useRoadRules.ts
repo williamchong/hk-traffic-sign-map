@@ -116,6 +116,33 @@ export const LEGEND_ENTRIES: LegendEntry[] = RULE_ROWS.reduce<LegendEntry[]>((ou
   else out.push({ key: r.group ?? r.key, rows: [r], grouped: !!r.group })
   return out
 }, [])
+// The Road rules tab's headings: the same entries, grouped by the question a
+// reader brings rather than by source-layer. Presentation only, like the taxi
+// fold above — `rules.sections.<key>` labels a section, and nothing else knows
+// sections exist. Every legend entry must sit in exactly one, or a row added
+// to RULE_ROWS would silently never reach the panel.
+export type LegendSectionKey = 'access' | 'road'
+const SECTION_ENTRIES: [LegendSectionKey, string[]][] = [
+  ['access', ['plb', 'taxi', 'expressway', 'proh-all', 'proh-gv', 'proh-ld', 'proh-other']],
+  ['road', ['speed', 'nsr', 'buslane', 'pedzone']]
+]
+if (import.meta.dev) {
+  const placed = SECTION_ENTRIES.flatMap(([, keys]) => keys)
+  const legendKeys = LEGEND_ENTRIES.map(e => e.key)
+  const wrong = [
+    ...legendKeys.filter(k => placed.filter(p => p === k).length !== 1),
+    ...placed.filter(k => !legendKeys.includes(k))
+  ]
+  if (wrong.length) throw new Error(`[useRoadRules] LEGEND_SECTIONS must place every legend entry exactly once: ${wrong.join(', ')}`)
+}
+export interface LegendSection {
+  key: LegendSectionKey
+  entries: LegendEntry[]
+}
+export const LEGEND_SECTIONS: LegendSection[] = SECTION_ENTRIES.map(([key, keys]) => ({
+  key,
+  entries: keys.map(k => LEGEND_ENTRIES.find(e => e.key === k)!)
+}))
 export const taxiColorStops = RULE_ROWS.filter(r => r.taxi).flatMap(r => [r.taxi!, r.color])
 
 // Speed-limit lines are coloured by value (the row colour is only its swatch
@@ -186,7 +213,9 @@ const rulesEnabled = useLocalStorage<Record<string, boolean>>(
   Object.fromEntries(RULE_ROWS.map(r => [r.key, !!r.defaultOn])),
   { mergeDefaults: true }
 )
-const anyRuleOn = computed(() => RULE_ROWS.some(r => rulesEnabled.value[r.key]))
+// How many legend rows are on — a grouped row counts once, as it reads.
+const rulesOnCount = computed(() =>
+  LEGEND_ENTRIES.filter(e => e.rows.some(r => rulesEnabled.value[r.key])).length)
 const enabledKinds = computed(() =>
   RULE_ROWS.filter(r => r.kind && rulesEnabled.value[r.key]).map(r => r.kind!)
 )
@@ -417,9 +446,9 @@ export const ruleTitleKey = (layer: RuleLayer, p: Record<string, unknown>) => {
 
 export function useRoadRules() {
   return {
-    legend: LEGEND_ENTRIES,
+    sections: LEGEND_SECTIONS,
     rulesEnabled,
-    anyRuleOn,
+    rulesOnCount,
     enabledKinds,
     enabledTaxis,
     isRowEnabled,
