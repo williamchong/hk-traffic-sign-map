@@ -2,6 +2,7 @@
 import { ruleRows, ruleTitleKey, rowKeyFor, rowValueOf, linkedSignCodes, ruleColor, SPEED_COLORS, NSR_VEH_COLORS, CUTOFF_COLOR, type NsrVehicle, type RuleLayer } from '~/composables/useRoadRules'
 import { useRuleNotes } from '~/composables/useRuleNotes'
 import { formatLngLat } from '~/utils/format'
+import { tdTrafficNoticesUrl } from '~/utils/links'
 import tilesVersion from '~/data/tilesVersion.json'
 
 // Detail card for a clicked rule line (speed limit / bus-only lane /
@@ -132,6 +133,24 @@ function onShowSigns() {
           >
             {{ $t('rules.asOf', { date: asOf }) }}
           </p>
+          <!-- Every reading can lag the road, and some are worked out rather
+               than posted, so each card names the plates and TD's own notices
+               as the authority. -->
+          <i18n-t
+            keypath="rules.verify"
+            tag="p"
+            scope="global"
+            class="mt-1 text-xs text-muted"
+          >
+            <template #notices>
+              <a
+                :href="tdTrafficNoticesUrl(locale)"
+                target="_blank"
+                rel="noopener"
+                class="underline decoration-dotted underline-offset-2"
+              >{{ $t('rules.noticesLabel') }}</a>
+            </template>
+          </i18n-t>
         </div>
       </div>
       <UButton

@@ -27,7 +27,7 @@ export default defineNuxtConfig({
     // SEO-length (~160 char) summary; the canonical long-form copy lives
     // in i18n/locales/en.json (site.summary). Kept in sync by hand —
     // nuxt.config is build-time and can't import locale messages.
-    description: 'Browse every Hong Kong road traffic sign on an interactive map, built from Transport Department open data.',
+    description: 'Hong Kong road rules and traffic signs on one interactive map: speed limits, no stopping, bus lanes, minibus no-go roads and taxi areas, from Transport Department open data.',
     defaultLocale: 'en'
   },
 

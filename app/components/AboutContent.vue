@@ -23,7 +23,7 @@ const LINKS = {
 const attributionLinks = computed(() => ({
   tad: LINKS.tad,
   roadNetwork: LINKS.roadNetwork,
-  ruc: `https://www.td.gov.hk/${locale.value === 'zh-HK' ? 'tc' : 'en'}/road_safety/road_users_code/index/chapter_8_the_language_of_the_road/`,
+  ruc: `https://www.td.gov.hk/${tdLang(locale.value)}/road_safety/road_users_code/index/chapter_8_the_language_of_the_road/`,
   terms: LINKS.terms,
   osm: LINKS.osm
 }))
@@ -75,9 +75,21 @@ const attributionLinks = computed(() => ({
           >{{ $t(`about.${slot}Label`) }}</a>
         </template>
       </i18n-t>
-      <p class="text-muted">
-        {{ $t('about.disclaimer') }}
-      </p>
+      <i18n-t
+        keypath="about.disclaimer"
+        tag="p"
+        scope="global"
+        class="text-muted"
+      >
+        <template #notices>
+          <a
+            :href="tdTrafficNoticesUrl(locale)"
+            target="_blank"
+            rel="noopener"
+            class="text-primary underline"
+          >{{ $t('about.noticesLabel') }}</a>
+        </template>
+      </i18n-t>
     </section>
 
     <nav class="flex flex-wrap gap-x-4 gap-y-1 text-sm">

@@ -1,9 +1,21 @@
 # HK Traffic Sign Map
 
-Interactive, high-performance viewer for every traffic sign the Hong Kong
-Transport Department has surveyed, built on
+Interactive map of Hong Kong's road rules — where speed limits, no-stopping
+restrictions, bus lanes and vehicle bans apply, which roads minibuses cannot
+reach, where each taxi colour may serve — and of every traffic sign the Hong
+Kong Transport Department has surveyed, built on
 [OpenStreetMap](https://www.openstreetmap.org) and the TD's
-[Traffic Aids Drawings (2nd generation) open data](https://data.gov.hk/en-data/dataset/hk-td-tis_16-traffic-aids-drawings-v2).
+[Traffic Aids Drawings (2nd generation)](https://data.gov.hk/en-data/dataset/hk-td-tis_16-traffic-aids-drawings-v2)
+and [Road Network (2nd generation)](https://data.gov.hk/en-data/dataset/hk-td-tis_15-road-network-v2)
+open data.
+
+> **Not an authority.** This is an independent project, not affiliated with
+> the Transport Department. Some readings (the roads minibuses cannot reach,
+> taxi operating areas, expressways) are worked out or curated here rather
+> than published by TD, and all of the data can lag behind the road. It is
+> provided as is, without warranty, and the author accepts no liability for
+> its use. Always follow the signs on the road and TD's latest
+> [traffic notices](https://www.td.gov.hk/en/traffic_notices/index.html).
 
 Rendering uses [MapLibre GL JS](https://maplibre.org) over vector tiles packed
 into [PMTiles](https://docs.protomaps.com/pmtiles/) archives, so the whole app
