@@ -184,6 +184,7 @@
     "source": "Road Network (2nd generation), Transport Department",
     "cutoffSource": "Worked out from the Transport Department's prohibitions and turn bans and the expressways public light buses may not use — not a posted rule",
     "noticeSource": "Designated by Transport Department traffic notice no. {n}; not yet in the road network data",
+    "asOf": "As at {date}",
     "close": "Close",
     "taxiAccess": {
       "area": "Permitted area",

@@ -1,4 +1,10 @@
 {
   "version": "c64e304889f3",
-  "rulesVersion": "1cd810606715"
+  "rulesVersion": "1cd810606715",
+  "rulesAsOf": {
+    "network": "2026-09-07",
+    "cutoff": "2025-10-26",
+    "taxi": "2026-07-31",
+    "expressway": "2025-10-26"
+  }
 }

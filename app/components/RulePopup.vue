@@ -2,6 +2,7 @@
 import { ruleRows, ruleTitleKey, rowKeyFor, rowValueOf, linkedSignCodes, ruleColor, SPEED_COLORS, NSR_VEH_COLORS, CUTOFF_COLOR, type NsrVehicle, type RuleLayer } from '~/composables/useRoadRules'
 import { useRuleNotes } from '~/composables/useRuleNotes'
 import { formatLngLat } from '~/utils/format'
+import tilesVersion from '~/data/tilesVersion.json'
 
 // Detail card for a clicked rule line (speed limit / bus-only lane /
 // prohibition / no stopping / pedestrian zone). Same slot as SignPopup — TrafficMap keeps at most one of
@@ -63,6 +64,19 @@ const SOURCE_KEY: Partial<Record<RuleLayer, string>> = {
   expressway: 'rules.expresswaySource'
 }
 
+// How old this reading is: the day TD's network was fetched for every layer
+// read straight off it, the date of the source each curated layer was checked
+// against, and the older of the two for the cut-off, which is derived from
+// both. A notice-backed row has none — the notice is its date. Written by
+// build-road-rules.mjs as YYYY-MM-DD, so formatted in UTC to stay that day.
+const AS_OF: Record<string, string> = tilesVersion.rulesAsOf
+const asOf = computed(() => {
+  const r = rule.value
+  if (!r || notice.value) return null
+  const iso = AS_OF[r.layer in AS_OF ? r.layer : 'network']
+  return iso ? new Date(iso).toLocaleDateString(locale.value, { dateStyle: 'medium', timeZone: 'UTC' }) : null
+})
+
 // "Show signs for this rule": the plates that announce it, added to the
 // sign-ID filter — the retain-all archive, so they are complete at every zoom
 // (a category-mode emphasis would only reach the thinned overview's
@@ -111,6 +125,12 @@ function onShowSigns() {
             <template v-else>
               {{ $t(SOURCE_KEY[rule.layer] ?? 'rules.source') }}
             </template>
+          </p>
+          <p
+            v-if="asOf"
+            class="text-xs text-dimmed"
+          >
+            {{ $t('rules.asOf', { date: asOf }) }}
           </p>
         </div>
       </div>

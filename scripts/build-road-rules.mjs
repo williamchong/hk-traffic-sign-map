@@ -53,7 +53,7 @@
 // joined from CENTERLINE — by ROAD_ROUTE_ID for every layer but NSR, which
 // names its roads by ST_CODE instead.
 
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { createWriteStream } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
@@ -528,6 +528,22 @@ for (const k of TILE_LAYERS) await rm(scratch(k), { force: true })
 // Own cache-buster key: this archive rebuilds independently of the sign
 // archives, so it must not invalidate their byte-range cache (and vice versa).
 const rulesVersion = createHash('sha256').update(await readFile(OUTPUT_PMTILES_RULES)).digest('hex').slice(0, 12)
-await mergeTilesVersion({ rulesVersion })
+// How old each reading is, for the rule popup's "as at" line. TD's network
+// has no publication date in its data, so it is the day the FGDB was fetched
+// (its mtime, as a Hong Kong date — a copy or touch would move it); the two
+// curated layers carry the date of the source they were checked against
+// (`asOf` in each file). The cut-off is derived from the network AND the
+// expressway designation, so it is only as current as the older of the two.
+const network = (await stat(RDNET_ZIP)).mtime.toLocaleDateString('en-CA', { timeZone: 'Asia/Hong_Kong' })
+for (const [file, asOf] of [[TAXI_AREAS_FILE, taxiAreas.asOf], [EXPRESSWAY_FILE, designation.asOf]]) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf ?? '')) throw new Error(`${file}: missing or malformed "asOf" (want YYYY-MM-DD), got ${asOf}`)
+}
+const rulesAsOf = {
+  network,
+  cutoff: [network, designation.asOf].sort()[0],
+  taxi: taxiAreas.asOf,
+  expressway: designation.asOf
+}
+await mergeTilesVersion({ rulesVersion, rulesAsOf })
 
 console.log(`\nDone → ${OUTPUT_PMTILES_RULES} (v${rulesVersion}, ${Date.now() - t0} ms)`)
